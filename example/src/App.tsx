@@ -1,18 +1,66 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'surveysparrow-react-native-sdk';
+import { StyleSheet, View, Button } from 'react-native';
+import {
+  SsSurveyViewComponent,
+  SsSurvey,
+  onSurveyResponseListener,
+  ScheduleSsSurvey,
+  ClearScheduleSsSurvey,
+} from 'surveysparrow-react-native-sdk';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
-
   React.useEffect(() => {
-    multiply(3, 7).then(setResult);
+    const sub = onSurveyResponseListener.addListener(
+      'onSurveyResponse',
+      (data: any) => {
+        console.log('survey response is', data);
+      }
+    );
+    return () => sub.remove();
   }, []);
+
+  const surveyConfig = {
+    domain: 'sachin.noforms.io',
+    token: 'tt-cf72a7',
+    surveyType: 'classic',
+  };
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Button
+        title="Schedule Survey"
+        onPress={() => {
+          ScheduleSsSurvey(surveyConfig);
+        }}
+      />
+      <Button
+        title="Clear Schedule Survey"
+        onPress={() => {
+          ClearScheduleSsSurvey(surveyConfig);
+        }}
+      />
+      <Button
+        title="Open Survey"
+        onPress={() => {
+          SsSurvey(surveyConfig);
+        }}
+      />
+      <SsSurveyViewComponent
+        styles={styles.box}
+        config={{
+          domain: 'sachin.noforms.io',
+          token: 'tt-cf72a7',
+          surveyType: 'classic',
+          customParams: [
+            { name: 'testname', value: 'custom value 10' },
+            { name: 'testname2', value: 'custom value 2' },
+          ],
+        }}
+        onSurveyComplete={(data) => {
+          console.log('survey response from embed survey is', data);
+        }}
+      />
     </View>
   );
 }
@@ -24,8 +72,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
+    width: '100%',
+    height: 400,
   },
 });

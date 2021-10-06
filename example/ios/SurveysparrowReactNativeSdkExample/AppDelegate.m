@@ -29,6 +29,10 @@ static void InitializeFlipper(UIApplication *application) {
 }
 #endif
 
+#if RCT_DEV
+#import <React/RCTDevLoadingView.h>
+#endif
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -37,6 +41,11 @@ static void InitializeFlipper(UIApplication *application) {
     InitializeFlipper(application);
   #endif
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  
+  #if RCT_DEV
+  [bridge moduleForClass:[RCTDevLoadingView class]];
+  #endif
+  
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"SurveysparrowReactNativeSdkExample"
                                             initialProperties:nil];
