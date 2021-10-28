@@ -155,15 +155,6 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
       surveySparrow.clearSchedule();
     }
 
-    // Example method
-    // See https://reactnative.dev/docs/native-modules-android
-    @ReactMethod
-    public void multiply(int a, int b, Promise promise) {
-        promise.resolve(a * b);
-    }
-
-    public static native int nativeMultiply(int a, int b);
-
     @Override
     public void onSsResponseEvent(JSONObject data) {
       Log.v(LOG_TAG, data.toString());
