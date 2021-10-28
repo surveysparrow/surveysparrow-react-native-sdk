@@ -72,7 +72,6 @@ class SsSurveyView:  UIView, WKScriptMessageHandler, WKNavigationDelegate {
       public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         print("response handled")
         let responsen = message.body as! [String: AnyObject]
-        print("response",responsen)
         onUpdate!(["result":responsen])
         if surveyDelegate != nil {
           let response = message.body as! [String: AnyObject]
@@ -101,7 +100,7 @@ class SsSurveyView:  UIView, WKScriptMessageHandler, WKNavigationDelegate {
         }
         
         var urlComponent = URLComponents()
-          urlComponent.scheme = "http"
+          urlComponent.scheme = "https"
           urlComponent.host = domain.trimmingCharacters(in: CharacterSet.whitespaces)
           urlComponent.path = "/\(surveyType == .NPS ? "n" : "s")/ios/\(token.trimmingCharacters(in: CharacterSet.whitespaces))"
           urlComponent.queryItems = paramsmap.map {
