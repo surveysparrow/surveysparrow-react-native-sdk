@@ -70,7 +70,6 @@ class SsSurveyView:  UIView, WKScriptMessageHandler, WKNavigationDelegate {
       }
       
       public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        print("response handled")
         let responsen = message.body as! [String: AnyObject]
         onUpdate!(["result":responsen])
         if surveyDelegate != nil {

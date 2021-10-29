@@ -84,7 +84,6 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
 
     @ReactMethod
     public void scheduleSsSurvey(ReadableMap surveyConfig) throws JSONException {
-      Log.v("json data",""+surveyConfig);
       String domain = surveyConfig.getString("domain");
       String token = surveyConfig.getString("token");
       String surveyType = surveyConfig.getString("surveyType");
@@ -151,7 +150,6 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
 
     @ReactMethod
     public void clearScheduleSsSurvey(ReadableMap surveyConfig){
-      Log.v("json data schedule","value i "+surveyConfig);
       surveySparrow.clearSchedule();
     }
 
@@ -173,7 +171,6 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
     private final ActivityEventListener activityEventListener = new ActivityEventListener() {
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
-      Log.v(LOG_TAG,"called here for ss response event event listener top"+" "+requestCode+" "+resultCode+" data"+data);
       if (requestCode == SURVEY_REQUEST_CODE || requestCode == SURVEY_SCHEDULE_REQUEST_CODE ) {
         if (resultCode == Activity.RESULT_OK) {
           JSONObject responses = SurveySparrow.toJSON(data.getData().toString());
