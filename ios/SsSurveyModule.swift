@@ -54,7 +54,6 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
   
   @objc
   func scheduleSsSurvey(_ options: NSDictionary){
-    print("obtained params",options)
     let domain = options.value(forKey: "domain") as! String
     let token = options.value(forKey: "token") as! String
     let queryItem = options.value(forKey: "customParams") as! [NSDictionary]
