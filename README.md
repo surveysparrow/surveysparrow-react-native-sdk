@@ -23,7 +23,7 @@ pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-
 ```
 ANDROID
 
-android doesn't require any changes and note the min sdk version is 19
+Android doesn't require any changes and note the min sdk version should be 19
 ## Usage
 
 ```js
@@ -149,8 +149,8 @@ React.useEffect(() => {
 
 | prop | Description | Default |
 | --- | --- | --- |
-| config | survey config such as domain,token,surveyType,customParams | value has to be provided |
-| onSurveyComplete | callback function that should be called after survey complete | null |
+| config | survey config such as domain,token,surveyType,customParams | config object has to be provided |
+| onSurveyComplete | callback function that will be called after survey complete | null |
 | styles | component styles | null |
 
 ## Contributing
