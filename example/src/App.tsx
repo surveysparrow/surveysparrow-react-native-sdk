@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import { StyleSheet, View, Button } from 'react-native';
 import {
-  SsSurveyViewComponent,
-  SsSurvey,
+  SurveySparrow,
+  invokeSurveySparrow,
   onSurveyResponseListener,
-  ScheduleSsSurvey,
-  ClearScheduleSsSurvey,
+  scheduleSurveySparrow,
+  clearSurveySparrow,
 } from 'surveysparrow-react-native-sdk';
 
 export default function App() {
@@ -31,22 +31,22 @@ export default function App() {
       <Button
         title="Schedule Survey"
         onPress={() => {
-          ScheduleSsSurvey(surveyConfig);
+          scheduleSurveySparrow(surveyConfig);
         }}
       />
       <Button
         title="Clear Schedule Survey"
         onPress={() => {
-          ClearScheduleSsSurvey(surveyConfig);
+          clearSurveySparrow(surveyConfig);
         }}
       />
       <Button
         title="Open Survey"
         onPress={() => {
-          SsSurvey(surveyConfig);
+          invokeSurveySparrow(surveyConfig);
         }}
       />
-      <SsSurveyViewComponent
+      <SurveySparrow
         styles={styles.box}
         config={{
           domain: 'sachin.noforms.io',

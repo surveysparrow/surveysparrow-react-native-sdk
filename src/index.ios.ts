@@ -7,9 +7,9 @@ import {
 } from './components/SsSurveyModuleIos';
 
 export {
-  SsSurveyViewComponentIos as SsSurveyViewComponent,
-  SsSurvey,
+  SsSurveyViewComponentIos as SurveySparrow,
+  SsSurvey as invokeSurveySparrow,
   onSurveyResponseListener,
-  ScheduleSsSurvey,
-  ClearScheduleSsSurvey,
+  ScheduleSsSurvey as scheduleSurveySparrow,
+  ClearScheduleSsSurvey as clearSurveySparrow,
 };

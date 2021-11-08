@@ -28,15 +28,15 @@ Android doesn't require any changes and note the min sdk version should be 19
 
 ```js
 import {
-  SsSurveyViewComponent,
-  SsSurvey,
+  SurveySparrow,
+  invokeSurveySparrow,
   onSurveyResponseListener,
-  ScheduleSsSurvey,
-  ClearScheduleSsSurvey,
+  scheduleSurveySparrow,
+  clearSurveySparrow,
 } from 'surveysparrow-react-native-sdk';
 
 // Embedded Survey
-<SsSurveyViewComponent
+<SurveySparrow
   styles={styles.box}
   config={{
     domain: 'domain-name',
@@ -55,7 +55,7 @@ import {
 <Button
   title="Open Survey"
   onPress={() => {
-    SsSurvey({
+    invokeSurveySparrow({
       domain: 'domain-name',
       token: 'survey-token',
       surveyType: 'classic',
@@ -67,7 +67,7 @@ import {
 <Button
   title="Open Survey"
   onPress={() => {
-    ScheduleSsSurvey({
+    scheduleSurveySparrow({
       domain: 'domain-name',
       token: 'survey-token',
       surveyType: 'classic',
@@ -79,7 +79,7 @@ import {
 <Button
   title="Open Survey"
   onPress={() => {
-    ClearScheduleSsSurvey({
+    clearSurveySparrow({
       domain: 'domain-name',
       token: 'survey-token',
       surveyType: 'classic',
@@ -101,57 +101,60 @@ React.useEffect(() => {
 
 ## Methods
 
-1) SsSurvey --> to invoke a full screen survey
-2) ScheduleSsSurvey --> to schedule a survey
-3) ClearScheduleSsSurvey --> to clear a schedule 
+1) **invokeSurveySparrow()**
+This method will be used to invoke Survey from SurveySparrow
 
-1) SsSurvey
+| parameter | Description | Default | Optional |
+| --- | --- | --- | -- |
+| domain | survey domain to load | value has to be provided | no |
+| token | survey token for the survey | value has to be provided | no |
+| surveyType | survey type for the survey | value has to be provided | no |
+| customParams | any custom params to be passed for the survey | [] | yes |
+| thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes | 
 
-| parameter | Description | Default |
-| --- | --- | --- |
-| domain | survey domain to load | value has to be provided |
-| token | survey token for the survey | value has to be provided |
-| surveyType | survey type for the survey | value has to be provided |
-| customParams | any custom params to be passed for the survey | [] |
-| thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | 
+2) **scheduleSurveySparrow**
+This method will be used to schedule Survey from SurveySparrow
 
-2) ScheduleSsSurvey
+| parameter | Description | Default | Optional |
+| --- | --- | --- | -- |
+| domain | survey domain to load | value has to be provided | no |
+| token | survey token for the survey | value has to be provided | no |
+| surveyType | survey type for the survey | value has to be provided | no |
+| customParams | any custom params to be passed for the survey | [] | yes |
+| thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes |
+| alertTitle | dialouge box alert title | 'Rate us' | yes |
+| alertMessage | dialouge box alert message | 'Share your feedback and let us know how we are doing' | yes |
+| alertPositiveText | dialouge box positive text | 'Rate Now' | yes |
+| alertNegativeText | dialouge box negative text | 'Later' | yes |
+| startAfter | after how long the initial schedule has to happen | 259200000 | yes |
+| repeatInterval | after how long the schedule should repeat | 432000000 | yes |
+| repeatSurvey | if the schedule should repeat | false | yes |
+| incrementalRepeat | if schedule has to be a incremental repeat | false | yes |
 
-| parameter | Description | Default |
-| --- | --- | --- |
-| domain | survey domain to load | value has to be provided |
-| token | survey token for the survey | value has to be provided |
-| surveyType | survey type for the survey | value has to be provided |
-| customParams | any custom params to be passed for the survey | [] |
-| thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) |
-| alertTitle | dialouge box alert title | 'Rate us' |
-| alertMessage | dialouge box alert message | 'Share your feedback and let us know how we are doing' |
-| alertPositiveText | dialouge box positive text | 'Rate Now' |
-| alertNegativeText | dialouge box negative text | 'Later' |
-| startAfter | after how long the initial schedule has to happen | 259200000 |
-| repeatInterval | after how long the schedule should repeat | 432000000 |
-| repeatSurvey | if the schedule should repeat | false |
-| incrementalRepeat | if schedule has to be a incremental repeat | false |
+3) **clearSurveySparrow**
+This method will be used to clear the schedule that was previously set
 
-3) ClearScheduleSsSurvey
-
-| parameter | Description | Default |
-| --- | --- | --- |
-| domain | survey domain to load | value has to be provided |
-| token | survey token for the survey | value has to be provided |
+| parameter | Description | Default | Optional |
+| --- | --- | --- | -- |
+| domain | survey domain to load | value has to be provided | no |
+| token | survey token for the survey | value has to be provided | no |
 
 ## Event Listener
-1) onSurveyResponseListener --> event listener which will be triggered after completeing the survey
-## Component
-1) SurveyModuleView --> component to render the survey in an emb
+1) onSurveyResponseListener
 
-1) SurveyModuleView
-
-| prop | Description | Default |
+| Listener name | Description |  Optional |
 | --- | --- | --- |
-| config | survey config such as domain,token,surveyType,customParams | config object has to be provided |
-| onSurveyComplete | callback function that will be called after survey complete | null |
-| styles | component styles | null |
+| onSurveyResponse | this event listener will be triggered after completing the survey | yes |
+
+## Component
+1) SurveySparrow
+This Component can be used to render a survey view
+
+| prop | Description | Default | Optional |
+| --- | --- | --- | --- |
+| config | survey config such as domain,token,surveyType,customParams | config object has to be provided | no |
+| onSurveyComplete | callback function that will be called after survey complete | null | yes |
+| styles | component styles | null | yes |
 
 ## Contributing
 

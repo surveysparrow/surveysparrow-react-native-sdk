@@ -7,9 +7,9 @@ import {
 } from './components/SsSurveyModuleAndroid';
 
 export {
-  SsSurveyViewComponentAndroid as SsSurveyViewComponent,
-  SsSurvey,
+  SsSurveyViewComponentAndroid as SurveySparrow,
+  SsSurvey as invokeSurveySparrow,
   onSurveyResponseListener,
-  ScheduleSsSurvey,
-  ClearScheduleSsSurvey,
+  ScheduleSsSurvey as scheduleSurveySparrow,
+  ClearScheduleSsSurvey as clearSurveySparrow,
 };
