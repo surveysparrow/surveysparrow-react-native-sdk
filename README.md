@@ -101,7 +101,7 @@ React.useEffect(() => {
 
 ## Methods
 
-1) **invokeSurveySparrow()**
+### 1) invokeSurveySparrow()
 This method will be used to invoke Survey from SurveySparrow
 
 | parameter | Description | Default | Optional |
@@ -112,7 +112,7 @@ This method will be used to invoke Survey from SurveySparrow
 | customParams | any custom params to be passed for the survey | [] | yes |
 | thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes | 
 
-2) **scheduleSurveySparrow**
+### 2) scheduleSurveySparrow()
 This method will be used to schedule Survey from SurveySparrow
 
 | parameter | Description | Default | Optional |
@@ -131,7 +131,7 @@ This method will be used to schedule Survey from SurveySparrow
 | repeatSurvey | if the schedule should repeat | false | yes |
 | incrementalRepeat | if schedule has to be a incremental repeat | false | yes |
 
-3) **clearSurveySparrow**
+### 3) clearSurveySparrow()
 This method will be used to clear the schedule that was previously set
 
 | parameter | Description | Default | Optional |
@@ -140,14 +140,14 @@ This method will be used to clear the schedule that was previously set
 | token | survey token for the survey | value has to be provided | no |
 
 ## Event Listener
-1) onSurveyResponseListener
+### 1) onSurveyResponseListener
 
 | Listener name | Description |  Optional |
 | --- | --- | --- |
 | onSurveyResponse | this event listener will be triggered after completing the survey | yes |
 
 ## Component
-1) SurveySparrow
+### 1) SurveySparrow
 This Component can be used to render a survey view
 
 | prop | Description | Default | Optional |
