@@ -163,3 +163,5 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 ## License
 
 MIT
+
+> Please submit bugs/issues through GitHub issues we will try to fix it ASAP.
