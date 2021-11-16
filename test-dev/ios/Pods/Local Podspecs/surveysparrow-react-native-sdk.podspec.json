@@ -1,0 +1,24 @@
+{
+  "name": "surveysparrow-react-native-sdk",
+  "version": "0.1.1",
+  "summary": "react native sdk for survey sparrow",
+  "homepage": "https://github.com/surveysparrow/surveysparrow-react-native-sdk#readme",
+  "license": "MIT",
+  "authors": "surveysparrow <sachin.kumar@surveysparrow.com> (https://github.com/surveysparrow)",
+  "platforms": {
+    "ios": "10.0"
+  },
+  "source": {
+    "git": "https://github.com/surveysparrow/surveysparrow-react-native-sdk.git",
+    "tag": "0.1.1"
+  },
+  "source_files": "ios/**/*.{h,m,mm,swift}",
+  "dependencies": {
+    "SurveySparrowSdk": [
+      "0.2.0"
+    ],
+    "React-Core": [
+
+    ]
+  }
+}
