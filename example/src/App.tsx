@@ -21,9 +21,9 @@ export default function App() {
   }, []);
 
   const surveyConfig = {
-    domain: 'sachin.noforms.io',
-    token: 'tt-cf72a7',
-    surveyType: 'classic',
+    domain: 'domain-name',
+    token: 'survey-token',
+    surveyType: 'survey-type',
   };
 
   return (
@@ -49,9 +49,9 @@ export default function App() {
       <SurveySparrow
         styles={styles.box}
         config={{
-          domain: 'sachin.noforms.io',
-          token: 'tt-cf72a7',
-          surveyType: 'classic',
+          domain: 'domain-name',
+          token: 'survey-token',
+          surveyType: 'survey-type',
           customParams: [
             { name: 'testname', value: 'custom value 10' },
             { name: 'testname2', value: 'custom value 2' },
