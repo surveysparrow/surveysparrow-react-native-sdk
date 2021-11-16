@@ -1,0 +1,6 @@
+module surveysparrow_react_native_sdk {
+  umbrella header "surveysparrow-react-native-sdk-umbrella.h"
+
+  export *
+  module * { export * }
+}
