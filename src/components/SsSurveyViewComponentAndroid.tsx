@@ -46,7 +46,6 @@ const SsSurveyViewComponentAndroid: FC<Props> = ({
     setTimeout(() => {
       findId();
     }, 200);
-    console.log('calling from new android typescript one');
   }, [customParams, domain, surveyType, token]);
 
   return (
