@@ -6,23 +6,29 @@ import {
   findNodeHandle,
   StyleProp,
   ViewStyle,
+  HostComponent,
 } from 'react-native';
+import type { IResponseData } from '../types/responseData';
 
-const SurveyModuleView = requireNativeComponent('SsSurveyFragment');
+interface ISurveyModuleViewProps {
+  onUpdate: (event: { nativeEvent: IResponseData }) => void;
+}
+const SurveyModuleView: HostComponent<ISurveyModuleViewProps> =
+  requireNativeComponent('SsSurveyFragment');
 
-interface paramValue {
+export interface paramValue {
   name: string;
   value: string;
 }
 
-interface Props {
+export interface Props {
   config: {
     domain: string;
     token: string;
     surveyType: string;
     customParams?: Array<paramValue>;
   };
-  onSurveyComplete(value: any): any;
+  onSurveyComplete(value: IResponseData): any;
   styles: StyleProp<ViewStyle>;
 }
 
@@ -31,7 +37,7 @@ const SsSurveyViewComponentAndroid: FC<Props> = ({
   onSurveyComplete,
   config: { domain, token, surveyType, customParams = [] },
 }) => {
-  let nativeComponentRef = useRef<any>(null);
+  let nativeComponentRef = useRef(null);
   useEffect(() => {
     const findId = () => {
       const androidViewId = findNodeHandle(nativeComponentRef.current);
@@ -52,7 +58,6 @@ const SsSurveyViewComponentAndroid: FC<Props> = ({
     <View style={styles} nativeID="surveyView">
       <SurveyModuleView
         ref={nativeComponentRef}
-        // @ts-ignore
         onUpdate={(event) => {
           const data = event.nativeEvent;
           onSurveyComplete(data);

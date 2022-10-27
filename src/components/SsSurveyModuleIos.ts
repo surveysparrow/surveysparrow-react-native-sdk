@@ -2,7 +2,7 @@ import { NativeModules, NativeEventEmitter } from 'react-native';
 
 const { SsSurveyModule } = NativeModules;
 
-interface paramValue {
+export interface paramValue {
   name: string;
   value: string;
 }
