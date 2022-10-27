@@ -7,6 +7,7 @@ import {
   StyleSheet,
   HostComponent,
 } from 'react-native';
+import type { SurveyTypes } from '../types/survey';
 import type { IResponseData } from '../types/responseData';
 
 interface ISurveyModuleViewProps {
@@ -18,7 +19,7 @@ interface ISurveyModuleViewProps {
   surveyDomain: {
     domain: string;
     token: string;
-    surveyType: string;
+    surveyType: SurveyTypes;
     customParams: paramValue[];
   };
   style: ViewStyle;
@@ -34,7 +35,7 @@ export interface paramValue {
 export interface IConfig {
   domain: string;
   token: string;
-  surveyType: string;
+  surveyType: SurveyTypes;
   customParams?: Array<paramValue>;
 }
 export interface Props {
