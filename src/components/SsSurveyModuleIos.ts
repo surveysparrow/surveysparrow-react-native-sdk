@@ -1,5 +1,4 @@
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { SurveyTypes } from '../types/survey';
 
 const { SsSurveyModule } = NativeModules;
 
@@ -17,7 +16,7 @@ export const SsSurvey = ({
 }: {
   domain: string;
   token: string;
-  surveyType: SurveyTypes;
+  surveyType: string;
   customParams?: Array<paramValue>;
   thankYouPageTimeLimit?: number;
 }) => {
@@ -50,7 +49,7 @@ export const ScheduleSsSurvey = ({
 }: {
   domain: string;
   token: string;
-  surveyType: SurveyTypes;
+  surveyType: string;
   customParams?: Array<paramValue>;
   thankYouPageTimeLimit?: number;
   alertTitle?: string;
