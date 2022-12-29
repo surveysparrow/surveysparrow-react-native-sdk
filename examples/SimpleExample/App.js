@@ -1,13 +1,12 @@
 import React from 'react';
-import type {Node} from 'react';
-import {SafeAreaView, StyleSheet, Button, View} from 'react-native';
+import {StyleSheet, Button, View} from 'react-native';
 import {
   SurveySparrow,
   invokeSurveySparrow,
   onSurveyResponseListener,
 } from 'surveysparrow-react-native-sdk';
 
-const App: () => Node = () => {
+const App = () => {
   React.useEffect(() => {
     const sub = onSurveyResponseListener.addListener(
       'onSurveyResponse',

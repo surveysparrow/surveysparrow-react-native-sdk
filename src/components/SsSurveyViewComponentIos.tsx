@@ -5,23 +5,42 @@ import {
   StyleProp,
   ViewStyle,
   StyleSheet,
+  HostComponent,
 } from 'react-native';
+import type { SurveyTypes } from '../types/survey';
+import type { IResponseData } from '../types/responseData';
 
-const CounterView = requireNativeComponent('SsSurveyView');
+interface ISurveyModuleViewProps {
+  onUpdate: (e: {
+    nativeEvent: {
+      result: IResponseData;
+    };
+  }) => void;
+  surveyDomain: {
+    domain: string;
+    token: string;
+    surveyType: SurveyTypes;
+    customParams: paramValue[];
+  };
+  style: ViewStyle;
+}
+const CounterView: HostComponent<ISurveyModuleViewProps> =
+  requireNativeComponent('SsSurveyView');
 
-interface paramValue {
+export interface paramValue {
   name: string;
   value: string;
 }
 
-interface Props {
-  config: {
-    domain: string;
-    token: string;
-    surveyType: string;
-    customParams?: Array<paramValue>;
-  };
-  onSurveyComplete(value: any): any;
+export interface IConfig {
+  domain: string;
+  token: string;
+  surveyType: SurveyTypes;
+  customParams?: Array<paramValue>;
+}
+export interface Props {
+  config: IConfig;
+  onSurveyComplete(value: IResponseData): any;
   styles: StyleProp<ViewStyle>;
 }
 
@@ -30,14 +49,15 @@ const SsSurveyViewComponentIos: FC<Props> = ({
   onSurveyComplete,
   config: { domain, token, surveyType, customParams = [] },
 }) => {
-  const _onSurveyAnswerUpdate = (e: any) => {
+  const _onSurveyAnswerUpdate = (e: {
+    nativeEvent: { result: IResponseData };
+  }) => {
     onSurveyComplete(e.nativeEvent.result);
   };
 
   return (
     <View style={styles}>
       <CounterView
-        //@ts-ignore
         onUpdate={_onSurveyAnswerUpdate}
         surveyDomain={{ domain, token, surveyType, customParams }}
         style={compStyle.fullView}
