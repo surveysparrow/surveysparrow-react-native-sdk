@@ -26,12 +26,21 @@ export default function App() {
     surveyType: 'survey-type',
   };
 
+  const surveyConfigSchedule = {
+    domain: 'domain-name',
+    token: 'survey-token',
+    surveyType: 'survey-type',
+    startAfter: 10000,
+    repeatInterval: 60000,
+    repeatSurvey: true,
+  };
+
   return (
     <View style={styles.container}>
       <Button
         title="Schedule Survey"
         onPress={() => {
-          scheduleSurveySparrow(surveyConfig);
+          scheduleSurveySparrow(surveyConfigSchedule);
         }}
       />
       <Button

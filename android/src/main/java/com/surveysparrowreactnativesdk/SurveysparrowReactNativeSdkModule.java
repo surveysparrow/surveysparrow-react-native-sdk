@@ -130,7 +130,7 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
         .setDialogMessage(alertMessage)
         .setDialogPositiveButtonText(positiveBtnMsg)
         .setDialogNegativeButtonText(negativeBtnMsg)
-        .setStartAfter(0)
+        .setStartAfter(startAfter)
         .setRepeatInterval(repeatInterval);
       if(isIncremental){
         surveySparrow.setRepeatType(SurveySparrow.REPEAT_TYPE_INCREMENTAL);
@@ -150,7 +150,12 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
 
     @ReactMethod
     public void clearScheduleSsSurvey(ReadableMap surveyConfig){
-      surveySparrow.clearSchedule();
+      try{
+        surveySparrow.clearSchedule();
+      }
+      catch (Exception e){
+        Log.v(LOG_TAG, e.toString());
+      }
     }
 
     @Override
