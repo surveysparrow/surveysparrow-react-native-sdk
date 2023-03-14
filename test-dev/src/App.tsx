@@ -27,9 +27,9 @@ export default function App() {
   };
 
   const surveyConfigSchedule = {
-    domain: 'sample.surveysparrow.com',
-    token: 'tt-45PASr1nteCoipjPJjoNui',
-    surveyType: 'classic',
+    domain: 'domain-name',
+    token: 'survey-token',
+    surveyType: 'survey-type',
     startAfter: 10000,
     repeatInterval: 60000,
     repeatSurvey: true,
