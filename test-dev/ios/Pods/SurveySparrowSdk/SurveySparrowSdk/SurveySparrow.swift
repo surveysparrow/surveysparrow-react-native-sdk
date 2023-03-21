@@ -16,7 +16,7 @@ public class SurveySparrow: SsSurveyDelegate {
   private var token: String
   
   public var surveyType: SurveyType = .CLASSIC
-  public var params: [String: String]?
+  public var params: [String: String] = [:]
   public var thankyouTimout: Double = 3.0
   public var surveyDelegate: SsSurveyDelegate!
   public var alertTitle: String = "Rate us"
@@ -28,6 +28,7 @@ public class SurveySparrow: SsSurveyDelegate {
   public var repeatInterval: Int64 = 432000000 // 5 days
   public var incrementalRepeat: Bool = false
   public var repeatSurvey: Bool = false
+  public var getSurveyLoadedResponse: Bool = false
   
   private var isAlreadyTakenKey = "isAlreadyTaken_"
   private var promptTimeKey = "promptTime_"
@@ -71,6 +72,8 @@ public class SurveySparrow: SsSurveyDelegate {
         let ssSurveyViewController = SsSurveyViewController()
         ssSurveyViewController.domain = self.domain
         ssSurveyViewController.token = self.token
+        ssSurveyViewController.params = self.params
+        ssSurveyViewController.getSurveyLoadedResponse = self.getSurveyLoadedResponse
         ssSurveyViewController.thankyouTimeout = self.thankyouTimout
         ssSurveyViewController.surveyDelegate = self
         parent.present(ssSurveyViewController, animated: true, completion: nil)
@@ -96,6 +99,12 @@ public class SurveySparrow: SsSurveyDelegate {
     UserDefaults.standard.set(true, forKey: isAlreadyTakenKey)
     if surveyDelegate != nil {
       self.surveyDelegate.handleSurveyResponse(response: response)
+    }
+  }
+
+  public func handleSurveyLoaded(response: [String : AnyObject]){
+    if surveyDelegate != nil {
+        self.surveyDelegate.handleSurveyResponse(response: response)
     }
   }
 }

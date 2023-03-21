@@ -31,8 +31,9 @@ export default function App() {
     token: 'survey-token',
     surveyType: 'survey-type',
     startAfter: 10000,
-    repeatInterval: 60000,
+    repeatInterval: 3000,
     repeatSurvey: true,
+    customParams: [{ name: 'email', value: 'test2@test.com' }],
   };
 
   return (
@@ -46,7 +47,7 @@ export default function App() {
       <Button
         title="Clear Schedule Survey"
         onPress={() => {
-          clearSurveySparrow(surveyConfig);
+          clearSurveySparrow(surveyConfigSchedule);
         }}
       />
       <Button

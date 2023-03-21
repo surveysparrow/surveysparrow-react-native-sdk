@@ -19,7 +19,7 @@ IOS
 
 Add SurveySparrow IOS sdk in pod file and run pod install
 ```sh
-pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.2.0'
+pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.3.0'
 ```
 ANDROID
 
