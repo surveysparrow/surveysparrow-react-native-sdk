@@ -14,9 +14,12 @@ import WebKit
   private var ssWebView: WKWebView = WKWebView()
   private let surveyResponseHandler = WKUserContentController()
   private let loader: UIActivityIndicatorView = UIActivityIndicatorView()
+  private var surveyLoaded: String = "surveyLoadStarted"
+  private var surveyCompleted: String = "surveyCompleted"
   
   public var params: [String: String] = [:]
   public var surveyType: SurveySparrow.SurveyType = .CLASSIC
+  public var getSurveyLoadedResponse: Bool = false
   
   @IBInspectable public var domain: String?
   @IBInspectable public var token: String?
@@ -62,10 +65,16 @@ import WebKit
     loader.stopAnimating()
   }
   
-  public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+ public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
     if surveyDelegate != nil {
       let response = message.body as! [String: AnyObject]
-      surveyDelegate.handleSurveyResponse(response: response)
+      let responseType = response["type"] as! String
+      if(responseType == surveyLoaded){
+        surveyDelegate.handleSurveyLoaded(response: response)
+      }
+      if(responseType == surveyCompleted){
+        surveyDelegate.handleSurveyResponse(response: response)
+      }
     }
   }
   
@@ -79,6 +88,9 @@ import WebKit
       urlComponent.scheme = "https"
       urlComponent.host = self.domain!.trimmingCharacters(in: CharacterSet.whitespaces)
       urlComponent.path = "/\(surveyType == .NPS ? "n" : "s")/ios/\(self.token!.trimmingCharacters(in: CharacterSet.whitespaces))"
+      if(getSurveyLoadedResponse){
+        params["isSurveyLoaded"] = "true"
+      }
       urlComponent.queryItems = params.map {
         URLQueryItem(name: $0.key, value: $0.value)
       }

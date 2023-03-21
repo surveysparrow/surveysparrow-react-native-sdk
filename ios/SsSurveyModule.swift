@@ -119,6 +119,10 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
   func handleSurveyResponse(response: [String : AnyObject]) {
       sendEvent(withName: "onSurveyResponse", body: response)
   }
+    
+  func handleSurveyLoaded(response: [String : AnyObject]) {
+        print(response)
+  }
   
   override static func requiresMainQueueSetup() -> Bool {
       return true

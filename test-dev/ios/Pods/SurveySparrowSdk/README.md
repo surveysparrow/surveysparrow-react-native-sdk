@@ -123,6 +123,7 @@ View to display embedded surveys
 |`token: String`|SDK token of the survey|*|
 |`surveyType: SurveySparrow.SurveyType`|Type of the survey|`.CLASSIC`|
 |`params: [String: String]`|Custom params for the survey| - |
+|`getSurveyLoadedResponse: Bool`|Set to true to get handleSurveyLoaded response (available in version >= 0.3.0)|false|
 |`surveyDelegate: SsSurveyDelegate`|Protocol to handle survey response| - |
 
 #### Public methods
@@ -138,6 +139,7 @@ ViewController to take full-screen feedback
 |`domain: String`|Your SurveySparrow account domain| * |
 |`token: String`|SDK token of the survey| * |
 |`surveyType: SurveySparrow.SurveyType`|Type of the survey|`.CLASSIC`|
+|`getSurveyLoadedResponse: Bool`|Set to true to get handleSurveyLoaded response (available in version >= 0.3.0)|false|
 |`params: [String: String]`|Custom params for the survey| - |
 |`thankyouTimeout: Double`|Duration to display thankyou screen in seconds| 3.0 |
 |`surveyDelegate: SsSurveyDelegate`|Protocol to handle survey response| - |
@@ -174,6 +176,7 @@ Class to handle survey scheduling
 |`params: [String: String]`|Custom params for the survey| - |
 |`thankyouTimeout: Double`|Duration to display thankyou screen in seconds| 3.0 |
 |`surveyDelegate: SsSurveyDelegate`|Protocol to handle survey response| - |
+|`getSurveyLoadedResponse: Bool`|Set to true to get handleSurveyLoaded response (available in version >= 0.3.0)|false|
 |`alertTitle: String`| Alert title | Rate us |
 |`alertMessage: String`| Alert message | Share your feedback and let us know how we are doing |
 |`alertPositiveButton: String`| Alert positive button text | Rate Now |

@@ -308,10 +308,10 @@ PODS:
     - React-Core (= 0.63.4)
     - React-cxxreact (= 0.63.4)
     - React-jsi (= 0.63.4)
-  - surveysparrow-react-native-sdk (0.1.1):
+  - surveysparrow-react-native-sdk (0.1.4):
     - React-Core
-    - SurveySparrowSdk (= 0.2.0)
-  - SurveySparrowSdk (0.2.0)
+    - SurveySparrowSdk (= 0.3.0)
+  - SurveySparrowSdk (0.3.0)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -364,7 +364,7 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - surveysparrow-react-native-sdk (from `../..`)
-  - SurveySparrowSdk (from `https://github.com/surveysparrow/surveysparrow-ios-sdk.git`, tag `0.2.0`)
+  - SurveySparrowSdk (from `https://github.com/surveysparrow/surveysparrow-ios-sdk.git`, tag `0.3.0`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -439,14 +439,14 @@ EXTERNAL SOURCES:
     :path: "../.."
   SurveySparrowSdk:
     :git: https://github.com/surveysparrow/surveysparrow-ios-sdk.git
-    :tag: 0.2.0
+    :tag: 0.3.0
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 CHECKOUT OPTIONS:
   SurveySparrowSdk:
     :git: https://github.com/surveysparrow/surveysparrow-ios-sdk.git
-    :tag: 0.2.0
+    :tag: 0.3.0
 
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
@@ -487,11 +487,11 @@ SPEC CHECKSUMS:
   React-RCTText: 5c51df3f08cb9dedc6e790161195d12bac06101c
   React-RCTVibration: ae4f914cfe8de7d4de95ae1ea6cc8f6315d73d9d
   ReactCommon: 73d79c7039f473b76db6ff7c6b159c478acbbb3b
-  surveysparrow-react-native-sdk: 004aeeef3e4a5996ff6d32a195d500459facc3ff
-  SurveySparrowSdk: a8799b92f3ebdea2128c85dd533ff5b8fcc37a4f
+  surveysparrow-react-native-sdk: 7dd1b2287bc77c107d8817db60603838d69019d4
+  SurveySparrowSdk: 2f941e5188cf5794a7b6ca315e8da778a3f416d1
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: a1534623ff49632999ff1dd938b00f807d256944
+PODFILE CHECKSUM: 4068b246feab9a55eed50aba56d1b281d3bcf133
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3
