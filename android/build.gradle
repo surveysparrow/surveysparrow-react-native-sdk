@@ -56,5 +56,5 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation 'com.github.surveysparrow:surveysparrow-android-sdk:0.4.3'
+    implementation 'com.github.surveysparrow:surveysparrow-android-sdk:0.4.6'
 }
