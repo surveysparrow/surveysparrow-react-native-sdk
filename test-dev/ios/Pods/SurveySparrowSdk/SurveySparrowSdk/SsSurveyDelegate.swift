@@ -11,4 +11,5 @@ import Foundation
 public protocol SsSurveyDelegate {
   func handleSurveyResponse(response: [String: AnyObject])
   func handleSurveyLoaded(response: [String: AnyObject])
+  func handleSurveyValidation(response: [String: AnyObject])
 }
