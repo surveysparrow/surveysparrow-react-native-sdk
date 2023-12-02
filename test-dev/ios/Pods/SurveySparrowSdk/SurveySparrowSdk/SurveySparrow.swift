@@ -65,29 +65,57 @@ public class SurveySparrow: SsSurveyDelegate {
       dataStore.set(1, forKey: incrementMultiplierKey)
       return
     }
+    if self.domain != nil && self.token != nil {
+      if isConnectedToNetwork && (!isAlreadyTaken || repeatSurvey) && (promptTime < currentTime) {
+      var isActive: Bool = false
+      var reason: String = ""
+      let group = DispatchGroup()
+      var widgetContactId: Int64 = 0 ;
+      group.enter()
+      let completion: ([String: Any]) -> Void = { result in
+        if let active = result["active"] as? Bool {
+          isActive = active
+        }
+        if let reasonData = result["reason"] as? String {
+          reason = reasonData
+        }
+        if let widgetContactIdData = result["widgetContactId"] as? Int64 {
+          widgetContactId = widgetContactIdData
+        }
+      }
+      validateSurvey(domain:domain,token:token,params:self.params, group: group,completion:completion);
+      group.wait()
+    if isActive == true {
     
-    if isConnectedToNetwork && (!isAlreadyTaken || repeatSurvey) && (promptTime < currentTime) {
-      let alertDialog = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: UIAlertController.Style.alert)
-      alertDialog.addAction(UIAlertAction(title: alertPositiveButton, style: UIAlertAction.Style.default, handler: {action in
-        let ssSurveyViewController = SsSurveyViewController()
-        ssSurveyViewController.domain = self.domain
-        ssSurveyViewController.token = self.token
-        ssSurveyViewController.params = self.params
-        ssSurveyViewController.getSurveyLoadedResponse = self.getSurveyLoadedResponse
-        ssSurveyViewController.thankyouTimeout = self.thankyouTimout
-        ssSurveyViewController.surveyDelegate = self
-        parent.present(ssSurveyViewController, animated: true, completion: nil)
-      }))
-      alertDialog.addAction(UIAlertAction(title: alertNegativeButton, style: UIAlertAction.Style.cancel, handler: nil))
-      parent.present(alertDialog, animated: true)
-      
-      UserDefaults.standard.set(incrementalRepeat ? incrementMultiplier * 2 : 1, forKey: self.incrementMultiplierKey)
-      let timeTillNext = repeatInterval * Int64(incrementMultiplier)
-      let nextPrompt = currentTime + timeTillNext
-      UserDefaults.standard.set(nextPrompt, forKey: promptTimeKey)
+        let alertDialog = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: UIAlertController.Style.alert)
+        alertDialog.addAction(UIAlertAction(title: alertPositiveButton, style: UIAlertAction.Style.default, handler: {action in
+          let ssSurveyViewController = SsSurveyViewController()
+          ssSurveyViewController.domain = self.domain
+          ssSurveyViewController.token = self.token
+          ssSurveyViewController.params = self.params
+          ssSurveyViewController.widgetContactId = widgetContactId
+          ssSurveyViewController.getSurveyLoadedResponse = self.getSurveyLoadedResponse
+          ssSurveyViewController.thankyouTimeout = self.thankyouTimout
+          ssSurveyViewController.surveyDelegate = self
+          parent.present(ssSurveyViewController, animated: true, completion: nil)
+        }))
+        alertDialog.addAction(UIAlertAction(title: alertNegativeButton, style: UIAlertAction.Style.cancel, handler: nil))
+        parent.present(alertDialog, animated: true)
+        
+        UserDefaults.standard.set(incrementalRepeat ? incrementMultiplier * 2 : 1, forKey: self.incrementMultiplierKey)
+        let timeTillNext = repeatInterval * Int64(incrementMultiplier)
+        let nextPrompt = currentTime + timeTillNext
+        UserDefaults.standard.set(nextPrompt, forKey: promptTimeKey)
+      } else {
+       self.handleSurveyValidation(response: [
+            "active": String(isActive),
+            "reason": reason,
+          ] as  [String: AnyObject])
     }
+    } 
   }
-  
+  }
+
   public func clearSchedule() {
     UserDefaults.standard.removeObject(forKey: incrementMultiplierKey)
     UserDefaults.standard.removeObject(forKey: isAlreadyTakenKey)
@@ -105,6 +133,13 @@ public class SurveySparrow: SsSurveyDelegate {
   public func handleSurveyLoaded(response: [String : AnyObject]){
     if surveyDelegate != nil {
         self.surveyDelegate.handleSurveyResponse(response: response)
+    }
+  }
+
+   public func handleSurveyValidation(response: [String : AnyObject]) {
+    UserDefaults.standard.set(true, forKey: isAlreadyTakenKey)
+    if surveyDelegate != nil {
+      self.surveyDelegate.handleSurveyResponse(response: response)
     }
   }
 }

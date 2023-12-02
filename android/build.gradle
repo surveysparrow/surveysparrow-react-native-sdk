@@ -19,10 +19,10 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
-    compileSdkVersion safeExtGet('SurveysparrowReactNativeSdk_compileSdkVersion', 29)
+    compileSdkVersion safeExtGet('SurveysparrowReactNativeSdk_compileSdkVersion', 33)
     defaultConfig {
-        minSdkVersion safeExtGet('SurveysparrowReactNativeSdk_minSdkVersion', 16)
-        targetSdkVersion safeExtGet('SurveysparrowReactNativeSdk_targetSdkVersion', 29)
+        minSdkVersion safeExtGet('SurveysparrowReactNativeSdk_minSdkVersion', 21)
+        targetSdkVersion safeExtGet('SurveysparrowReactNativeSdk_targetSdkVersion', 33)
         versionCode 1
         versionName "1.0"
 
@@ -56,5 +56,5 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation 'com.github.surveysparrow:surveysparrow-android-sdk:0.4.3'
+    implementation 'com.github.surveysparrow:surveysparrow-android-sdk:0.4.6'
 }

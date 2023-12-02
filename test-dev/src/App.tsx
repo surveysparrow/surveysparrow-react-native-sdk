@@ -38,29 +38,36 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Button
+       <View style= {styles.btn} >
+        <Button
         title="Schedule Survey"
         onPress={() => {
           scheduleSurveySparrow(surveyConfigSchedule);
         }}
+        
       />
+      </View>
+      <View style= {styles.btn} >
       <Button
         title="Clear Schedule Survey"
         onPress={() => {
           clearSurveySparrow(surveyConfigSchedule);
         }}
       />
+      </View>
+      <View style= {styles.btn} >
       <Button
         title="Open Survey"
         onPress={() => {
           invokeSurveySparrow(surveyConfig);
         }}
       />
+      </View>
       <SurveySparrow
         styles={styles.box}
         config={{
-          domain: 'domain-name',
-          token: 'survey-token',
+          domain: 'rgk1183.surveysparrow.com',
+          token: 'tt-wRdgNDmAqPZaiJtnYDtiPy',
           surveyType: 'survey-type',
           customParams: [
             { name: 'testname', value: 'custom value 10' },
@@ -80,7 +87,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+   
   },
+  btn :{ marginBottom: 20},
   box: {
     width: '100%',
     height: 400,

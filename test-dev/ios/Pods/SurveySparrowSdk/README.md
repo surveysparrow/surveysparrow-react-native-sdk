@@ -16,7 +16,7 @@ Add SurveySparrowSdk Framework to your project either by using CocoaPods or dire
 #### Using CocoaPods
 Add the following line to your `Podfile` file under `target`
 ```pod
-pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.2.0'
+pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.4.5'
 ```
 
 #### Not using CocoaPods! Directly import SurveySparrowSdk
@@ -44,13 +44,23 @@ ssSurveyViewController.token = "<sdk-token>"
 present(ssSurveyViewController, animated: true, completion: nil)
 ```
 
-#### Handle response
+#### Handle the initial question load and the response from the survey
 Implement the `SsSurveyDelegate` protocol to handle survey responses.
 ```swift
 class ViewController: UIViewController, SsSurveyDelegate {
   //...
+  func handleSurveyLoaded(response: [String : AnyObject]) {
+    // This will be executed after the initial question in the survey is loaded
+    // NOTE: 'ssSurveyViewController.getSurveyLoadedResponse' should be set to true for this to work
+    print(response)
+  }
+  //...
   func handleSurveyResponse(response: [String : AnyObject]) {
     // Handle response here
+    print(response)
+  }
+  func handleSurveyValidation(response: [String : AnyObject]) {
+    // Get survey validation fail json here
     print(response)
   }
   //...
@@ -59,6 +69,24 @@ class ViewController: UIViewController, SsSurveyDelegate {
 Also set surveyDelegate property of the `SsSurveyViewController` object to `self`
 ```swift
 ssSurveyViewController.surveyDelegate = self
+```
+
+#### Handle survey validation
+
+Handle survey validation using the [`SsSurveyView`](#SsSurveyView).
+
+
+Add a `UIView` to storyboard and change the Class to `SsSurveyView` under *Identity Inspector* and also make sure that the Module is `SurveySparrowSdk`. Under *Attribute inspector*  provide `domain` and `token`. 
+
+Now connect the `SsSurveyView` as an `IBOutlet`
+```swift
+@IBOutlet weak var ssSurveyView: SsSurveyView!
+```
+Use `loadFullscreenSurvey()` on  the `ssSurveyView` to load the survey in full screen view, this method will handle the survey validations along with survey pop up. If a survey is not valid the error json can be captured in `handleSurveyValidation` method 
+
+```swift
+ssSurveyView.loadFullscreenSurvey(parent: self,delegate: self,domain:"some-company.surveysparrow.com", token: "tt-7f76bd",params:["emailaddress":"example@gmail.com", "email":"example@gmail.com"] )
+// Note : only params will be an optional field, email and emailaddress has to be passed in the params for creating a contact
 ```
 
 ### Embed survey 
@@ -73,9 +101,17 @@ Now connect the `SsSurveyView` as an `IBOutlet`
 ```swift
 @IBOutlet weak var ssSurveyView: SsSurveyView!
 ```
-Then call `loadSurvey()` on on the `ssSurveyView` to load the survey
+Then call `loadSurvey()` on  the `ssSurveyView` to load the survey
 ```swift
 ssSurveyView.loadSurvey()
+```
+#### Handle survey validation
+
+Use `loadEmbedSurvey()` on  the `ssSurveyView` to load the survey in Embed, this method will handle the survey validations along with survey embed. If a survey is not valid the error json can be captured in `handleSurveyValidation` method 
+
+```swift
+ssSurveyView.loadFullscreenSurvey(domain:"some-company.surveysparrow.com", token: "tt-7f76bd",params:["emailaddress":"example@gmail.com", "email":"example@gmail.com"] )
+// Note : only params will be an optional field, email and emailaddress has to be passed in the params for creating a contact
 ```
 #### Handle response
 Implement `SsSurveyDelegate` protocol to handle responses.
@@ -154,6 +190,8 @@ Protocol to get survey responses
 |Method|Description|
 |-----------|------|
 |`handleSurveyResponse(response: [String: AnyObject])`|Handle survey response|
+|`handleSurveyLoaded(response: [String: AnyObject])`|Handle survey loaded|
+|`handleSurveyValidation(response: [String: AnyObject])`|Handle survey validation|
 
 ### SurveySparrow
 Class to handle survey scheduling
@@ -176,7 +214,7 @@ Class to handle survey scheduling
 |`params: [String: String]`|Custom params for the survey| - |
 |`thankyouTimeout: Double`|Duration to display thankyou screen in seconds| 3.0 |
 |`surveyDelegate: SsSurveyDelegate`|Protocol to handle survey response| - |
-|`getSurveyLoadedResponse: Bool`|Set to true to get handleSurveyLoaded response (available in version >= 0.3.0)|false|
+|`getSurveyLoadedResponse: Bool`|Set to true to get handleSurveyLoaded response (available from version >= 0.3.0)|false|
 |`alertTitle: String`| Alert title | Rate us |
 |`alertMessage: String`| Alert message | Share your feedback and let us know how we are doing |
 |`alertPositiveButton: String`| Alert positive button text | Rate Now |
