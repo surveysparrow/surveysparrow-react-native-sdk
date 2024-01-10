@@ -1,6 +1,6 @@
 {
   "name": "surveysparrow-react-native-sdk",
-  "version": "2.0.0",
+  "version": "0.1.10",
   "description": "react native sdk for survey sparrow",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
