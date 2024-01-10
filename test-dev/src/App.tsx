@@ -66,8 +66,8 @@ export default function App() {
       <SurveySparrow
         styles={styles.box}
         config={{
-          domain: 'domain-name',
-          token: 'survey-token',
+          domain: 'rgk1183.surveysparrow.com',
+          token: 'tt-wRdgNDmAqPZaiJtnYDtiPy',
           surveyType: 'survey-type',
           customParams: [
             { name: 'testname', value: 'custom value 10' },

@@ -33,7 +33,7 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
     SurveySparrow surveySparrow;
     private Promise resultPromise;
     public static final String LOG_TAG = "SS_SAMPLE";
-    public static final int SURVEY_REQUEST_CODE = 1183;
+    public static final int SURVEY_REQUEST_CODE = 1;
     public static final int SURVEY_SCHEDULE_REQUEST_CODE = 2;
     private DeviceEventManagerModule.RCTDeviceEventEmitter mEmitter = null;
 
@@ -178,10 +178,8 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
       if (requestCode == SURVEY_REQUEST_CODE || requestCode == SURVEY_SCHEDULE_REQUEST_CODE ) {
         if (resultCode == Activity.RESULT_OK) {
-          if (data != null) {
-            JSONObject responses = SurveySparrow.toJSON(data.getData().toString());
-            sendEventEmit(responses.toString());
-          }
+          JSONObject responses = SurveySparrow.toJSON(data.getData().toString());
+          sendEventEmit(responses.toString());
         } else {
           Log.v(LOG_TAG, "No Response");
         }
