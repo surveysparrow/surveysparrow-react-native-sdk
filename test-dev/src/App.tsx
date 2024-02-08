@@ -2,11 +2,10 @@ import * as React from 'react';
 
 import { StyleSheet, View, Button } from 'react-native';
 import {
+  Spotcheck,
   SurveySparrow,
   invokeSurveySparrow,
   onSurveyResponseListener,
-  scheduleSurveySparrow,
-  clearSurveySparrow,
 } from 'surveysparrow-react-native-sdk';
 
 export default function App() {
@@ -26,42 +25,16 @@ export default function App() {
     surveyType: 'survey-type',
   };
 
-  const surveyConfigSchedule = {
-    domain: 'domain-name',
-    token: 'survey-token',
-    surveyType: 'survey-type',
-    startAfter: 10000,
-    repeatInterval: 3000,
-    repeatSurvey: true,
-    customParams: [{ name: 'email', value: 'test2@test.com' }],
-  };
-
   return (
     <View style={styles.container}>
-       <View style= {styles.btn} >
+      <Spotcheck />
+      <View style={styles.btn}>
         <Button
-        title="Schedule Survey"
-        onPress={() => {
-          scheduleSurveySparrow(surveyConfigSchedule);
-        }}
-        
-      />
-      </View>
-      <View style= {styles.btn} >
-      <Button
-        title="Clear Schedule Survey"
-        onPress={() => {
-          clearSurveySparrow(surveyConfigSchedule);
-        }}
-      />
-      </View>
-      <View style= {styles.btn} >
-      <Button
-        title="Open Survey"
-        onPress={() => {
-          invokeSurveySparrow(surveyConfig);
-        }}
-      />
+          title="Open Survey"
+          onPress={() => {
+            invokeSurveySparrow(surveyConfig);
+          }}
+        />
       </View>
       <SurveySparrow
         styles={styles.box}
@@ -87,9 +60,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-   
   },
-  btn :{ marginBottom: 20},
+  btn: { marginBottom: 20 },
   box: {
     width: '100%',
     height: 400,

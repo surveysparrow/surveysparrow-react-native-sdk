@@ -13,6 +13,7 @@ import {
   ScheduleSsSurvey as AndroidScheduleSsSurvey,
   ClearScheduleSsSurvey as AndroidClearScheduleSsSurvey,
 } from './components/SsSurveyModuleAndroid';
+import Spotcheck from './components/SpotCheck';
 
 const invokeSurveySparrow =
   Platform.OS === 'android' ? AndroidSsSurvey : IosSsSurvey;
@@ -32,6 +33,7 @@ const SurveySparrow =
     : SsSurveyViewComponentIos;
 
 export {
+  Spotcheck,
   SurveySparrow,
   invokeSurveySparrow,
   scheduleSurveySparrow,
