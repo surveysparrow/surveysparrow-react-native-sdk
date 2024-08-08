@@ -16,7 +16,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Spot"
+        initialRouteName="Home"
         screenOptions={{
           headerShown: true,
         }}
