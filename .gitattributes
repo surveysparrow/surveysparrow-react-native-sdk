@@ -1,6 +1,0 @@
-*.pbxproj -text
-# specific for windows script files
-*.bat text eol=crlf
-*.html linguist-detectable=false
-*.java linguist-detectable=false
-*.swift linguist-detectable=false
