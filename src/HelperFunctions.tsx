@@ -48,7 +48,7 @@ export const setAppearance = async (
         default:
           break;
       }
-
+      console.log(store.getState().spotcheck.spotcheckPosition);
       store.dispatch(setIsCloseButtonEnabled(appearance?.closeButton ?? true));
       store.dispatch(setCloseButtonStyle(appearance.colors?.overrides ?? {}));
 
@@ -101,7 +101,6 @@ export const setAppearance = async (
 
 export const start = () => {
   setTimeout(() => {
-    console.log('came in');
     store.dispatch(setIsVisible(true));
   }, store.getState().spotcheck.afterDelay * 1000);
 };

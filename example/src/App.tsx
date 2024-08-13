@@ -7,7 +7,7 @@ import SpotScreen from './SpotCheck_Screen';
 
 export type RootStackParamList = {
   Home: undefined;
-  Spot: undefined;
+  SpotCheck: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -15,6 +15,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function App() {
   return (
     <NavigationContainer>
+      <Spotchecks />
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
@@ -22,9 +23,8 @@ export default function App() {
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Spot" component={SpotScreen} />
+        <Stack.Screen name="SpotCheck" component={SpotScreen} />
       </Stack.Navigator>
-      <Spotchecks />
     </NavigationContainer>
   );
 }

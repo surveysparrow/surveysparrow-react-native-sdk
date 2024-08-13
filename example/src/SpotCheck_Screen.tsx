@@ -6,7 +6,7 @@ import { trackEvent, trackScreen } from 'spotcheck';
 
 type AnotherScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
-  'Spot'
+  'SpotCheck'
 >;
 
 type Props = {
@@ -20,8 +20,8 @@ const SpotScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => {
-          trackEvent('HomeScreen', { onEvent: {} });
+        onPress={async () => {
+          await trackEvent('HomeScreen', { onEvent: {} });
         }}
       >
         <Text style={{ color: 'black', fontSize: 20 }}>Onevent</Text>
@@ -32,6 +32,7 @@ const SpotScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: 'white',
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

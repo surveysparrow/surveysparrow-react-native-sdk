@@ -12,7 +12,7 @@ type Props = {
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.navigate('Spot')}>
+      <TouchableOpacity onPress={() => navigation.navigate('SpotCheck')}>
         <Text style={{ color: 'blue', backgroundColor: 'white', fontSize: 20 }}>
           SpotCheckScreen
         </Text>

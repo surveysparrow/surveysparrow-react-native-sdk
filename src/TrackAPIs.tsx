@@ -217,8 +217,6 @@ export const sendTrackEventRequest = async (screen: string, event: Event) => {
             ) {
               const uuid = await loadData();
               if (uuid) {
-                console.log(uuid + ' setted');
-
                 payloadUserDetails.uuid = uuid;
               }
             }

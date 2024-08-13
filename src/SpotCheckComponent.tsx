@@ -5,6 +5,9 @@ import {
   Dimensions,
   StyleSheet,
   type ScaledSize,
+  Animated,
+  Easing,
+  Modal,
 } from 'react-native';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,8 +27,9 @@ import {
   setSpotcheckPosition,
   setIsLoading,
   store,
+  setIsVisible,
 } from './SpotCheckState';
-import type { SpotcheckProps } from './types';
+import type { SpotcheckProps } from './Types';
 import { closeSpotCheck, handleSurveyEnd } from './HelperFunctions';
 
 export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
@@ -53,69 +57,115 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     variables,
   ]);
 
-  return spotcheck.isVisible ? (
-    <View
-      style={
-        spotcheck.isFullScreenMode
-          ? style.fullScreenMode
-          : spotcheck.spotcheckPosition === 'bottom'
-            ? style.bottom
-            : spotcheck.spotcheckPosition === 'top'
-              ? style.top
-              : style.center
-      }
+  return (
+    <Modal
+      visible={spotcheck.isVisible}
+      animationType="fade"
+      transparent={true}
     >
-      <View style={{}}>
-        {spotcheck.isCloseButtonEnabled && !spotcheck.isLoading && (
-          <TouchableOpacity
-            onPress={() => {
-              closeSpotCheck(
-                spotcheck.domainName,
-                spotcheck.spotcheckContactID,
-                spotcheck.traceId,
-                spotcheck.triggerToken
-              );
-              dispatch(setSpotcheckID(0));
-              dispatch(setCurrentQuestionHeight(0));
-              dispatch(setCloseButtonStyle({}));
-              dispatch(setSpotcheckContactID(0));
-              dispatch(setSpotcheckURL(''));
-              dispatch(setSpotcheckPosition('bottom'));
-              dispatch(setIsLoading(true));
-              handleSurveyEnd();
-            }}
-            style={style.closeButtonContainer}
-          >
-            <View style={style.closeButtonOverlay}>
-              <View
-                style={{
-                  position: 'absolute',
-                  width: 18,
-                  height: 1.6,
-                  backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                  transform: [{ rotate: '45deg' }],
+      <View
+        style={
+          spotcheck.isFullScreenMode
+            ? style.fullScreenMode
+            : spotcheck.spotcheckPosition === 'bottom'
+              ? style.bottom
+              : spotcheck.spotcheckPosition === 'top'
+                ? style.top
+                : style.center
+        }
+      >
+        <View>
+          {spotcheck.isCloseButtonEnabled &&
+            ((spotcheck.currentQuestionHeight > 0 &&
+              !spotcheck.isFullScreenMode) ||
+              (spotcheck.isFullScreenMode && !spotcheck.isLoading)) && (
+              <TouchableOpacity
+                onPress={() => {
+                  closeSpotCheck(
+                    spotcheck.domainName,
+                    spotcheck.spotcheckContactID,
+                    spotcheck.traceId,
+                    spotcheck.triggerToken
+                  );
+                  dispatch(setSpotcheckID(0));
+                  dispatch(setCurrentQuestionHeight(0));
+                  dispatch(setCloseButtonStyle({}));
+                  dispatch(setSpotcheckContactID(0));
+                  dispatch(setSpotcheckURL(''));
+                  dispatch(setSpotcheckPosition('bottom'));
+                  dispatch(setIsLoading(true));
+                  handleSurveyEnd();
                 }}
-              />
+                style={style.closeButtonContainer}
+              >
+                <View style={style.closeButtonOverlay}>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      width: 18,
+                      height: 1.6,
+                      backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
+                      transform: [{ rotate: '45deg' }],
+                    }}
+                  />
 
-              <View
-                style={{
-                  position: 'absolute',
-                  width: 18,
-                  height: 1.6,
-                  backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                  transform: [{ rotate: '-45deg' }],
-                }}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      width: 18,
+                      height: 1.6,
+                      backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
+                      transform: [{ rotate: '-45deg' }],
+                    }}
+                  />
+                </View>
+              </TouchableOpacity>
+            )}
 
-        {<WebViewComponent />}
+          <WebViewComponent />
+        </View>
+        {spotcheck.isLoading && <CircularProgress />}
       </View>
+    </Modal>
+  );
+};
+
+const CircularProgress = ({ size = 40, strokeWidth = 5 }) => {
+  const rotateValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    console.log('Circular');
+    Animated.loop(
+      Animated.timing(rotateValue, {
+        toValue: 1,
+        duration: 2200,
+        easing: Easing.linear,
+        useNativeDriver: false,
+      })
+    ).start();
+  }, [rotateValue]);
+
+  const rotateInterpolation = rotateValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <View style={style.progressOverlay}>
+      <Animated.View
+        style={{
+          borderRightColor: 'rgba(0,0,0,1)',
+          borderTopColor: 'rgba(0,0,0,1)',
+          borderBottomColor: 'rgba(255,255,255,1)',
+          borderLeftColor: 'rgba(255,255,255,1)',
+          borderWidth: strokeWidth,
+          borderRadius: size / 2,
+          width: size,
+          height: size,
+          transform: [{ rotate: rotateInterpolation }],
+        }}
+      />
     </View>
-  ) : (
-    // eslint-disable-next-line react-native/no-inline-styles
-    <View style={{ position: 'absolute' }} />
   );
 };
 
@@ -159,13 +209,16 @@ const WebViewComponent: React.FC = () => {
   return (
     <View
       style={{
+        backgroundColor: 'rgba(255,255,255,0)',
         width: width,
         height: !spotchecks.isFullScreenMode
           ? Math.min(
               spotchecks.currentQuestionHeight,
               spotchecks.maxHeight * height
             )
-          : height,
+          : spotchecks.isLoading
+            ? 0
+            : height,
       }}
     >
       <WebView
@@ -179,6 +232,12 @@ const WebViewComponent: React.FC = () => {
           store.dispatch(setIsLoading(false));
         }}
         onMessage={handleOnMessage}
+        onError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          console.warn('WebView error: ', nativeEvent);
+          store.dispatch(setIsVisible(false));
+          store.dispatch(setIsLoading(false));
+        }}
         injectedJavaScript={`window.flutterSpotCheckData = {
               postMessage: function(data) {
                 window.ReactNativeWebView.postMessage(data);
@@ -199,7 +258,7 @@ const style = StyleSheet.create({
     right: 0,
     left: 0,
     zIndex: 999999,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.33)',
     height: '100%',
   },
   bottom: {
@@ -209,7 +268,7 @@ const style = StyleSheet.create({
     bottom: 0,
     position: 'absolute',
     zIndex: 999999,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.33)',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -222,7 +281,7 @@ const style = StyleSheet.create({
     top: 0,
     position: 'absolute',
     zIndex: 999999,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.33)',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -234,7 +293,7 @@ const style = StyleSheet.create({
     right: 0,
     position: 'absolute',
     zIndex: 999999,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.33)',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
@@ -244,7 +303,7 @@ const style = StyleSheet.create({
     position: 'absolute',
     zIndex: 999999,
     right: 20,
-    top: 10,
+    top: 20,
     height: 20,
     width: 20,
   },
@@ -256,5 +315,18 @@ const style = StyleSheet.create({
     height: 18,
     position: 'relative',
     backgroundColor: 'rgba(255,255,255,0)',
+  },
+
+  progressOverlay: {
+    flex: 1,
+    left: 0,
+    right: 0,
+    position: 'absolute',
+    zIndex: 999999,
+    backgroundColor: 'rgba(0,0,0,0)',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
   },
 });

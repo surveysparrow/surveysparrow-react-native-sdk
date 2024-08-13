@@ -2,7 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { store } from './SpotCheckState';
 
-import type { SpotcheckProps } from './types';
+import type { SpotcheckProps } from './Types';
 import { start } from './HelperFunctions';
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
