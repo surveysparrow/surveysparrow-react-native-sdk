@@ -7,8 +7,8 @@ export default function Spotchecks() {
       style={{ position: 'absolute', flex: 1, height: '100%', width: '100%' }}
     >
       <Spotcheck
-        domainName="kalaiprojects.surveysparrow.com"
-        targetToken="tar-5AB5te8uZgK7rShTQrcods"
+        domainName="<your-domain-name>"
+        targetToken="<your-target-token>"
         userDetails={{}}
       />
     </View>

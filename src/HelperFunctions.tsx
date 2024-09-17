@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import {
   store,
   setIsVisible,
@@ -48,7 +47,7 @@ export const setAppearance = async (
         default:
           break;
       }
-      console.log(store.getState().spotcheck.spotcheckPosition);
+
       store.dispatch(setIsCloseButtonEnabled(appearance?.closeButton ?? true));
       store.dispatch(setCloseButtonStyle(appearance.colors?.overrides ?? {}));
 
@@ -83,18 +82,11 @@ export const setAppearance = async (
       )
     );
     store.dispatch(setTriggerToken(responseJson?.triggerToken ?? ''));
-
     const baseSpotcheckURL = `https://${domainName}/n/spotcheck/${store.getState().spotcheck.triggerToken}?spotcheckContactId=${store.getState().spotcheck.spotcheckContactID}&traceId=${traceId}&spotcheckUrl=${screen}`;
     let fullSpotcheckURL = baseSpotcheckURL;
-
     Object.entries(variables).forEach(([key, value]) => {
       fullSpotcheckURL += `&${key}=${value}`;
     });
-
-    if (Platform.OS === 'android') {
-      fullSpotcheckURL += '&isAndroidMobileTarget=true';
-    }
-
     store.dispatch(setSpotcheckURL(fullSpotcheckURL));
   }
 };

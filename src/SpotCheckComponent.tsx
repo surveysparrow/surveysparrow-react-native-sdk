@@ -19,12 +19,7 @@ import {
   setUserDetails,
   setVariables,
   setCustomProperties,
-  setSpotcheckID,
   setCurrentQuestionHeight,
-  setCloseButtonStyle,
-  setSpotcheckContactID,
-  setSpotcheckURL,
-  setSpotcheckPosition,
   setIsLoading,
   store,
   setIsVisible,
@@ -87,13 +82,6 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
                     spotcheck.traceId,
                     spotcheck.triggerToken
                   );
-                  dispatch(setSpotcheckID(0));
-                  dispatch(setCurrentQuestionHeight(0));
-                  dispatch(setCloseButtonStyle({}));
-                  dispatch(setSpotcheckContactID(0));
-                  dispatch(setSpotcheckURL(''));
-                  dispatch(setSpotcheckPosition('bottom'));
-                  dispatch(setIsLoading(true));
                   handleSurveyEnd();
                 }}
                 style={style.closeButtonContainer}
@@ -134,7 +122,6 @@ const CircularProgress = ({ size = 40, strokeWidth = 5 }) => {
   const rotateValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    console.log('Circular');
     Animated.loop(
       Animated.timing(rotateValue, {
         toValue: 1,
@@ -225,9 +212,6 @@ const WebViewComponent: React.FC = () => {
         ref={webViewRef}
         source={{ uri: spotchecks.spotcheckURL }}
         javaScriptEnabled={true}
-        onLoadStart={() => {
-          store.dispatch(setIsLoading(true));
-        }}
         onLoad={() => {
           store.dispatch(setIsLoading(false));
         }}

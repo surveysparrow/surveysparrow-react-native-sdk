@@ -59,22 +59,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@reduxjs/toolkit": "^2.2.6",
-    "axios": "^1.7.2",
-    "react-native-uuid": "^2.0.2",
-    "react-native-webview": "^13.10.5",
-    "react-redux": "^9.1.2",
-    "redux": "^5.0.1",
-    "redux-persist": "^6.0.0",
-
-
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.5.0",
     "@react-native/eslint-config": "^0.73.1",
+    "@reduxjs/toolkit": "^2.2.6",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.5.5",
     "@types/react": "^18.2.44",
     "@types/uuid": "^10.0.0",
+    "axios": "^1.7.2",
     "commitlint": "^17.0.2",
     "del-cli": "^5.1.0",
     "eslint": "^8.51.0",
@@ -85,6 +78,11 @@
     "react": "18.2.0",
     "react-native": "0.74.3",
     "react-native-builder-bob": "^0.25.0",
+    "react-native-uuid": "^2.0.2",
+    "react-native-webview": "^13.10.5",
+    "react-redux": "^9.1.2",
+    "redux": "^5.0.1",
+    "redux-persist": "^6.0.0",
     "release-it": "^15.0.0",
     "turbo": "^1.10.7",
     "typescript": "^5.2.2"
@@ -94,8 +92,8 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
-   
+    "react-native": "*",
+    "react-native-webview":"<=12"
   },
   "workspaces": [
     "example"
@@ -190,5 +188,4 @@
     "languages": "kotlin-swift",
     "version": "0.38.1"
   }
- 
 }
