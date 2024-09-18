@@ -49,6 +49,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
     },
     traceId: store.getState().spotcheck.traceId,
     customProperties: store.getState().spotcheck.customProperties,
+    "sdk" : "REACT NATIVE"
   };
 
   const url = `https://${store.getState().spotcheck.domainName}/api/internal/spotcheck/widget/${store.getState().spotcheck.targetToken}/properties?isSpotCheck=true`;
