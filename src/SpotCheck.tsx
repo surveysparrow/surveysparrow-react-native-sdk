@@ -13,6 +13,7 @@ const Spotcheck: React.FC<SpotcheckProps> = ({
   userDetails = {},
   variables = {},
   customProperties = {},
+  sparrowLang = ""
 }) => {
   return (
     <Provider store={store}>
@@ -22,6 +23,7 @@ const Spotcheck: React.FC<SpotcheckProps> = ({
         userDetails={userDetails}
         variables={variables}
         customProperties={customProperties}
+        sparrowLang={sparrowLang}
       />
     </Provider>
   );

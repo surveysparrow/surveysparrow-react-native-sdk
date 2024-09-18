@@ -25,6 +25,7 @@ interface SpotcheckState {
   customProperties: Record<string, any>;
   traceId: string;
   isLoading: boolean;
+  sparrowLang: string;
 }
 
 const initialState: SpotcheckState = {
@@ -33,6 +34,7 @@ const initialState: SpotcheckState = {
   spotcheckURL: '',
   spotcheckID: 0,
   spotcheckContactID: 0,
+  sparrowLang:"",
   afterDelay: 0.0,
   maxHeight: 0.5,
   currentQuestionHeight: 0,
@@ -129,6 +131,9 @@ const spotcheckSlice = createSlice({
     setIsLoading(state, action: PayloadAction<boolean>) {
       state.isLoading = action.payload;
     },
+    setsparrowLang(state, action: PayloadAction<string>) {
+      state.sparrowLang = action.payload;
+    },
   },
 });
 
@@ -156,6 +161,7 @@ export const {
   setIsSpotPassed,
   setIsChecksPassed,
   setIsLoading,
+  setsparrowLang
 } = spotcheckSlice.actions;
 
 const rootReducer = combineReducers({

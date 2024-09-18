@@ -16,6 +16,7 @@ export interface SpotcheckProps {
   userDetails?: UserDetails;
   variables?: Variables;
   customProperties?: CustomProperties;
+  sparrowLang?: string;
 }
 
 export interface Event {

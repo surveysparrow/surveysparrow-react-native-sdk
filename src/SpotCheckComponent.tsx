@@ -23,6 +23,7 @@ import {
   setIsLoading,
   store,
   setIsVisible,
+  setsparrowLang,
 } from './SpotCheckState';
 import type { SpotcheckProps } from './Types';
 import { closeSpotCheck, handleSurveyEnd } from './HelperFunctions';
@@ -33,6 +34,7 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
   userDetails = {},
   variables = {},
   customProperties = {},
+  sparrowLang = ""
 }) => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
@@ -43,6 +45,7 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     dispatch(setUserDetails(userDetails));
     dispatch(setVariables(variables));
     dispatch(setCustomProperties(customProperties));
+    dispatch(setsparrowLang(sparrowLang))
   }, [
     customProperties,
     dispatch,
@@ -50,6 +53,7 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     targetToken,
     userDetails,
     variables,
+    sparrowLang
   ]);
 
   return (

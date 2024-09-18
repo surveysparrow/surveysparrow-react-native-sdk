@@ -87,6 +87,9 @@ export const setAppearance = async (
     Object.entries(variables).forEach(([key, value]) => {
       fullSpotcheckURL += `&${key}=${value}`;
     });
+    if (store.getState().spotcheck.sparrowLang.length>0) {
+      fullSpotcheckURL += `&sparrowLang=${store.getState().spotcheck.sparrowLang}`;
+    }
     store.dispatch(setSpotcheckURL(fullSpotcheckURL));
   }
 };
