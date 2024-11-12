@@ -10,6 +10,7 @@ import Foundation
 import SurveySparrowSdk
 
 @objc(SsSurveyViewManager)
+@available(iOS 13.0, *)
 class SsSurveyViewManager: RCTViewManager{
     
     override func view() -> UIView! {

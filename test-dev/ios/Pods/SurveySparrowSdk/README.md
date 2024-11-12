@@ -16,7 +16,7 @@ Add SurveySparrowSdk Framework to your project either by using CocoaPods or dire
 #### Using CocoaPods
 Add the following line to your `Podfile` file under `target`
 ```pod
-pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.4.5'
+pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.5.1'
 ```
 
 #### Not using CocoaPods! Directly import SurveySparrowSdk

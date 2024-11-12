@@ -10,6 +10,7 @@ import UIKit
 import WebKit
 import SurveySparrowSdk
 
+@available(iOS 13.0, *)
 class SsSurveyView:  UIView, WKScriptMessageHandler, WKNavigationDelegate {
       @objc var onUpdate: RCTDirectEventBlock?
       
@@ -70,12 +71,26 @@ class SsSurveyView:  UIView, WKScriptMessageHandler, WKNavigationDelegate {
       }
       
       public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        let responsen = message.body as! [String: AnyObject]
-        onUpdate!(["result":responsen])
-        if surveyDelegate != nil {
-          let response = message.body as! [String: AnyObject]
-          surveyDelegate.handleSurveyResponse(response: response)
-        }
+          if let responseString = message.body as? String {
+              if let data = responseString.data(using: .utf8) {
+                  do {
+                      if let responsen = try JSONSerialization.jsonObject(with: data, options: []) as? [String: AnyObject] {
+                          onUpdate!(["result": responsen])
+                          if surveyDelegate != nil {
+                              surveyDelegate.handleSurveyResponse(response: responsen)
+                          }
+                      }
+                  } catch {
+                      print("Error parsing JSON: \(error)")
+                  }
+              }
+          } else if let responsen = message.body as? [String: AnyObject] {
+              onUpdate!(["result": responsen])
+              if surveyDelegate != nil {
+                  surveyDelegate.handleSurveyResponse(response: responsen)
+              }
+          }
+
       }
       
       public func setupSurvey () {
