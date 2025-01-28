@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from './App';
+import { trackScreen } from 'spotcheck';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -10,6 +11,9 @@ type Props = {
 };
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  // useEffect(() => {
+  //   trackScreen('HomeScreen');
+  // });
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.navigate('SpotCheck')}>

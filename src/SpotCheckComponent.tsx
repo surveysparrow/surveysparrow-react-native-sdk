@@ -5,11 +5,9 @@ import {
   Dimensions,
   StyleSheet,
   type ScaledSize,
-  Animated,
-  Easing,
-  Modal,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
-import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   type AppDispatch,
@@ -20,13 +18,25 @@ import {
   setVariables,
   setCustomProperties,
   setCurrentQuestionHeight,
-  setIsLoading,
-  store,
+  setIsClassicLoading,
+  setIsChatLoading,
   setIsVisible,
   setsparrowLang,
+  setClassicUrl,
+  setChatUrl,
+  setClassicWebViewRef,
+  setChatWebViewRef,
+  setFilteredSpotChecks,
+  setIsMounted,
 } from './SpotCheckState';
 import type { SpotcheckProps } from './Types';
-import { closeSpotCheck, handleSurveyEnd } from './HelperFunctions';
+import {
+  closeSpotCheck,
+  handleSurveyEnd,
+  ischatSurvey,
+} from './HelperFunctions';
+import axios from 'axios';
+import WebView from 'react-native-webview';
 
 export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
   domainName,
@@ -34,7 +44,7 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
   userDetails = {},
   variables = {},
   customProperties = {},
-  sparrowLang = ""
+  sparrowLang = '',
 }) => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
@@ -45,7 +55,58 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     dispatch(setUserDetails(userDetails));
     dispatch(setVariables(variables));
     dispatch(setCustomProperties(customProperties));
-    dispatch(setsparrowLang(sparrowLang))
+    dispatch(setsparrowLang(sparrowLang));
+
+    const initializeWidget = async () => {
+      try {
+        const SDK = 'REACT NATIVE';
+        const response = await axios.get(
+          `https://${domainName}/api/internal/spotcheck/widget/${targetToken}/init?sdk=${SDK}`
+        );
+        var classicIframe = false;
+        var chatIframe = false;
+        if (response?.data?.filteredSpotChecks)
+          dispatch(setFilteredSpotChecks(response.data.filteredSpotChecks));
+        response.data.filteredSpotChecks.forEach((spotcheck: any) => {
+          if (spotcheck.appearance.mode === 'card') {
+            classicIframe = true;
+          } else if (
+            spotcheck.appearance.mode === 'fullScreen' &&
+            ischatSurvey(spotcheck?.survey?.surveyType)
+          ) {
+            chatIframe = true;
+          } else if (spotcheck.appearance.mode === 'fullScreen') {
+            classicIframe = true;
+          }
+        });
+
+        dispatch(
+          setChatUrl(
+            chatIframe ? `https://${domainName}/eui-template/chat` : ''
+          )
+        );
+
+        dispatch(
+          setClassicUrl(
+            classicIframe ? `https://${domainName}/eui-template/classic` : ''
+          )
+        );
+
+        if (Platform.OS === 'android') {
+          const cameraPermission = PermissionsAndroid.PERMISSIONS.CAMERA;
+          if (!cameraPermission) {
+            console.error('Camera permission is not available');
+            return;
+          }
+          const permission = await PermissionsAndroid.request(cameraPermission);
+          permission;
+        }
+      } catch (error) {
+        console.log('Error initializing widget:', error);
+      }
+    };
+
+    initializeWidget();
   }, [
     customProperties,
     dispatch,
@@ -53,119 +114,141 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     targetToken,
     userDetails,
     variables,
-    sparrowLang
+    sparrowLang,
   ]);
 
   return (
-    <Modal
-      visible={spotcheck.isVisible}
-      animationType="fade"
-      transparent={true}
+    <View
+      style={
+        spotcheck.isFullScreenMode && spotcheck.isVisible
+          ? style.fullScreenMode
+          : spotcheck.spotcheckPosition === 'bottom' &&
+              spotcheck.isVisible &&
+              spotcheck.isMounted
+            ? style.bottom
+            : spotcheck.spotcheckPosition === 'top' &&
+                spotcheck.isVisible &&
+                spotcheck.isMounted
+              ? style.top
+              : spotcheck.spotcheckPosition === 'center' &&
+                  spotcheck.isVisible &&
+                  spotcheck.isMounted
+                ? style.center
+                : style.nothing
+      }
     >
-      <View
-        style={
-          spotcheck.isFullScreenMode
-            ? style.fullScreenMode
-            : spotcheck.spotcheckPosition === 'bottom'
-              ? style.bottom
-              : spotcheck.spotcheckPosition === 'top'
-                ? style.top
-                : style.center
-        }
-      >
-        <View>
-          {spotcheck.isCloseButtonEnabled &&
-            ((spotcheck.currentQuestionHeight > 0 &&
-              !spotcheck.isFullScreenMode) ||
-              (spotcheck.isFullScreenMode && !spotcheck.isLoading)) && (
-              <TouchableOpacity
-                onPress={() => {
-                  closeSpotCheck(
-                    spotcheck.domainName,
-                    spotcheck.spotcheckContactID,
-                    spotcheck.traceId,
-                    spotcheck.triggerToken
-                  );
-                  handleSurveyEnd();
-                }}
-                style={style.closeButtonContainer}
-              >
-                <View style={style.closeButtonOverlay}>
-                  <View
-                    style={{
-                      position: 'absolute',
-                      width: 18,
-                      height: 1.6,
-                      backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                      transform: [{ rotate: '45deg' }],
-                    }}
-                  />
+      <View>
+        {spotcheck.isCloseButtonEnabled &&
+          ((spotcheck.currentQuestionHeight > 0 &&
+            !spotcheck.isFullScreenMode) ||
+            (spotcheck.isFullScreenMode &&
+              ((!spotcheck.isClassicLoading &&
+                spotcheck.spotCheckType === 'classic') ||
+                (!spotcheck.isChatLoading &&
+                  spotcheck.spotCheckType === 'chat')))) && (
+            <TouchableOpacity
+              onPress={() => {
+                closeSpotCheck(
+                  spotcheck.domainName,
+                  spotcheck.spotcheckContactID,
+                  spotcheck.traceId,
+                  spotcheck.triggerToken
+                );
+                handleSurveyEnd();
+              }}
+              style={style.closeButtonContainer}
+            >
+              <View style={style.closeButtonOverlay}>
+                <View
+                  style={{
+                    position: 'absolute',
+                    width: 18,
+                    height: 1.6,
+                    backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
+                    transform: [{ rotate: '45deg' }],
+                  }}
+                />
 
-                  <View
-                    style={{
-                      position: 'absolute',
-                      width: 18,
-                      height: 1.6,
-                      backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                      transform: [{ rotate: '-45deg' }],
-                    }}
-                  />
-                </View>
-              </TouchableOpacity>
-            )}
+                <View
+                  style={{
+                    position: 'absolute',
+                    width: 18,
+                    height: 1.6,
+                    backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
+                    transform: [{ rotate: '-45deg' }],
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+          )}
 
-          <WebViewComponent />
-        </View>
-        {spotcheck.isLoading && <CircularProgress />}
+        {spotcheck.classicUrl.length > 0 && (
+          <View
+            style={
+              spotcheck.spotcheckURL.length > 0 &&
+              spotcheck.spotCheckType === 'classic'
+                ? {}
+                : {
+                    left: '-100%',
+                    right: '-100%',
+                    width: 1,
+                    height: 1,
+                    position: 'absolute',
+                    zIndex: 1,
+                  }
+            }
+          >
+            <WebViewComponents
+              webviewType="classic"
+              url={`${spotcheck.classicUrl}`}
+            />
+          </View>
+        )}
+
+        {spotcheck.chatUrl.length > 0 && (
+          <View
+            style={
+              spotcheck.spotcheckURL.length > 0 &&
+              spotcheck.spotCheckType === 'chat'
+                ? {}
+                : {
+                    left: '-100%',
+                    right: '-100%',
+                    width: 1,
+                    height: 1,
+                    position: 'absolute',
+                    zIndex: 1,
+                  }
+            }
+          >
+            <WebViewComponents
+              webviewType="chat"
+              url={`${spotcheck.chatUrl}`}
+            />
+          </View>
+        )}
       </View>
-    </Modal>
-  );
-};
-
-const CircularProgress = ({ size = 40, strokeWidth = 5 }) => {
-  const rotateValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(rotateValue, {
-        toValue: 1,
-        duration: 2200,
-        easing: Easing.linear,
-        useNativeDriver: false,
-      })
-    ).start();
-  }, [rotateValue]);
-
-  const rotateInterpolation = rotateValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  return (
-    <View style={style.progressOverlay}>
-      <Animated.View
-        style={{
-          borderRightColor: 'rgba(0,0,0,1)',
-          borderTopColor: 'rgba(0,0,0,1)',
-          borderBottomColor: 'rgba(255,255,255,1)',
-          borderLeftColor: 'rgba(255,255,255,1)',
-          borderWidth: strokeWidth,
-          borderRadius: size / 2,
-          width: size,
-          height: size,
-          transform: [{ rotate: rotateInterpolation }],
-        }}
-      />
     </View>
   );
 };
 
-const WebViewComponent: React.FC = () => {
+interface WebViewComponentProps {
+  webviewType: 'classic' | 'chat';
+  url: string;
+}
+
+const WebViewComponents: React.FC<WebViewComponentProps> = ({
+  webviewType,
+  url,
+}) => {
+  const dispatch = useDispatch();
   const spotchecks = useSelector((state: RootState) => state.spotcheck);
+
   const webViewRef = useRef(null);
   const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
     Dimensions.get('window')
   );
+
   useEffect(() => {
     const onChange = ({ window }: { window: ScaledSize }) => {
       setScreenDimensions(window);
@@ -180,17 +263,33 @@ const WebViewComponent: React.FC = () => {
 
   const { width, height } = screenDimensions;
 
-  const handleOnMessage = (event: WebViewMessageEvent) => {
+  useEffect(() => {
+    if (webViewRef.current) {
+      if (webviewType === 'classic') {
+        dispatch(setClassicWebViewRef(webViewRef));
+      } else {
+        dispatch(setChatWebViewRef(webViewRef));
+      }
+    }
+  }, [dispatch, webviewType]);
+
+  const handleOnMessage = async (event: any) => {
     try {
-      const jsonResponse = JSON.parse(event.nativeEvent.data);
+      if (event.nativeEvent?.data === 'captureImage') {
+      } else {
+        const jsonResponse = JSON.parse(event.nativeEvent?.data);
 
-      if (jsonResponse.type === 'spotCheckData') {
-        const question_height = jsonResponse.data.currentQuestionSize.height;
-
-        store.dispatch(setCurrentQuestionHeight(question_height));
-      } else if (jsonResponse.type === 'surveyCompleted') {
-        console.log('Survey submitted');
-        handleSurveyEnd();
+        if (jsonResponse.type === 'spotCheckData') {
+          const question_height = jsonResponse.data.currentQuestionSize.height;
+          dispatch(setCurrentQuestionHeight(question_height));
+        } else if (jsonResponse.type === 'surveyCompleted') {
+          console.log('Survey submitted');
+          handleSurveyEnd();
+        } else if (jsonResponse.type === 'slideInFrame') {
+          if (jsonResponse?.data.mounted === true) {
+            dispatch(setIsMounted(true));
+          }
+        }
       }
     } catch (e) {
       console.log('Error decoding JSON:', e);
@@ -207,24 +306,34 @@ const WebViewComponent: React.FC = () => {
               spotchecks.currentQuestionHeight,
               spotchecks.maxHeight * height
             )
-          : spotchecks.isLoading
+          : (
+                webviewType === 'chat'
+                  ? spotchecks.isChatLoading
+                  : spotchecks.isClassicLoading
+              )
             ? 0
             : height,
       }}
     >
       <WebView
-        ref={webViewRef}
-        source={{ uri: spotchecks.spotcheckURL }}
+        ref={webViewRef} // Set the reference to the WebView
+        source={{ uri: url }} // Use the passed URL prop here
         javaScriptEnabled={true}
+        debuggingEnabled={true}
+        geolocationEnabled={true}
+        mediaPlaybackRequiresUserAction={false}
+        originWhitelist={['*']}
         onLoad={() => {
-          store.dispatch(setIsLoading(false));
+          if (webviewType === 'classic') dispatch(setIsClassicLoading(false));
+          else dispatch(setIsChatLoading(false));
         }}
         onMessage={handleOnMessage}
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.warn('WebView error: ', nativeEvent);
-          store.dispatch(setIsVisible(false));
-          store.dispatch(setIsLoading(false));
+          dispatch(setIsVisible(false));
+          if (webviewType === 'classic') dispatch(setIsClassicLoading(true));
+          else dispatch(setIsChatLoading(true));
         }}
         injectedJavaScript={`window.flutterSpotCheckData = {
               postMessage: function(data) {
@@ -262,6 +371,16 @@ const style = StyleSheet.create({
     justifyContent: 'flex-end',
     flexDirection: 'column',
   },
+  nothing: {
+    left: '-100%',
+    right: '-100%',
+    width: 1,
+    height: 1,
+    position: 'absolute',
+    zIndex: 1,
+    // backgroundColor: 'rgba(0,0,0,0.33)',
+  },
+
   top: {
     flex: 1,
     left: 0,
@@ -275,6 +394,7 @@ const style = StyleSheet.create({
     justifyContent: 'flex-start',
     flexDirection: 'column',
   },
+
   center: {
     flex: 1,
     left: 0,
@@ -287,6 +407,7 @@ const style = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'column',
   },
+
   closeButtonContainer: {
     position: 'absolute',
     zIndex: 999999,
@@ -297,10 +418,10 @@ const style = StyleSheet.create({
   },
   closeButtonOverlay: {
     justifyContent: 'center',
-    top: 10,
-    right: 10,
-    width: 18,
-    height: 18,
+    top: 5,
+    right: 0,
+    width: 9,
+    height: 9,
     position: 'relative',
     backgroundColor: 'rgba(255,255,255,0)',
   },

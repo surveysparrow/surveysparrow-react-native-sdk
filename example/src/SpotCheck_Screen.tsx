@@ -21,7 +21,7 @@ const SpotScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={async () => {
-          await trackEvent('HomeScreen', { onEvent: {} });
+          await trackEvent('HomeScreen', { MobileClick: {} });
         }}
       >
         <Text style={{ color: 'black', fontSize: 20 }}>Onevent</Text>

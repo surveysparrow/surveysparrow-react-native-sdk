@@ -24,8 +24,16 @@ interface SpotcheckState {
   variables: Record<string, any>;
   customProperties: Record<string, any>;
   traceId: string;
-  isLoading: boolean;
+  isClassicLoading: boolean;
+  isChatLoading: boolean;
   sparrowLang: string;
+  classicUrl: string;
+  chatUrl: string;
+  classicWebViewRef: any | null;
+  chatWebViewRef: any | null;
+  filteredSpotChecks: Record<string, any>[];
+  spotCheckType: String;
+  isMounted: boolean;
 }
 
 const initialState: SpotcheckState = {
@@ -34,11 +42,11 @@ const initialState: SpotcheckState = {
   spotcheckURL: '',
   spotcheckID: 0,
   spotcheckContactID: 0,
-  sparrowLang:"",
+  sparrowLang: '',
   afterDelay: 0.0,
   maxHeight: 0.5,
   currentQuestionHeight: 0,
-  isFullScreenMode: true,
+  isFullScreenMode: false,
   isBannerImageOn: false,
   triggerToken: '',
   closeButtonStyle: {},
@@ -52,7 +60,15 @@ const initialState: SpotcheckState = {
   variables: {},
   customProperties: {},
   traceId: '',
-  isLoading: true,
+  isClassicLoading: true,
+  isChatLoading: true,
+  classicUrl: '',
+  chatUrl: '',
+  classicWebViewRef: null,
+  chatWebViewRef: null,
+  filteredSpotChecks: [],
+  spotCheckType: '',
+  isMounted: false,
 };
 
 const spotcheckSlice = createSlice({
@@ -128,11 +144,41 @@ const spotcheckSlice = createSlice({
     setIsChecksPassed(state, action: PayloadAction<boolean>) {
       state.isChecksPassed = action.payload;
     },
-    setIsLoading(state, action: PayloadAction<boolean>) {
-      state.isLoading = action.payload;
+    setIsClassicLoading(state, action: PayloadAction<boolean>) {
+      state.isClassicLoading = action.payload;
+    },
+    setIsChatLoading(state, action: PayloadAction<boolean>) {
+      state.isChatLoading = action.payload;
     },
     setsparrowLang(state, action: PayloadAction<string>) {
       state.sparrowLang = action.payload;
+    },
+
+    setClassicUrl(state, action: PayloadAction<string>) {
+      state.classicUrl = action.payload;
+    },
+
+    setChatUrl(state, action: PayloadAction<string>) {
+      state.chatUrl = action.payload;
+    },
+    setClassicWebViewRef: (state, action: PayloadAction<any | null>) => {
+      state.classicWebViewRef = action.payload;
+    },
+
+    setChatWebViewRef: (state, action: PayloadAction<any | null>) => {
+      state.chatWebViewRef = action.payload;
+    },
+
+    setFilteredSpotChecks(state, action: PayloadAction<Record<string, any>[]>) {
+      state.filteredSpotChecks = action.payload;
+    },
+
+    setSpotCheckType(state, action: PayloadAction<string>) {
+      state.spotCheckType = action.payload;
+    },
+
+    setIsMounted(state, action: PayloadAction<boolean>) {
+      state.isMounted = action.payload;
     },
   },
 });
@@ -160,8 +206,16 @@ export const {
   setCustomEventsSpotChecks,
   setIsSpotPassed,
   setIsChecksPassed,
-  setIsLoading,
-  setsparrowLang
+  setIsClassicLoading,
+  setIsChatLoading,
+  setsparrowLang,
+  setChatUrl,
+  setClassicUrl,
+  setChatWebViewRef,
+  setClassicWebViewRef,
+  setFilteredSpotChecks,
+  setSpotCheckType,
+  setIsMounted,
 } = spotcheckSlice.actions;
 
 const rootReducer = combineReducers({

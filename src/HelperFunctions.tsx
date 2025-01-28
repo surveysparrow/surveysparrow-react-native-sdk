@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   store,
   setIsVisible,
@@ -9,10 +10,11 @@ import {
   setSpotcheckContactID,
   setSpotcheckURL,
   setSpotcheckPosition,
-  setIsLoading,
   setIsBannerImageOn,
   setMaxHeight,
   setTriggerToken,
+  setSpotCheckType,
+  setIsMounted,
 } from './SpotCheckState';
 import uuid from 'react-native-uuid';
 
@@ -30,8 +32,19 @@ export const setAppearance = async (
   variables: Record<string, any>
 ) => {
   if (responseJson) {
-    const appearance = responseJson?.appearance;
+    const currentSpotcheck = store
+      .getState()
+      .spotcheck.filteredSpotChecks.find((spotcheck) => {
+        if (
+          spotcheck.id === responseJson?.spotCheckId ||
+          spotcheck.id === responseJson?.id
+        ) {
+          return spotcheck;
+        }
+      });
 
+    let chat;
+    const appearance = responseJson?.appearance;
     if (appearance) {
       const tposition = appearance?.position;
       switch (tposition) {
@@ -45,6 +58,7 @@ export const setAppearance = async (
           store.dispatch(setSpotcheckPosition('bottom'));
           break;
         default:
+          store.dispatch(setSpotcheckPosition('bottom'));
           break;
       }
 
@@ -63,6 +77,13 @@ export const setAppearance = async (
         store.dispatch(setMaxHeight(0));
       }
 
+      chat =
+        ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
+        appearance?.mode === 'fullScreen';
+
+      if (chat) {
+        store.dispatch(setSpotCheckType('chat'));
+      } else if (!chat) store.dispatch(setSpotCheckType('classic'));
       store.dispatch(setIsFullScreenMode(appearance?.mode === 'fullScreen'));
       store.dispatch(
         setIsBannerImageOn(appearance?.bannerImage?.enabled ?? false)
@@ -82,20 +103,151 @@ export const setAppearance = async (
       )
     );
     store.dispatch(setTriggerToken(responseJson?.triggerToken ?? ''));
-    const baseSpotcheckURL = `https://${domainName}/n/spotcheck/${store.getState().spotcheck.triggerToken}?spotcheckContactId=${store.getState().spotcheck.spotcheckContactID}&traceId=${traceId}&spotcheckUrl=${screen}`;
+    let baseSpotcheckURL;
+    if (chat)
+      baseSpotcheckURL = `https://${domainName}/s/spotcheck/${store.getState().spotcheck.triggerToken}/config?spotcheckContactId=${store.getState().spotcheck.spotcheckContactID}&traceId=${traceId}&spotcheckUrl=${screen}`;
+    else
+      baseSpotcheckURL = `https://${domainName}/s/spotcheck/${store.getState().spotcheck.triggerToken}/bootstrap?spotcheckContactId=${store.getState().spotcheck.spotcheckContactID}&traceId=${traceId}&spotcheckUrl=${screen}`;
+
     let fullSpotcheckURL = baseSpotcheckURL;
     Object.entries(variables).forEach(([key, value]) => {
       fullSpotcheckURL += `&${key}=${value}`;
     });
-    if (store.getState().spotcheck.sparrowLang.length>0) {
+    if (store.getState().spotcheck.sparrowLang.length > 0) {
       fullSpotcheckURL += `&sparrowLang=${store.getState().spotcheck.sparrowLang}`;
     }
+
+    console.log(fullSpotcheckURL);
+
     store.dispatch(setSpotcheckURL(fullSpotcheckURL));
+
+    try {
+      const response = await axios.get(fullSpotcheckURL);
+      const themeInfo = response.data.config.generatedCSS;
+      const theme_payload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
+
+      if (chat) {
+        if (store.getState().spotcheck.chatWebViewRef != null) {
+          const payload = {
+            type: 'RESET_STATE',
+            state: {
+              ...(response.data || {}),
+              skip: true,
+              spotCheckAppearance: {
+                ...(responseJson?.appearance || {}),
+                targetType: 'MOBILE',
+              },
+              spotcheckUrl: screen,
+              traceId,
+              elementBuilderParams: {
+                ...(variables || {}),
+              },
+            },
+          };
+
+          if (store.getState().spotcheck.chatWebViewRef) {
+            const INJECTED_JAVASCRIPT = `
+          (function() {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: ${JSON.stringify(payload)}
+            }));
+
+            window.dispatchEvent(new MessageEvent('message', {
+              data: ${JSON.stringify(theme_payload)}
+            }));
+          })();
+        `;
+
+            if (!store.getState().spotcheck.isChatLoading) {
+              store
+                .getState()
+                .spotcheck.chatWebViewRef?.current.injectJavaScript(
+                  INJECTED_JAVASCRIPT
+                );
+              start();
+            } else {
+              const unsubscribe = store.subscribe(() => {
+                const { isChatLoading, chatWebViewRef } =
+                  store.getState().spotcheck;
+
+                if (!isChatLoading) {
+                  unsubscribe();
+                  chatWebViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+                  start();
+                }
+              });
+            }
+          } else {
+            console.warn('WebView reference is not available');
+          }
+        }
+      } else {
+        if (store.getState().spotcheck.classicWebViewRef != null) {
+          const payload = {
+            type: 'RESET_STATE',
+            state: {
+              ...(response.data || {}),
+              skip: true,
+              spotCheckAppearance: {
+                ...(responseJson?.appearance || {}),
+                targetType: 'MOBILE',
+              },
+              spotcheckUrl: screen,
+              traceId,
+              elementBuilderParams: {
+                ...(variables || {}),
+              },
+            },
+          };
+
+          if (store.getState().spotcheck.classicWebViewRef) {
+            const INJECTED_JAVASCRIPT = `
+          (function() {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: ${JSON.stringify(payload)}
+            }));
+
+            window.dispatchEvent(new MessageEvent('message', {
+              data: ${JSON.stringify(theme_payload)}
+            }));
+
+          })();
+        `;
+
+            if (!store.getState().spotcheck.isClassicLoading) {
+              store
+                .getState()
+                .spotcheck.classicWebViewRef.current.injectJavaScript(
+                  INJECTED_JAVASCRIPT
+                );
+              start();
+            } else {
+              const unsubscribe = store.subscribe(() => {
+                const { isClassicLoading, classicWebViewRef } =
+                  store.getState().spotcheck;
+
+                if (!isClassicLoading) {
+                  unsubscribe();
+                  classicWebViewRef?.current.injectJavaScript(
+                    INJECTED_JAVASCRIPT
+                  );
+                  start();
+                }
+              });
+            }
+          } else {
+            console.warn('WebView reference is not available');
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 };
 
 export const start = () => {
-  setTimeout(() => {
+  setTimeout(async () => {
     store.dispatch(setIsVisible(true));
   }, store.getState().spotcheck.afterDelay * 1000);
 };
@@ -110,7 +262,24 @@ export const handleSurveyEnd = () => {
   store.dispatch(setSpotcheckContactID(0));
   store.dispatch(setSpotcheckURL(''));
   store.dispatch(setSpotcheckPosition('bottom'));
-  store.dispatch(setIsLoading(true));
+  store.dispatch(setIsMounted(false));
+  if (store.getState().spotcheck.spotCheckType === 'chat')
+    store.getState().spotcheck.chatWebViewRef?.current.injectJavaScript(`
+          (function() {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
+            }));
+          })();
+        `);
+  else
+    store.getState().spotcheck.classicWebViewRef?.current.injectJavaScript(`
+          (function() {
+            window.dispatchEvent(new MessageEvent('message', {
+              data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
+            }));
+          })();
+        `);
+  store.dispatch(setSpotCheckType(''));
 };
 
 export const closeSpotCheck = async (
@@ -147,4 +316,13 @@ export const closeSpotCheck = async (
   } catch (error) {
     console.log('Error parsing JSON:', error);
   }
+};
+
+export const ischatSurvey = (type: String) => {
+  return (
+    type === 'Conversational' ||
+    type === 'CESChat' ||
+    type === 'NPSChat' ||
+    type === 'CSATChat'
+  );
 };
