@@ -1,6 +1,0 @@
-module Pods_SurveysparrowReactNativeSdkExample {
-  umbrella header "Pods-SurveysparrowReactNativeSdkExample-umbrella.h"
-
-  export *
-  module * { export * }
-}
