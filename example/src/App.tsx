@@ -25,8 +25,8 @@ export default function App() {
         <Stack.Screen name="SpotCheck" component={SpotScreen} />
       </Stack.Navigator>
       <Spotcheck
-        domainName="kalaiprojectss.surveysparrow.com"
-        targetToken="tar-eQ9pnj8ykqsY9UkgANsmW7"
+        domainName="Your-Domain-Name"
+        targetToken="Your-Target-Token"
         customProperties={{}}
         variables={{}}
         userDetails={{}}
