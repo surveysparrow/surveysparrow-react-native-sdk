@@ -1,5 +1,8 @@
-import { View } from "react-native";
+import Spotcheck from './SpotCheck';
+import {
+  TrackScreen as trackScreen,
+  TrackEvent as trackEvent,
+} from './SpotCheck';
 
-export default function demo() {
-  return <View>App</View>
-};
+export { trackScreen, trackEvent };
+export default Spotcheck;
