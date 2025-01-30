@@ -1,7 +1,7 @@
 {
-  "name": "spotcheck",
-  "version": "0.1.0",
-  "description": "SurveySparrow ReactNative Sdk",
+  "name": "surveysparrow-react-native-sdk",
+  "version": "0.0.1",
+  "description": "SurveySparrow React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.cjs",
   "module": "./lib/module/index.mjs",
@@ -47,14 +47,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KALAISELVANK-18/spotcheck.git"
+    "url": "git+https://github.com/surveysparrow/surveysparrow-react-native-sdk.git"
   },
-  "author": "Kalaiselvan K <kalaiselvan.k@surveysparrow.com> (https://github.com/KalaiselvanK-018)",
+  "author": "SurveySparrow <support@surveysparrow.com> (https://github.com/surveysparrow)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/KALAISELVANK-18/spotcheck/issues"
+    "url": "https://github.com/surveysparrow/surveysparrow-react-native-sdk/issues"
   },
-  "homepage": "https://github.com/KALAISELVANK-18/spotcheck#readme",
+  "homepage": "https://github.com/surveysparrow/surveysparrow-react-native-sdk",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
