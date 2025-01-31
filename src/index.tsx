@@ -1,5 +1,22 @@
-import { View } from "react-native";
+import { NativeModules, Platform } from 'react-native';
 
-export default function demo() {
-  return <View>App</View>
-};
+const LINKING_ERROR =
+  `The package 'surveysparrow-react-native-sdk' doesn't seem to be linked. Make sure: \n\n` +
+  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
+  '- You rebuilt the app after installing the package\n' +
+  '- You are not using Expo Go\n';
+
+const SurveysparrowReactNativeSdk = NativeModules.SurveysparrowReactNativeSdk
+  ? NativeModules.SurveysparrowReactNativeSdk
+  : new Proxy(
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
+
+export function multiply(a: number, b: number): Promise<number> {
+  return SurveysparrowReactNativeSdk.multiply(a, b);
+}

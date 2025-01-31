@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  SpotCheckExample
+//  SurveysparrowReactNativeSdkExample
 //
 
 import Foundation
