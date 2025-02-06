@@ -34,82 +34,59 @@ export const setAppearance = async (
   if (responseJson) {
     const currentSpotcheck = store
       .getState()
-      .spotcheck.filteredSpotChecks.find((spotcheck) => {
-        if (
+      .spotcheck.filteredSpotChecks.find(
+        (spotcheck) =>
           spotcheck.id === responseJson?.spotCheckId ||
           spotcheck.id === responseJson?.id
-        ) {
-          return spotcheck;
-        } else {
-          return null;
-        }
-      });
+      );
 
-    let chat;
     const appearance = responseJson?.appearance;
+    let chat = false;
+
     if (appearance) {
-      const tposition = appearance?.position;
-      switch (tposition) {
-        case 'top_full':
-          store.dispatch(setSpotcheckPosition('top'));
-          break;
-        case 'center_center':
-          store.dispatch(setSpotcheckPosition('center'));
-          break;
-        case 'bottom_full':
-          store.dispatch(setSpotcheckPosition('bottom'));
-          break;
-        default:
-          store.dispatch(setSpotcheckPosition('bottom'));
-          break;
-      }
+      const {
+        position,
+        closeButton,
+        colors,
+        cardProperties,
+        mode,
+        bannerImage,
+      } = appearance;
+      const { maxHeight } = cardProperties || {};
 
-      store.dispatch(setIsCloseButtonEnabled(appearance?.closeButton ?? true));
-      store.dispatch(setCloseButtonStyle(appearance.colors?.overrides ?? {}));
-
-      const cardProp = appearance.cardProperties;
-      if (cardProp?.maxHeight) {
-        const mxHeight =
-          typeof cardProp.maxHeight === 'string'
-            ? parseFloat(cardProp.maxHeight)
-            : cardProp.maxHeight;
-
-        store.dispatch(setMaxHeight(mxHeight / 100));
-      } else {
-        store.dispatch(setMaxHeight(0));
-      }
+      store.dispatch(
+        setSpotcheckPosition(
+          position === 'top_full'
+            ? 'top'
+            : position === 'center_center'
+              ? 'center'
+              : 'bottom'
+        )
+      );
+      store.dispatch(setIsCloseButtonEnabled(closeButton ?? true));
+      store.dispatch(setCloseButtonStyle(colors?.overrides ?? {}));
+      store.dispatch(setMaxHeight(maxHeight ? parseFloat(maxHeight) / 100 : 0));
 
       chat =
         ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
-        appearance?.mode === 'fullScreen';
-
-      if (chat) {
-        store.dispatch(setSpotCheckType('chat'));
-      } else if (!chat) store.dispatch(setSpotCheckType('classic'));
-      store.dispatch(setIsFullScreenMode(appearance?.mode === 'fullScreen'));
-      store.dispatch(
-        setIsBannerImageOn(appearance?.bannerImage?.enabled ?? false)
-      );
+        mode === 'fullScreen';
+      store.dispatch(setSpotCheckType(chat ? 'chat' : 'classic'));
+      store.dispatch(setIsFullScreenMode(mode === 'fullScreen'));
+      store.dispatch(setIsBannerImageOn(bannerImage?.enabled ?? false));
     }
 
-    store.dispatch(
-      setSpotcheckID(
-        responseJson?.spotCheckId ?? responseJson?.spotCheckId ?? 0
-      )
-    );
-    store.dispatch(
-      setSpotcheckContactID(
-        responseJson?.spotCheckContactId ??
-          responseJson?.spotCheckContact?.id ??
-          0
-      )
-    );
-    store.dispatch(setTriggerToken(responseJson?.triggerToken ?? ''));
-    let baseSpotcheckURL;
-    if (chat)
-      baseSpotcheckURL = `https://${domainName}/s/spotcheck/${store.getState().spotcheck.triggerToken}/config?spotcheckContactId=${store.getState().spotcheck.spotcheckContactID}&traceId=${traceId}&spotcheckUrl=${screen}`;
-    else
-      baseSpotcheckURL = `https://${domainName}/s/spotcheck/${store.getState().spotcheck.triggerToken}/bootstrap?spotcheckContactId=${store.getState().spotcheck.spotcheckContactID}&traceId=${traceId}&spotcheckUrl=${screen}`;
+    const spotCheckId = responseJson?.spotCheckId ?? 0;
+    const spotCheckContactId =
+      responseJson?.spotCheckContactId ??
+      responseJson?.spotCheckContact?.id ??
+      0;
+    const triggerToken = responseJson?.triggerToken ?? '';
+
+    store.dispatch(setSpotcheckID(spotCheckId));
+    store.dispatch(setSpotcheckContactID(spotCheckContactId));
+    store.dispatch(setTriggerToken(triggerToken));
+
+    const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${chat ? 'config' : 'bootstrap'}?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}`;
 
     let fullSpotcheckURL = baseSpotcheckURL;
     Object.entries(variables).forEach(([key, value]) => {
@@ -117,7 +94,6 @@ export const setAppearance = async (
     });
 
     console.log(fullSpotcheckURL);
-
     store.dispatch(setSpotcheckURL(fullSpotcheckURL));
 
     try {
@@ -125,119 +101,65 @@ export const setAppearance = async (
       const themeInfo = response.data.config.generatedCSS;
       const theme_payload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
 
-      if (chat) {
-        if (store.getState().spotcheck.chatWebViewRef != null) {
-          const payload = {
-            type: 'RESET_STATE',
-            state: {
-              ...(response.data || {}),
-              skip: true,
-              spotCheckAppearance: {
-                ...(responseJson?.appearance || {}),
-                targetType: 'MOBILE',
-              },
-              spotcheckUrl: screen,
-              traceId,
-              elementBuilderParams: {
-                ...(variables || {}),
-              },
+      const webViewRef = chat
+        ? store.getState().spotcheck.chatWebViewRef
+        : store.getState().spotcheck.classicWebViewRef;
+      const isLoading = chat
+        ? store.getState().spotcheck.isChatLoading
+        : store.getState().spotcheck.isClassicLoading;
+
+      if (webViewRef) {
+        const payload = {
+          type: 'RESET_STATE',
+          state: {
+            ...(response.data || {}),
+            skip: true,
+            spotCheckAppearance: {
+              ...(appearance || {}),
+              targetType: 'MOBILE',
             },
-          };
+            spotcheckUrl: screen,
+            traceId,
+            elementBuilderParams: {
+              ...(variables || {}),
+            },
+          },
+        };
 
-          if (store.getState().spotcheck.chatWebViewRef) {
-            const INJECTED_JAVASCRIPT = `
+        const INJECTED_JAVASCRIPT = `
           (function() {
-            window.dispatchEvent(new MessageEvent('message', {
-              data: ${JSON.stringify(payload)}
-            }));
-
-            window.dispatchEvent(new MessageEvent('message', {
-              data: ${JSON.stringify(theme_payload)}
-            }));
+            window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(payload)} }));
+            window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(theme_payload)} }));
           })();
         `;
 
-            if (!store.getState().spotcheck.isChatLoading) {
-              store
-                .getState()
-                .spotcheck.chatWebViewRef?.current.injectJavaScript(
-                  INJECTED_JAVASCRIPT
-                );
-              start();
-            } else {
-              const unsubscribe = store.subscribe(() => {
-                const { isChatLoading, chatWebViewRef } =
-                  store.getState().spotcheck;
+        const injectJavaScript = () =>
+          webViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
 
-                if (!isChatLoading) {
-                  unsubscribe();
-                  chatWebViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
-                  start();
-                }
-              });
+        if (!isLoading) {
+          injectJavaScript();
+          start();
+        } else {
+          const unsubscribe = store.subscribe(() => {
+            const {
+              isChatLoading,
+              isClassicLoading,
+              chatWebViewRef,
+              classicWebViewRef,
+            } = store.getState().spotcheck;
+
+            if (!(isChatLoading || isClassicLoading)) {
+              unsubscribe();
+              (chat
+                ? chatWebViewRef
+                : classicWebViewRef
+              )?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+              start();
             }
-          } else {
-            console.warn('WebView reference is not available');
-          }
+          });
         }
       } else {
-        if (store.getState().spotcheck.classicWebViewRef != null) {
-          const payload = {
-            type: 'RESET_STATE',
-            state: {
-              ...(response.data || {}),
-              skip: true,
-              spotCheckAppearance: {
-                ...(responseJson?.appearance || {}),
-                targetType: 'MOBILE',
-              },
-              spotcheckUrl: screen,
-              traceId,
-              elementBuilderParams: {
-                ...(variables || {}),
-              },
-            },
-          };
-
-          if (store.getState().spotcheck.classicWebViewRef) {
-            const INJECTED_JAVASCRIPT = `
-          (function() {
-            window.dispatchEvent(new MessageEvent('message', {
-              data: ${JSON.stringify(payload)}
-            }));
-
-            window.dispatchEvent(new MessageEvent('message', {
-              data: ${JSON.stringify(theme_payload)}
-            }));
-
-          })();
-        `;
-
-            if (!store.getState().spotcheck.isClassicLoading) {
-              store
-                .getState()
-                .spotcheck.classicWebViewRef.current.injectJavaScript(
-                  INJECTED_JAVASCRIPT
-                );
-              start();
-            } else {
-              const unsubscribe = store.subscribe(() => {
-                const { isClassicLoading, classicWebViewRef } =
-                  store.getState().spotcheck;
-
-                if (!isClassicLoading) {
-                  unsubscribe();
-                  classicWebViewRef?.current.injectJavaScript(
-                    INJECTED_JAVASCRIPT
-                  );
-                  start();
-                }
-              });
-            }
-          } else {
-            console.warn('WebView reference is not available');
-          }
-        }
+        console.warn('WebView reference is not available');
       }
     } catch (error) {
       console.log(error);

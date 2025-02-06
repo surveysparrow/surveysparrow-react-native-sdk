@@ -1,8 +1,8 @@
 interface UserDetails {
   uuid?: string;
   email?: string;
-  Firstname?: string;
-  Lastname?: string;
+  firstName?: string;
+  lastName?: string;
   mobile?: number;
   [key: string]: any;
 }

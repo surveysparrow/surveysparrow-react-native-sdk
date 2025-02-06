@@ -14,13 +14,15 @@ import {
 import type { TrackEventProps } from './Types';
 
 export const sendTrackScreenRequest = async (screen: string) => {
-  if (store.getState().spotcheck.traceId === '') {
-    const traceId = generateTraceId();
+  const state = store.getState().spotcheck;
+  let traceId = state.traceId;
 
+  if (traceId === '') {
+    traceId = generateTraceId();
     store.dispatch(setTraceId(traceId));
   }
 
-  const payloadUserDetails = { ...store.getState().spotcheck.userDetails };
+  let payloadUserDetails = { ...state.userDetails };
 
   if (
     !payloadUserDetails.email &&
@@ -28,7 +30,6 @@ export const sendTrackScreenRequest = async (screen: string) => {
     !payloadUserDetails.mobile
   ) {
     const uuid: string | null | undefined = await loadData();
-
     if (typeof uuid === 'string') {
       payloadUserDetails.uuid = uuid;
     }
@@ -36,7 +37,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
   const payload = {
     screenName: screen,
-    variables: store.getState().spotcheck.variables,
+    variables: state.variables,
     userDetails: payloadUserDetails,
     visitor: {
       deviceType: 'MOBILE',
@@ -48,11 +49,11 @@ export const sendTrackScreenRequest = async (screen: string) => {
       currentDate: new Date().toISOString(),
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
-    traceId: store.getState().spotcheck.traceId,
-    customProperties: store.getState().spotcheck.customProperties,
+    traceId,
+    customProperties: state.customProperties,
   };
 
-  const url = `https://${store.getState().spotcheck.domainName}/api/internal/spotcheck/widget/${store.getState().spotcheck.targetToken}/properties?isSpotCheck=true`;
+  const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/properties?isSpotCheck=true`;
 
   try {
     const response = await axios.post(url, payload, {
@@ -72,18 +73,18 @@ export const sendTrackScreenRequest = async (screen: string) => {
           setAppearance(
             responseJson,
             screen,
-            store.getState().spotcheck.domainName,
-            store.getState().spotcheck.traceId,
-            store.getState().spotcheck.variables
+            state.domainName,
+            traceId,
+            state.variables
           );
           store.dispatch(setIsSpotPassed(true));
           console.log(
-            'Success: Spots or Checks or Visitor or Reccurence Condition Passed'
+            'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
           );
           return { valid: true };
         } else {
           console.log(
-            'Error: Spots or Checks or Visitor or Reccurence Condition Failed'
+            'Error: Spots or Checks or Visitor or Recurrence Condition Failed'
           );
           return { valid: false };
         }
@@ -91,91 +92,68 @@ export const sendTrackScreenRequest = async (screen: string) => {
         console.log('Error: Show not Received');
       }
 
-      if (!store.getState().spotcheck.isSpotPassed) {
-        if (responseJson.checkPassed) {
-          if (responseJson.checkCondition) {
-            const checkCondition = responseJson.checkCondition;
-            if (checkCondition?.afterDelay) {
-              store.dispatch(
-                setAfterDelay(responseJson.checkCondition.afterDelay)
-              );
-            } else {
-              store.dispatch(setAfterDelay(0));
-            }
-
-            if (checkCondition?.customEvent) {
-              store.dispatch(setCustomEventsSpotChecks([responseJson!]));
-              return { valid: false };
-            }
+      if (!state.isSpotPassed && responseJson.checkPassed) {
+        if (responseJson.checkCondition) {
+          const checkCondition = responseJson.checkCondition;
+          store.dispatch(setAfterDelay(checkCondition.afterDelay || 0));
+          if (checkCondition.customEvent) {
+            store.dispatch(setCustomEventsSpotChecks([responseJson]));
+            return { valid: false };
           }
-
-          setAppearance(
-            responseJson,
-            screen,
-            store.getState().spotcheck.domainName,
-            store.getState().spotcheck.traceId,
-            store.getState().spotcheck.variables
-          );
-          store.dispatch(setIsChecksPassed(true));
-          return { valid: true };
-        } else {
-          console.log('Error: Check not recieved');
         }
+
+        setAppearance(
+          responseJson,
+          screen,
+          state.domainName,
+          traceId,
+          state.variables
+        );
+        store.dispatch(setIsChecksPassed(true));
+        return { valid: true };
       }
 
       if (
-        !store.getState().spotcheck.isSpotPassed &&
-        !store.getState().spotcheck.isChecksPassed
+        !state.isSpotPassed &&
+        !state.isChecksPassed &&
+        responseJson?.multiShow != null
       ) {
-        if (responseJson?.multiShow != null) {
-          if (responseJson?.multiShow) {
-            store.dispatch(
-              setCustomEventsSpotChecks(responseJson.resultantSpotCheck)
-            );
+        if (responseJson.multiShow) {
+          store.dispatch(
+            setCustomEventsSpotChecks(responseJson.resultantSpotCheck)
+          );
+          let selectedSpotCheck = {};
+          let minDelay = Infinity;
 
-            var selectedSpotCheck: any = {};
-            var minDelay: Double = 93359684956;
-
-            for (var spotcheck of store.getState().spotcheck
-              .customEventsSpotChecks) {
-              const checks: any = spotcheck?.checks;
-
-              if (Object.keys(checks).length === 0) {
-                minDelay = 0;
+          for (const spotcheck of state.customEventsSpotChecks) {
+            const checks = spotcheck?.checks || {};
+            if (Object.keys(checks).length === 0) {
+              minDelay = 0;
+              selectedSpotCheck = spotcheck;
+            } else if (checks.afterDelay != null) {
+              const delay = parseFloat(checks.afterDelay);
+              if (minDelay > delay) {
+                minDelay = delay;
                 selectedSpotCheck = spotcheck;
-              } else if (checks?.afterDelay != null) {
-                const delay = parseFloat(checks?.afterDelay);
-                if (minDelay > delay) {
-                  minDelay = delay;
-                  selectedSpotCheck = spotcheck;
-                }
               }
-            }
-
-            if (selectedSpotCheck != null) {
-              const checks = selectedSpotCheck?.checks;
-
-              if (checks != null) {
-                store.dispatch(setAfterDelay(minDelay));
-              }
-            }
-
-            if (Object.keys(selectedSpotCheck).length > 0) {
-              setAppearance(
-                selectedSpotCheck,
-                screen,
-                store.getState().spotcheck.domainName,
-                store.getState().spotcheck.traceId,
-                store.getState().spotcheck.variables
-              );
-
-              console.log('Info: MultiShow Received');
-              return { valid: true };
             }
           }
-        } else {
-          console.log('Info: MultiShow Not Received');
+
+          if (Object.keys(selectedSpotCheck).length > 0) {
+            store.dispatch(setAfterDelay(minDelay));
+            setAppearance(
+              selectedSpotCheck,
+              screen,
+              state.domainName,
+              traceId,
+              state.variables
+            );
+            console.log('Info: MultiShow Received');
+            return { valid: true };
+          }
         }
+      } else {
+        console.log('Info: MultiShow Not Received');
       }
 
       return { valid: false };
@@ -194,12 +172,12 @@ export const sendTrackEventRequest = async (
   event: TrackEventProps
 ) => {
   const intMax = 4294967296;
+  const state = store.getState().spotcheck;
+  let selectedSpotCheckID = intMax;
 
-  var selectedSpotCheckID = intMax;
-
-  if (store.getState().spotcheck.customEventsSpotChecks.length > 0) {
+  if (state.customEventsSpotChecks.length > 0) {
     const eventKeys = Object.keys(event);
-    for (var spotCheck of store.getState().spotcheck.customEventsSpotChecks) {
+    for (const spotCheck of state.customEventsSpotChecks) {
       const checks = spotCheck?.checks ?? spotCheck?.checkCondition;
 
       if (checks) {
@@ -208,9 +186,7 @@ export const sendTrackEventRequest = async (
         if (eventKeys.includes(customEvent?.eventName)) {
           selectedSpotCheckID =
             spotCheck?.id ?? spotCheck?.spotCheckId ?? intMax;
-          const payloadUserDetails = {
-            ...store.getState().spotcheck.userDetails,
-          };
+          let payloadUserDetails = { ...state.userDetails };
 
           if (selectedSpotCheckID !== intMax) {
             if (
@@ -226,7 +202,7 @@ export const sendTrackEventRequest = async (
 
             const payload = {
               screenName: screen,
-              variables: store.getState().spotcheck.variables,
+              variables: state.variables,
               userDetails: payloadUserDetails,
               visitor: {
                 deviceType: 'MOBILE',
@@ -242,11 +218,11 @@ export const sendTrackEventRequest = async (
               eventTrigger: {
                 customEvent: event,
               },
-              traceId: store.getState().spotcheck.traceId,
-              customProperties: store.getState().spotcheck.customProperties,
+              traceId: state.traceId,
+              customProperties: state.customProperties,
             };
 
-            const url = `https://${store.getState().spotcheck.domainName}/api/internal/spotcheck/widget/${store.getState().spotcheck.targetToken}/eventTrigger?isSpotCheck=true`;
+            const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/eventTrigger?isSpotCheck=true`;
 
             try {
               const response = await axios.post(url, payload, {
@@ -263,54 +239,50 @@ export const sendTrackEventRequest = async (
                     setAppearance(
                       responseJson,
                       screen,
-                      store.getState().spotcheck.domainName,
-                      store.getState().spotcheck.traceId,
-                      store.getState().spotcheck.variables
+                      state.domainName,
+                      state.traceId,
+                      state.variables
                     );
                     store.dispatch(setIsSpotPassed(true));
                     console.log(
-                      'Success: Spots or Checks or Visitor or Reccurence Condition Passed'
+                      'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
                     );
                     return { valid: true };
                   } else {
                     console.log(
-                      'Error: Spots or Checks or Visitor or Reccurence Condition Failed'
+                      'Error: Spots or Checks or Visitor or Recurrence Condition Failed'
                     );
                   }
                 } else {
                   console.log('Error: Show not Received');
                 }
 
-                if (!store.getState().spotcheck.isSpotPassed) {
-                  if (responseJson?.eventShow) {
-                    if (responseJson?.checkCondition != null) {
-                      const checkCondition = responseJson?.checkCondition;
-                      if (checkCondition?.afterDelay != null) {
-                        store.dispatch(
-                          setAfterDelay(checkCondition?.afterDelay)
-                        );
-                      }
-
-                      if (checkCondition?.customEvent != null) {
-                        const delay =
-                          checkCondition?.customEvent?.delayInSeconds;
-                        store.dispatch(setAfterDelay(delay ?? 0));
-                      }
-                    }
-                    setAppearance(
-                      responseJson,
-                      screen,
-                      store.getState().spotcheck.domainName,
-                      store.getState().spotcheck.traceId,
-                      store.getState().spotcheck.variables
+                if (!state.isSpotPassed && responseJson?.eventShow) {
+                  if (responseJson?.checkCondition != null) {
+                    const checkCondition = responseJson?.checkCondition;
+                    store.dispatch(
+                      setAfterDelay(checkCondition?.afterDelay ?? 0)
                     );
 
-                    console.log('Success: EventShow Condition Passed');
-
-                    return { valid: true };
-                  } else {
-                    console.log('Error: EventShow Condition Failed');
+                    if (checkCondition?.customEvent != null) {
+                      store.dispatch(
+                        setAfterDelay(
+                          checkCondition?.customEvent?.delayInSeconds ?? 0
+                        )
+                      );
+                    }
                   }
+                  setAppearance(
+                    responseJson,
+                    screen,
+                    state.domainName,
+                    state.traceId,
+                    state.variables
+                  );
+                  console.log('Success: EventShow Condition Passed');
+                  return { valid: true };
+                } else {
+                  console.log('Error: EventShow Condition Failed');
                 }
               } else {
                 console.error('Error:', response.status);
