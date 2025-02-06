@@ -1,8 +1,14 @@
 interface UserDetails {
+  uuid?: string;
+  email?: string;
+  Firstname?: string;
+  Lastname?: string;
+  mobile?: number;
   [key: string]: any;
 }
 
 interface Variables {
+  sparrowLang?: string;
   [key: string]: any;
 }
 
@@ -16,9 +22,8 @@ export interface SpotcheckProps {
   userDetails?: UserDetails;
   variables?: Variables;
   customProperties?: CustomProperties;
-  sparrowLang?: string;
 }
 
-export interface Event {
+export interface TrackEventProps {
   [key: string]: any;
 }

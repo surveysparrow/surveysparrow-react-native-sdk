@@ -2,7 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { store } from './SpotCheckState';
 
-import type { SpotcheckProps } from './Types';
+import type { SpotcheckProps, TrackEventProps } from './Types';
 
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
@@ -13,7 +13,6 @@ const Spotcheck: React.FC<SpotcheckProps> = ({
   userDetails = {},
   variables = {},
   customProperties = {},
-  sparrowLang = '',
 }) => {
   return (
     <Provider store={store}>
@@ -23,7 +22,6 @@ const Spotcheck: React.FC<SpotcheckProps> = ({
         userDetails={userDetails}
         variables={variables}
         customProperties={customProperties}
-        sparrowLang={sparrowLang}
       />
     </Provider>
   );
@@ -42,7 +40,7 @@ export const trackScreen = async (screen: string) => {
   }
 };
 
-export const trackEvent = async (screen: string, event: Event) => {
+export const trackEvent = async (screen: string, event: TrackEventProps) => {
   try {
     const response = await sendTrackEventRequest(screen, event);
     if (response.valid) {

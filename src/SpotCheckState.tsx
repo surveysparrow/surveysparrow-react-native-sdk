@@ -26,7 +26,6 @@ interface SpotcheckState {
   traceId: string;
   isClassicLoading: boolean;
   isChatLoading: boolean;
-  sparrowLang: string;
   classicUrl: string;
   chatUrl: string;
   classicWebViewRef: any | null;
@@ -42,7 +41,6 @@ const initialState: SpotcheckState = {
   spotcheckURL: '',
   spotcheckID: 0,
   spotcheckContactID: 0,
-  sparrowLang: '',
   afterDelay: 0.0,
   maxHeight: 0.5,
   currentQuestionHeight: 0,
@@ -150,10 +148,6 @@ const spotcheckSlice = createSlice({
     setIsChatLoading(state, action: PayloadAction<boolean>) {
       state.isChatLoading = action.payload;
     },
-    setsparrowLang(state, action: PayloadAction<string>) {
-      state.sparrowLang = action.payload;
-    },
-
     setClassicUrl(state, action: PayloadAction<string>) {
       state.classicUrl = action.payload;
     },
@@ -208,7 +202,6 @@ export const {
   setIsChecksPassed,
   setIsClassicLoading,
   setIsChatLoading,
-  setsparrowLang,
   setChatUrl,
   setClassicUrl,
   setChatWebViewRef,

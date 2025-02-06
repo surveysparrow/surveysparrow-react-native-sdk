@@ -11,6 +11,7 @@ import {
   setCustomEventsSpotChecks,
   setIsChecksPassed,
 } from './SpotCheckState';
+import type { TrackEventProps } from './Types';
 
 export const sendTrackScreenRequest = async (screen: string) => {
   if (store.getState().spotcheck.traceId === '') {
@@ -188,7 +189,10 @@ export const sendTrackScreenRequest = async (screen: string) => {
   }
 };
 
-export const sendTrackEventRequest = async (screen: string, event: Event) => {
+export const sendTrackEventRequest = async (
+  screen: string,
+  event: TrackEventProps
+) => {
   const intMax = 4294967296;
 
   var selectedSpotCheckID = intMax;

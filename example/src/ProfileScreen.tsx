@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { /*trackEvent,*/ trackScreen } from 'surveysparrow-react-native-sdk';
+import { trackEvent, trackScreen } from 'surveysparrow-react-native-sdk';
+import type { TrackEventProps } from 'surveysparrow-react-native-sdk';
 import type { RootStackParamList } from './App';
 import type { StackNavigationProp } from '@react-navigation/stack';
 
@@ -30,8 +31,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.screenTitle}>Profile Screen</Text>
       </View>
       <TouchableOpacity
-        onPress={async () => {}
-          // await trackEvent('ProfileScreen', { MobileClick: {} })
+        onPress={async () => {await trackEvent('ProfileScreen', { MobileClick: {} } as TrackEventProps);}
         }
         style={styles.content}
       >

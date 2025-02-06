@@ -5,6 +5,7 @@ import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
 import SettingsScreen from './SettingsScreen';
 import Spotcheck from 'surveysparrow-react-native-sdk';
+import { SpotcheckProps } from 'surveysparrow-react-native-sdk';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -25,12 +26,13 @@ export default function App() {
         <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
       <Spotcheck
-        domainName=""
-        targetToken=""
-        userDetails={{}}
-        variables={{}}
-        customProperties={{}}
-        sparrowLang="en"
+      {...{
+        domainName: 'your-domain-name',
+        targetToken: 'your-target-token',
+        userDetails: {},
+        variables: {},
+        customProperties: {},
+      } as SpotcheckProps}
       />
     </NavigationContainer>
   );

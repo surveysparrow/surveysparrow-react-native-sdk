@@ -21,7 +21,6 @@ import {
   setIsClassicLoading,
   setIsChatLoading,
   setIsVisible,
-  setsparrowLang,
   setClassicUrl,
   setChatUrl,
   setClassicWebViewRef,
@@ -44,7 +43,6 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
   userDetails = {},
   variables = {},
   customProperties = {},
-  sparrowLang = '',
 }) => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
@@ -55,7 +53,6 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     dispatch(setUserDetails(userDetails));
     dispatch(setVariables(variables));
     dispatch(setCustomProperties(customProperties));
-    dispatch(setsparrowLang(sparrowLang));
 
     const initializeWidget = async () => {
       try {
@@ -114,7 +111,6 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     targetToken,
     userDetails,
     variables,
-    sparrowLang,
   ]);
 
   return (
