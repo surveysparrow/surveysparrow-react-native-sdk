@@ -130,7 +130,6 @@ export const setAppearance = async (
 
         if (!isLoading) {
           injectJavaScript();
-          start();
         } else {
           const unsubscribe = store.subscribe(() => {
             const {
@@ -146,7 +145,6 @@ export const setAppearance = async (
                 ? chatWebViewRef
                 : classicWebViewRef
               )?.current.injectJavaScript(INJECTED_JAVASCRIPT);
-              start();
             }
           });
         }

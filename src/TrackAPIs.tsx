@@ -63,18 +63,19 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
       if (responseJson.show != null) {
         if (responseJson.show) {
-          setAppearance(
+          return setAppearance(
             responseJson,
             screen,
             state.domainName,
             traceId,
             state.variables
-          );
-          store.dispatch(updateState({ isSpotPassed: true }));
-          console.log(
-            'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
-          );
-          return { valid: true };
+          ).then(() => {
+            store.dispatch(updateState({ isSpotPassed: true }));
+            console.log(
+              'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
+            );
+            return { valid: true };
+          });
         } else {
           console.log(
             'Error: Spots or Checks or Visitor or Recurrence Condition Failed'
@@ -99,15 +100,16 @@ export const sendTrackScreenRequest = async (screen: string) => {
           }
         }
 
-        setAppearance(
+        return setAppearance(
           responseJson,
           screen,
           state.domainName,
           traceId,
           state.variables
-        );
-        store.dispatch(updateState({ isChecksPassed: true }));
-        return { valid: true };
+        ).then(() => {
+          store.dispatch(updateState({ isChecksPassed: true }));
+          return { valid: true };
+        });
       }
 
       if (
@@ -141,15 +143,16 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
           if (Object.keys(selectedSpotCheck).length > 0) {
             store.dispatch(updateState({ afterDelay: minDelay }));
-            setAppearance(
+            return setAppearance(
               selectedSpotCheck,
               screen,
               state.domainName,
               traceId,
               state.variables
-            );
-            console.log('Info: MultiShow Received');
-            return { valid: true };
+            ).then(() => {
+              console.log('Info: MultiShow Received');
+              return { valid: true };
+            });
           }
         }
       } else {
@@ -236,18 +239,19 @@ export const sendTrackEventRequest = async (
 
                 if (responseJson?.show != null) {
                   if (responseJson?.show) {
-                    setAppearance(
+                    return setAppearance(
                       responseJson,
                       screen,
                       state.domainName,
                       state.traceId,
                       state.variables
-                    );
-                    store.dispatch(updateState({ isSpotPassed: true }));
-                    console.log(
-                      'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
-                    );
-                    return { valid: true };
+                    ).then(() => {
+                      store.dispatch(updateState({ isSpotPassed: true }));
+                      console.log(
+                        'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
+                      );
+                      return { valid: true };
+                    });
                   } else {
                     console.log(
                       'Error: Spots or Checks or Visitor or Recurrence Condition Failed'
@@ -275,15 +279,16 @@ export const sendTrackEventRequest = async (
                       );
                     }
                   }
-                  setAppearance(
+                  return setAppearance(
                     responseJson,
                     screen,
                     state.domainName,
                     state.traceId,
                     state.variables
-                  );
-                  console.log('Success: EventShow Condition Passed');
-                  return { valid: true };
+                  ).then(() => {
+                    console.log('Success: EventShow Condition Passed');
+                    return { valid: true };
+                  });
                 } else {
                   console.log('Error: EventShow Condition Failed');
                 }
