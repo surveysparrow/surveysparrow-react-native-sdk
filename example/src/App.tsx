@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useLayoutEffect } from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './HomeScreen';
@@ -17,7 +17,7 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
-  useEffect(() => {
+  useLayoutEffect(() => {
     initializeSpotChecks({
       ...{
         domainName: 'your-domain-name',
@@ -27,7 +27,7 @@ export default function App() {
         customProperties: {},
       } as SpotcheckProps
     });
-  });
+  },[]);
 
   return (
     <NavigationContainer>

@@ -7,13 +7,6 @@ import { store, updateState } from './SpotCheckState';
 import type { TrackEventProps } from './Types';
 
 export const sendTrackScreenRequest = async (screen: string) => {
-  const unsubscribe = store.subscribe(() => {
-    const { domainName, targetToken } = store.getState().spotcheck;
-
-    if (targetToken.length > 0 && domainName.length > 0) {
-      unsubscribe();
-    }
-  });
   const state = store.getState().spotcheck;
   let traceId = state.traceId;
 
