@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './HomeScreen';
@@ -6,6 +6,7 @@ import ProfileScreen from './ProfileScreen';
 import SettingsScreen from './SettingsScreen';
 import Spotcheck from 'surveysparrow-react-native-sdk';
 import { SpotcheckProps } from 'surveysparrow-react-native-sdk';
+import { initializeSpotChecks } from 'surveysparrow-react-native-sdk';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -16,6 +17,18 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
+  useEffect(() => {
+    initializeSpotChecks({
+      ...{
+        domainName: 'your-domain-name',
+        targetToken: 'your-target-token',
+        userDetails: {},
+        variables: {},
+        customProperties: {},
+      } as SpotcheckProps
+    });
+  });
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -25,15 +38,7 @@ export default function App() {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
-      <Spotcheck
-      {...{
-        domainName: 'your-domain-name',
-        targetToken: 'your-target-token',
-        userDetails: {},
-        variables: {},
-        customProperties: {},
-      } as SpotcheckProps}
-      />
+      <Spotcheck/>
     </NavigationContainer>
   );
 }

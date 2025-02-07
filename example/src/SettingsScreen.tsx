@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { trackEvent, trackScreen } from 'surveysparrow-react-native-sdk';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -14,9 +14,9 @@ type Props = {
 };
 
 const SettingsScreen: React.FC<Props> = ({ navigation }) => {
-
+  useEffect(() => { trackScreen('SettingsScreen'); }, []);
   return (
-    <View style={styles.container} onLayout={() => trackScreen('SettingsScreen')}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}

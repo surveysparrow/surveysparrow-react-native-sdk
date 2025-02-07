@@ -1,29 +1,15 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { store } from './SpotCheckState';
-
+import { store, updateState } from './SpotCheckState';
 import type { SpotcheckProps, TrackEventProps } from './Types';
-
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
 import { start } from './HelperFunctions';
 
-const Spotcheck: React.FC<SpotcheckProps> = ({
-  domainName,
-  targetToken,
-  userDetails = {},
-  variables = {},
-  customProperties = {},
-}) => {
+const Spotcheck: React.FC = () => {
   return (
     <Provider store={store}>
-      <SpotcheckComponent
-        domainName={domainName}
-        targetToken={targetToken}
-        userDetails={userDetails}
-        variables={variables}
-        customProperties={customProperties}
-      />
+      <SpotcheckComponent />
     </Provider>
   );
 };
@@ -54,6 +40,24 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
   } catch (error) {
     console.log('Error in trackEvent: ', error);
   }
+};
+
+export const initializeSpotChecks = ({
+  domainName,
+  targetToken,
+  userDetails,
+  variables,
+  customProperties,
+}: SpotcheckProps) => {
+  store.dispatch(
+    updateState({
+      domainName,
+      targetToken,
+      userDetails,
+      variables,
+      customProperties,
+    })
+  );
 };
 
 export default Spotcheck;

@@ -14,7 +14,6 @@ import {
   type RootState,
   updateState,
 } from './SpotCheckState';
-import type { SpotcheckProps } from './Types';
 import {
   closeSpotCheck,
   handleSurveyEnd,
@@ -23,32 +22,16 @@ import {
 import axios from 'axios';
 import WebView from 'react-native-webview';
 
-export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
-  domainName,
-  targetToken,
-  userDetails = {},
-  variables = {},
-  customProperties = {},
-}) => {
+export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
 
   useEffect(() => {
-    dispatch(
-      updateState({
-        targetToken: targetToken,
-        domainName: domainName,
-        userDetails: userDetails,
-        variables: variables,
-        customProperties: customProperties,
-      })
-    );
-
     const initializeWidget = async () => {
       try {
         const SDK = 'REACT NATIVE';
         const response = await axios.get(
-          `https://${domainName}/api/internal/spotcheck/widget/${targetToken}/init?sdk=${SDK}`
+          `https://${spotcheck.domainName}/api/internal/spotcheck/widget/${spotcheck.targetToken}/init?sdk=${SDK}`
         );
         var classicIframe = false;
         var chatIframe = false;
@@ -75,11 +58,11 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
         dispatch(
           updateState({
             chatUrl: chatIframe
-              ? `https://${domainName}/eui-template/chat`
+              ? `https://${spotcheck.domainName}/eui-template/chat`
               : '',
 
             classicUrl: classicIframe
-              ? `https://${domainName}/eui-template/classic`
+              ? `https://${spotcheck.domainName}/eui-template/classic`
               : '',
           })
         );
@@ -90,8 +73,7 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
             console.error('Camera permission is not available');
             return;
           }
-          const permission = await PermissionsAndroid.request(cameraPermission);
-          permission;
+          await PermissionsAndroid.request(cameraPermission);
         }
       } catch (error) {
         console.log('Error initializing widget:', error);
@@ -99,33 +81,22 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
     };
 
     initializeWidget();
-  }, [
-    customProperties,
-    dispatch,
-    domainName,
-    targetToken,
-    userDetails,
-    variables,
-  ]);
+  }, [spotcheck.domainName, spotcheck.targetToken]);
 
   return (
     <View
       style={
         spotcheck.isFullScreenMode && spotcheck.isVisible
           ? style.fullScreenMode
-          : spotcheck.spotcheckPosition === 'bottom' &&
-              spotcheck.isVisible &&
-              spotcheck.isMounted
-            ? style.bottom
-            : spotcheck.spotcheckPosition === 'top' &&
-                spotcheck.isVisible &&
-                spotcheck.isMounted
-              ? style.top
-              : spotcheck.spotcheckPosition === 'center' &&
-                  spotcheck.isVisible &&
-                  spotcheck.isMounted
-                ? style.center
-                : style.nothing
+          : spotcheck.isVisible && spotcheck.isMounted
+            ? spotcheck.spotcheckPosition === 'bottom'
+              ? style.bottom
+              : spotcheck.spotcheckPosition === 'top'
+                ? style.top
+                : spotcheck.spotcheckPosition === 'center'
+                  ? style.center
+                  : style.nothing
+            : style.nothing
       }
     >
       <View>
@@ -159,7 +130,6 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
                     transform: [{ rotate: '45deg' }],
                   }}
                 />
-
                 <View
                   style={{
                     position: 'absolute',
@@ -191,7 +161,7 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
           >
             <WebViewComponents
               webviewType="classic"
-              url={`${spotcheck.classicUrl}`}
+              url={spotcheck.classicUrl}
             />
           </View>
         )}
@@ -212,10 +182,7 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
                   }
             }
           >
-            <WebViewComponents
-              webviewType="chat"
-              url={`${spotcheck.chatUrl}`}
-            />
+            <WebViewComponents webviewType="chat" url={spotcheck.chatUrl} />
           </View>
         )}
       </View>
