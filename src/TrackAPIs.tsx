@@ -3,14 +3,7 @@ import { Platform, Dimensions } from 'react-native';
 import type { Double } from 'react-native/Libraries/Types/CodegenTypes';
 import { generateTraceId, setAppearance } from './HelperFunctions';
 import { loadData, saveData } from './LocalStorage';
-import {
-  store,
-  setTraceId,
-  setIsSpotPassed,
-  setAfterDelay,
-  setCustomEventsSpotChecks,
-  setIsChecksPassed,
-} from './SpotCheckState';
+import { store, updateState } from './SpotCheckState';
 import type { TrackEventProps } from './Types';
 
 export const sendTrackScreenRequest = async (screen: string) => {
@@ -19,7 +12,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
   if (traceId === '') {
     traceId = generateTraceId();
-    store.dispatch(setTraceId(traceId));
+    store.dispatch(updateState({ traceId }));
   }
 
   let payloadUserDetails = { ...state.userDetails };
@@ -77,7 +70,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
             traceId,
             state.variables
           );
-          store.dispatch(setIsSpotPassed(true));
+          store.dispatch(updateState({ isSpotPassed: true }));
           console.log(
             'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
           );
@@ -95,9 +88,13 @@ export const sendTrackScreenRequest = async (screen: string) => {
       if (!state.isSpotPassed && responseJson.checkPassed) {
         if (responseJson.checkCondition) {
           const checkCondition = responseJson.checkCondition;
-          store.dispatch(setAfterDelay(checkCondition.afterDelay || 0));
+          store.dispatch(
+            updateState({ afterDelay: checkCondition.afterDelay || 0 })
+          );
           if (checkCondition.customEvent) {
-            store.dispatch(setCustomEventsSpotChecks([responseJson]));
+            store.dispatch(
+              updateState({ customEventsSpotChecks: [responseJson] })
+            );
             return { valid: false };
           }
         }
@@ -109,7 +106,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
           traceId,
           state.variables
         );
-        store.dispatch(setIsChecksPassed(true));
+        store.dispatch(updateState({ isChecksPassed: true }));
         return { valid: true };
       }
 
@@ -120,8 +117,11 @@ export const sendTrackScreenRequest = async (screen: string) => {
       ) {
         if (responseJson.multiShow) {
           store.dispatch(
-            setCustomEventsSpotChecks(responseJson.resultantSpotCheck)
+            updateState({
+              customEventsSpotChecks: responseJson.resultantSpotCheck,
+            })
           );
+
           let selectedSpotCheck = {};
           let minDelay: Double = Infinity;
 
@@ -140,7 +140,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
           }
 
           if (Object.keys(selectedSpotCheck).length > 0) {
-            store.dispatch(setAfterDelay(minDelay));
+            store.dispatch(updateState({ afterDelay: minDelay }));
             setAppearance(
               selectedSpotCheck,
               screen,
@@ -243,7 +243,7 @@ export const sendTrackEventRequest = async (
                       state.traceId,
                       state.variables
                     );
-                    store.dispatch(setIsSpotPassed(true));
+                    store.dispatch(updateState({ isSpotPassed: true }));
                     console.log(
                       'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
                     );
@@ -261,14 +261,17 @@ export const sendTrackEventRequest = async (
                   if (responseJson?.checkCondition != null) {
                     const checkCondition = responseJson?.checkCondition;
                     store.dispatch(
-                      setAfterDelay(checkCondition?.afterDelay ?? 0)
+                      updateState({
+                        afterDelay: checkCondition?.afterDelay ?? 0,
+                      })
                     );
 
                     if (checkCondition?.customEvent != null) {
                       store.dispatch(
-                        setAfterDelay(
-                          checkCondition?.customEvent?.delayInSeconds ?? 0
-                        )
+                        updateState({
+                          afterDelay:
+                            checkCondition?.customEvent?.delayInSeconds ?? 0,
+                        })
                       );
                     }
                   }

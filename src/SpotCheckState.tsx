@@ -1,7 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-interface SpotcheckState {
+export interface SpotcheckState {
   isVisible: boolean;
   spotcheckPosition: string;
   spotcheckURL: string;
@@ -73,143 +73,13 @@ const spotcheckSlice = createSlice({
   name: 'spotcheck',
   initialState,
   reducers: {
-    setIsVisible(state, action: PayloadAction<boolean>) {
-      state.isVisible = action.payload;
-    },
-    setSpotcheckPosition(state, action: PayloadAction<string>) {
-      state.spotcheckPosition = action.payload;
-    },
-    setSpotcheckURL(state, action: PayloadAction<string>) {
-      state.spotcheckURL = action.payload;
-    },
-    setSpotcheckID(state, action: PayloadAction<number>) {
-      state.spotcheckID = action.payload;
-    },
-    setSpotcheckContactID(state, action: PayloadAction<number>) {
-      state.spotcheckContactID = action.payload;
-    },
-    setAfterDelay(state, action: PayloadAction<number>) {
-      state.afterDelay = action.payload;
-    },
-    setMaxHeight(state, action: PayloadAction<number>) {
-      state.maxHeight = action.payload;
-    },
-    setCurrentQuestionHeight(state, action: PayloadAction<number>) {
-      state.currentQuestionHeight = action.payload;
-    },
-    setIsFullScreenMode(state, action: PayloadAction<boolean>) {
-      state.isFullScreenMode = action.payload;
-    },
-    setIsBannerImageOn(state, action: PayloadAction<boolean>) {
-      state.isBannerImageOn = action.payload;
-    },
-    setTriggerToken(state, action: PayloadAction<string>) {
-      state.triggerToken = action.payload;
-    },
-    setCloseButtonStyle(state, action: PayloadAction<Record<string, string>>) {
-      state.closeButtonStyle = action.payload;
-    },
-    setIsCloseButtonEnabled(state, action: PayloadAction<boolean>) {
-      state.isCloseButtonEnabled = action.payload;
-    },
-    setTargetToken(state, action: PayloadAction<string>) {
-      state.targetToken = action.payload;
-    },
-    setDomainName(state, action: PayloadAction<string>) {
-      state.domainName = action.payload;
-    },
-    setUserDetails(state, action: PayloadAction<Record<string, any>>) {
-      state.userDetails = action.payload;
-    },
-    setVariables(state, action: PayloadAction<Record<string, any>>) {
-      state.variables = action.payload;
-    },
-    setCustomProperties(state, action: PayloadAction<Record<string, any>>) {
-      state.customProperties = action.payload;
-    },
-    setTraceId(state, action: PayloadAction<string>) {
-      state.traceId = action.payload;
-    },
-    setCustomEventsSpotChecks(
-      state,
-      action: PayloadAction<Record<string, any>[]>
-    ) {
-      state.customEventsSpotChecks = action.payload;
-    },
-    setIsSpotPassed(state, action: PayloadAction<boolean>) {
-      state.isSpotPassed = action.payload;
-    },
-    setIsChecksPassed(state, action: PayloadAction<boolean>) {
-      state.isChecksPassed = action.payload;
-    },
-    setIsClassicLoading(state, action: PayloadAction<boolean>) {
-      state.isClassicLoading = action.payload;
-    },
-    setIsChatLoading(state, action: PayloadAction<boolean>) {
-      state.isChatLoading = action.payload;
-    },
-    setClassicUrl(state, action: PayloadAction<string>) {
-      state.classicUrl = action.payload;
-    },
-
-    setChatUrl(state, action: PayloadAction<string>) {
-      state.chatUrl = action.payload;
-    },
-    setClassicWebViewRef: (state, action: PayloadAction<any | null>) => {
-      state.classicWebViewRef = action.payload;
-    },
-
-    setChatWebViewRef: (state, action: PayloadAction<any | null>) => {
-      state.chatWebViewRef = action.payload;
-    },
-
-    setFilteredSpotChecks(state, action: PayloadAction<Record<string, any>[]>) {
-      state.filteredSpotChecks = action.payload;
-    },
-
-    setSpotCheckType(state, action: PayloadAction<string>) {
-      state.spotCheckType = action.payload;
-    },
-
-    setIsMounted(state, action: PayloadAction<boolean>) {
-      state.isMounted = action.payload;
+    updateState(state, action: PayloadAction<Partial<SpotcheckState>>) {
+      Object.assign(state, action.payload);
     },
   },
 });
 
-export const {
-  setIsVisible,
-  setSpotcheckPosition,
-  setSpotcheckURL,
-  setSpotcheckID,
-  setSpotcheckContactID,
-  setAfterDelay,
-  setMaxHeight,
-  setCurrentQuestionHeight,
-  setIsFullScreenMode,
-  setIsBannerImageOn,
-  setTriggerToken,
-  setCloseButtonStyle,
-  setIsCloseButtonEnabled,
-  setTargetToken,
-  setDomainName,
-  setUserDetails,
-  setVariables,
-  setCustomProperties,
-  setTraceId,
-  setCustomEventsSpotChecks,
-  setIsSpotPassed,
-  setIsChecksPassed,
-  setIsClassicLoading,
-  setIsChatLoading,
-  setChatUrl,
-  setClassicUrl,
-  setChatWebViewRef,
-  setClassicWebViewRef,
-  setFilteredSpotChecks,
-  setSpotCheckType,
-  setIsMounted,
-} = spotcheckSlice.actions;
+export const { updateState } = spotcheckSlice.actions;
 
 const rootReducer = combineReducers({
   spotcheck: spotcheckSlice.reducer,

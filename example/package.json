@@ -18,7 +18,7 @@
     "react-native-safe-area-context": "^5.1.0",
     "react-native-screens": "^4.5.0",
     "react-native-webview": "^13.13.2",
-    "surveysparrow-react-native-sdk": "0.2.1-beta.3"
+    "surveysparrow-react-native-sdk": "0.2.1-beta.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

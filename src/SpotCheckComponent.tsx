@@ -12,21 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   type AppDispatch,
   type RootState,
-  setTargetToken,
-  setDomainName,
-  setUserDetails,
-  setVariables,
-  setCustomProperties,
-  setCurrentQuestionHeight,
-  setIsClassicLoading,
-  setIsChatLoading,
-  setIsVisible,
-  setClassicUrl,
-  setChatUrl,
-  setClassicWebViewRef,
-  setChatWebViewRef,
-  setFilteredSpotChecks,
-  setIsMounted,
+  updateState,
 } from './SpotCheckState';
 import type { SpotcheckProps } from './Types';
 import {
@@ -48,11 +34,15 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
 
   useEffect(() => {
-    dispatch(setTargetToken(targetToken));
-    dispatch(setDomainName(domainName));
-    dispatch(setUserDetails(userDetails));
-    dispatch(setVariables(variables));
-    dispatch(setCustomProperties(customProperties));
+    dispatch(
+      updateState({
+        targetToken: targetToken,
+        domainName: domainName,
+        userDetails: userDetails,
+        variables: variables,
+        customProperties: customProperties,
+      })
+    );
 
     const initializeWidget = async () => {
       try {
@@ -63,7 +53,12 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
         var classicIframe = false;
         var chatIframe = false;
         if (response?.data?.filteredSpotChecks)
-          dispatch(setFilteredSpotChecks(response.data.filteredSpotChecks));
+          dispatch(
+            updateState({
+              filteredSpotChecks: response.data.filteredSpotChecks,
+            })
+          );
+
         response.data.filteredSpotChecks.forEach((spotcheck: any) => {
           if (spotcheck.appearance.mode === 'card') {
             classicIframe = true;
@@ -78,15 +73,15 @@ export const SpotcheckComponent: React.FC<SpotcheckProps> = ({
         });
 
         dispatch(
-          setChatUrl(
-            chatIframe ? `https://${domainName}/eui-template/chat` : ''
-          )
-        );
+          updateState({
+            chatUrl: chatIframe
+              ? `https://${domainName}/eui-template/chat`
+              : '',
 
-        dispatch(
-          setClassicUrl(
-            classicIframe ? `https://${domainName}/eui-template/classic` : ''
-          )
+            classicUrl: classicIframe
+              ? `https://${domainName}/eui-template/classic`
+              : '',
+          })
         );
 
         if (Platform.OS === 'android') {
@@ -261,30 +256,36 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
 
   useEffect(() => {
     if (webViewRef.current) {
-      if (webviewType === 'classic') {
-        dispatch(setClassicWebViewRef(webViewRef));
-      } else {
-        dispatch(setChatWebViewRef(webViewRef));
-      }
+      dispatch(
+        updateState(
+          webviewType === 'classic'
+            ? { classicWebViewRef: webViewRef }
+            : { chatWebViewRef: webViewRef }
+        )
+      );
     }
   }, [dispatch, webviewType]);
 
   const handleOnMessage = async (event: any) => {
     try {
-      if (event.nativeEvent?.data === 'captureImage') {
-      } else {
+      if (event.nativeEvent?.data !== 'captureImage') {
         const jsonResponse = JSON.parse(event.nativeEvent?.data);
 
         if (jsonResponse.type === 'spotCheckData') {
-          const question_height = jsonResponse.data.currentQuestionSize.height;
-          dispatch(setCurrentQuestionHeight(question_height));
+          dispatch(
+            updateState({
+              currentQuestionHeight:
+                jsonResponse.data.currentQuestionSize.height,
+            })
+          );
         } else if (jsonResponse.type === 'surveyCompleted') {
           console.log('Survey submitted');
           handleSurveyEnd();
-        } else if (jsonResponse.type === 'slideInFrame') {
-          if (jsonResponse?.data.mounted === true) {
-            dispatch(setIsMounted(true));
-          }
+        } else if (
+          jsonResponse.type === 'slideInFrame' &&
+          jsonResponse?.data.mounted
+        ) {
+          dispatch(updateState({ isMounted: true }));
         }
       }
     } catch (e) {
@@ -312,31 +313,39 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       }}
     >
       <WebView
-        ref={webViewRef} // Set the reference to the WebView
-        source={{ uri: url }} // Use the passed URL prop here
+        ref={webViewRef}
+        source={{ uri: url }}
         javaScriptEnabled={true}
         debuggingEnabled={true}
         geolocationEnabled={true}
         mediaPlaybackRequiresUserAction={false}
         originWhitelist={['*']}
         onLoad={() => {
-          if (webviewType === 'classic') dispatch(setIsClassicLoading(false));
-          else dispatch(setIsChatLoading(false));
+          dispatch(
+            updateState(
+              webviewType === 'classic'
+                ? { isClassicLoading: false }
+                : { isChatLoading: false }
+            )
+          );
         }}
         onMessage={handleOnMessage}
         onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
-          dispatch(setIsVisible(false));
-          if (webviewType === 'classic') dispatch(setIsClassicLoading(true));
-          else dispatch(setIsChatLoading(true));
+          console.warn('WebView error: ', syntheticEvent.nativeEvent);
+          dispatch(
+            updateState({
+              isVisible: false,
+              ...(webviewType === 'classic'
+                ? { isClassicLoading: true }
+                : { isChatLoading: true }),
+            })
+          );
         }}
         injectedJavaScript={`window.flutterSpotCheckData = {
-              postMessage: function(data) {
-                window.ReactNativeWebView.postMessage(data);
-              }
-            };
-          `}
+          postMessage: function(data) {
+            window.ReactNativeWebView.postMessage(data);
+          }
+        };`}
       />
     </View>
   );
@@ -374,7 +383,6 @@ const style = StyleSheet.create({
     height: 1,
     position: 'absolute',
     zIndex: 1,
-    // backgroundColor: 'rgba(0,0,0,0.33)',
   },
 
   top: {

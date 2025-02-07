@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { trackEvent, trackScreen } from 'surveysparrow-react-native-sdk';
 import type { TrackEventProps } from 'surveysparrow-react-native-sdk';
@@ -15,12 +15,9 @@ type Props = {
 };
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
-  useEffect(() => {
-    trackScreen('ProfileScreen');
-  }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={() => trackScreen('ProfileScreen')}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}

@@ -1,21 +1,5 @@
 import axios from 'axios';
-import {
-  store,
-  setIsVisible,
-  setIsCloseButtonEnabled,
-  setIsFullScreenMode,
-  setSpotcheckID,
-  setCurrentQuestionHeight,
-  setCloseButtonStyle,
-  setSpotcheckContactID,
-  setSpotcheckURL,
-  setSpotcheckPosition,
-  setIsBannerImageOn,
-  setMaxHeight,
-  setTriggerToken,
-  setSpotCheckType,
-  setIsMounted,
-} from './SpotCheckState';
+import { store, updateState, type SpotcheckState } from './SpotCheckState';
 import uuid from 'react-native-uuid';
 
 export function generateTraceId() {
@@ -43,6 +27,8 @@ export const setAppearance = async (
     const appearance = responseJson?.appearance;
     let chat = false;
 
+    let updatedState: Partial<SpotcheckState> = {};
+
     if (appearance) {
       const {
         position,
@@ -54,25 +40,26 @@ export const setAppearance = async (
       } = appearance;
       const { maxHeight } = cardProperties || {};
 
-      store.dispatch(
-        setSpotcheckPosition(
+      updatedState = {
+        spotcheckPosition:
           position === 'top_full'
             ? 'top'
             : position === 'center_center'
               ? 'center'
-              : 'bottom'
-        )
-      );
-      store.dispatch(setIsCloseButtonEnabled(closeButton ?? true));
-      store.dispatch(setCloseButtonStyle(colors?.overrides ?? {}));
-      store.dispatch(setMaxHeight(maxHeight ? parseFloat(maxHeight) / 100 : 0));
+              : 'bottom',
+        isCloseButtonEnabled: closeButton ?? true,
+        closeButtonStyle: colors?.overrides ?? {},
+        maxHeight: maxHeight ? parseFloat(maxHeight) / 100 : 0,
+        spotCheckType:
+          ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
+          mode === 'fullScreen'
+            ? 'chat'
+            : 'classic',
+        isFullScreenMode: mode === 'fullScreen',
+        isBannerImageOn: bannerImage?.enabled ?? false,
+      };
 
-      chat =
-        ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
-        mode === 'fullScreen';
-      store.dispatch(setSpotCheckType(chat ? 'chat' : 'classic'));
-      store.dispatch(setIsFullScreenMode(mode === 'fullScreen'));
-      store.dispatch(setIsBannerImageOn(bannerImage?.enabled ?? false));
+      chat = updatedState.spotCheckType === 'chat';
     }
 
     const spotCheckId = responseJson?.spotCheckId ?? 0;
@@ -82,9 +69,12 @@ export const setAppearance = async (
       0;
     const triggerToken = responseJson?.triggerToken ?? '';
 
-    store.dispatch(setSpotcheckID(spotCheckId));
-    store.dispatch(setSpotcheckContactID(spotCheckContactId));
-    store.dispatch(setTriggerToken(triggerToken));
+    updatedState = {
+      ...updatedState,
+      spotcheckID: spotCheckId,
+      spotcheckContactID: spotCheckContactId,
+      triggerToken,
+    };
 
     const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${chat ? 'config' : 'bootstrap'}?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}`;
 
@@ -94,7 +84,9 @@ export const setAppearance = async (
     });
 
     console.log(fullSpotcheckURL);
-    store.dispatch(setSpotcheckURL(fullSpotcheckURL));
+    updatedState.spotcheckURL = fullSpotcheckURL;
+
+    store.dispatch(updateState(updatedState));
 
     try {
       const response = await axios.get(fullSpotcheckURL);
@@ -169,38 +161,39 @@ export const setAppearance = async (
 
 export const start = () => {
   setTimeout(async () => {
-    store.dispatch(setIsVisible(true));
+    store.dispatch(updateState({ isVisible: true }));
   }, store.getState().spotcheck.afterDelay * 1000);
 };
 
 export const handleSurveyEnd = () => {
-  store.dispatch(setIsVisible(false));
-  store.dispatch(setIsCloseButtonEnabled(false));
-  store.dispatch(setIsFullScreenMode(false));
-  store.dispatch(setSpotcheckID(0));
-  store.dispatch(setCurrentQuestionHeight(0));
-  store.dispatch(setCloseButtonStyle({}));
-  store.dispatch(setSpotcheckContactID(0));
-  store.dispatch(setSpotcheckURL(''));
-  store.dispatch(setSpotcheckPosition('bottom'));
-  store.dispatch(setIsMounted(false));
-  if (store.getState().spotcheck.spotCheckType === 'chat')
-    store.getState().spotcheck.chatWebViewRef?.current.injectJavaScript(`
-          (function() {
-            window.dispatchEvent(new MessageEvent('message', {
-              data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
-            }));
-          })();
-        `);
-  else
-    store.getState().spotcheck.classicWebViewRef?.current.injectJavaScript(`
-          (function() {
-            window.dispatchEvent(new MessageEvent('message', {
-              data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
-            }));
-          })();
-        `);
-  store.dispatch(setSpotCheckType(''));
+  const updatedState: Partial<SpotcheckState> = {
+    isVisible: false,
+    isCloseButtonEnabled: false,
+    isFullScreenMode: false,
+    spotcheckID: 0,
+    currentQuestionHeight: 0,
+    closeButtonStyle: {},
+    spotcheckContactID: 0,
+    spotcheckURL: '',
+    spotcheckPosition: 'bottom',
+    isMounted: false,
+    spotCheckType: '',
+  };
+
+  store.dispatch(updateState(updatedState));
+
+  const webViewRef =
+    store.getState().spotcheck.spotCheckType === 'chat'
+      ? store.getState().spotcheck.chatWebViewRef
+      : store.getState().spotcheck.classicWebViewRef;
+
+  webViewRef?.current?.injectJavaScript(`
+      (function() {
+        window.dispatchEvent(new MessageEvent('message', {
+          data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
+        }));
+      })();
+    `);
 };
 
 export const closeSpotCheck = async (
