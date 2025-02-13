@@ -83,7 +83,6 @@ export const setAppearance = async (
       fullSpotcheckURL += `&${key}=${value}`;
     });
 
-    console.log(fullSpotcheckURL);
     updatedState.spotcheckURL = fullSpotcheckURL;
 
     store.dispatch(updateState(updatedState));

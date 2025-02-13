@@ -71,19 +71,11 @@ export const sendTrackScreenRequest = async (screen: string) => {
             state.variables
           ).then(() => {
             store.dispatch(updateState({ isSpotPassed: true }));
-            console.log(
-              'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
-            );
             return { valid: true };
           });
         } else {
-          console.log(
-            'Error: Spots or Checks or Visitor or Recurrence Condition Failed'
-          );
           return { valid: false };
         }
-      } else {
-        console.log('Error: Show not Received');
       }
 
       if (!state.isSpotPassed && responseJson.checkPassed) {
@@ -150,18 +142,14 @@ export const sendTrackScreenRequest = async (screen: string) => {
               traceId,
               state.variables
             ).then(() => {
-              console.log('Info: MultiShow Received');
               return { valid: true };
             });
           }
         }
-      } else {
-        console.log('Info: MultiShow Not Received');
       }
 
       return { valid: false };
     } else {
-      console.error('Error:', response.status);
       return { valid: false };
     }
   } catch (error) {
@@ -247,18 +235,9 @@ export const sendTrackEventRequest = async (
                       state.variables
                     ).then(() => {
                       store.dispatch(updateState({ isSpotPassed: true }));
-                      console.log(
-                        'Success: Spots or Checks or Visitor or Recurrence Condition Passed'
-                      );
                       return { valid: true };
                     });
-                  } else {
-                    console.log(
-                      'Error: Spots or Checks or Visitor or Recurrence Condition Failed'
-                    );
                   }
-                } else {
-                  console.log('Error: Show not Received');
                 }
 
                 if (!state.isSpotPassed && responseJson?.eventShow) {
@@ -286,14 +265,10 @@ export const sendTrackEventRequest = async (
                     state.traceId,
                     state.variables
                   ).then(() => {
-                    console.log('Success: EventShow Condition Passed');
                     return { valid: true };
                   });
-                } else {
-                  console.log('Error: EventShow Condition Failed');
                 }
               } else {
-                console.error('Error:', response.status);
                 return { valid: false };
               }
             } catch (error) {

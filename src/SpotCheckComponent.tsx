@@ -69,11 +69,9 @@ export const SpotcheckComponent: React.FC = () => {
 
         if (Platform.OS === 'android') {
           const cameraPermission = PermissionsAndroid.PERMISSIONS.CAMERA;
-          if (!cameraPermission) {
-            console.error('Camera permission is not available');
-            return;
+          if (cameraPermission) {
+            await PermissionsAndroid.request(cameraPermission);
           }
-          await PermissionsAndroid.request(cameraPermission);
         }
       } catch (error) {
         console.log('Error initializing widget:', error);
@@ -297,8 +295,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
           );
         }}
         onMessage={handleOnMessage}
-        onError={(syntheticEvent) => {
-          console.warn('WebView error: ', syntheticEvent.nativeEvent);
+        onError={() => {
           dispatch(
             updateState({
               isVisible: false,
