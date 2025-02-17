@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { trackEvent, trackScreen } from 'surveysparrow-react-native-sdk';
+import { trackEvent, TrackEventProps, trackScreen } from 'surveysparrow-react-native-sdk';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from './App';
 
@@ -13,29 +13,31 @@ type Props = {
   navigation: SettingsScreenNavigationProp;
 };
 
-const SettingsScreen: React.FC<Props> = ({ navigation }) => {
-  useEffect(() => { trackScreen('SettingsScreen'); }, []);
+const SettingsScreen: React.FC<Props> = ({navigation}) => {
+  useEffect(() => {
+    trackScreen('SettingsScreen');
+  }, []);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backIcon}
-        >
+          style={styles.backIcon}>
           <Text>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Setting Screen</Text>
+        <Text style={styles.screenTitle}>Profile Screen</Text>
       </View>
-      <TouchableOpacity
-        onPress={async () => {
-          await trackEvent('SettingsScreen', {'MobileClick': {}});
-        }
-          
-        }
-        style={styles.content}
-      >
-        <Text style={styles.link}>Track Event</Text>
-      </TouchableOpacity>
+      <View style={styles.content}>
+        <TouchableOpacity
+          onPress={async () => {
+            await trackEvent('SettingsScreen', {
+              MobileClick: {},
+            } as TrackEventProps);
+            }}
+            style={{backgroundColor: '#f0f0f0', paddingHorizontal: 10}}>
+          <Text style={styles.link}>Track Event</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

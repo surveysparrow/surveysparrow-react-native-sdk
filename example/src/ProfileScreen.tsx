@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { trackEvent, trackScreen } from 'surveysparrow-react-native-sdk';
-import type { TrackEventProps } from 'surveysparrow-react-native-sdk';
-import type { RootStackParamList } from './App';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import React, {useEffect} from 'react';
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {trackEvent, trackScreen} from 'surveysparrow-react-native-sdk';
+import type {TrackEventProps} from 'surveysparrow-react-native-sdk';
+import type {RootStackParamList} from './App';
+import type {StackNavigationProp} from '@react-navigation/stack';
 
 type ProfileScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -14,26 +14,31 @@ type Props = {
   navigation: ProfileScreenNavigationProp;
 };
 
-const ProfileScreen: React.FC<Props> = ({ navigation }) => {
-  useEffect(() => { trackScreen('ProfileScreen'); }, []);
+const ProfileScreen: React.FC<Props> = ({navigation}) => {
+  useEffect(() => {
+    trackScreen('ProfileScreen');
+  }, []);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backIcon}
-        >
+          style={styles.backIcon}>
           <Text>Back</Text>
         </TouchableOpacity>
         <Text style={styles.screenTitle}>Profile Screen</Text>
       </View>
-      <TouchableOpacity
-        onPress={async () => {await trackEvent('ProfileScreen', { MobileClick: {} } as TrackEventProps);}
-        }
-        style={styles.content}
-      >
-        <Text style={styles.link}>Track Event</Text>
-      </TouchableOpacity>
+      <View style={styles.content}>
+        <TouchableOpacity
+          onPress={async () => {
+            await trackEvent('ProfileScreen', {
+              MobileClick: {},
+            } as TrackEventProps);
+            }}
+            style={{backgroundColor: '#f0f0f0', paddingHorizontal: 10}}>
+          <Text style={styles.link}>Track Event</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
