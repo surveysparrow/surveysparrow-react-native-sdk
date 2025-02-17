@@ -119,7 +119,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
           let selectedSpotCheck = {};
           let minDelay: Double = Infinity;
 
-          for (const spotcheck of state.customEventsSpotChecks) {
+          for (const spotcheck of responseJson.resultantSpotCheck) {
             const checks = spotcheck?.checks || {};
             if (Object.keys(checks).length === 0) {
               minDelay = 0;
