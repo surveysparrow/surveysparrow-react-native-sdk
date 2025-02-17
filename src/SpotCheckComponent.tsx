@@ -265,8 +265,17 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         width: width,
         height: !spotchecks.isFullScreenMode
           ? Math.min(
-              spotchecks.currentQuestionHeight,
-              spotchecks.maxHeight * height
+              height,
+              Math.min(
+                spotchecks.currentQuestionHeight,
+                spotchecks.maxHeight * height
+              ) +
+                (spotchecks.isBannerImageOn &&
+                spotchecks.currentQuestionHeight !== 0
+                  ? Math.min(width, height) < 600
+                    ? 100
+                    : 0
+                  : 0)
             )
           : (
                 webviewType === 'chat'
