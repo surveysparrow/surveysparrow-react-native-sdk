@@ -9,7 +9,7 @@ import type { TrackEventProps } from './Types';
 export const sendTrackScreenRequest = async (screen: string) => {
   const state = store.getState().spotcheck;
   let traceId = state.traceId;
-
+  let { isSpotPassed, isChecksPassed } = state;
   if (traceId === '') {
     traceId = generateTraceId();
     store.dispatch(updateState({ traceId }));
@@ -71,6 +71,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
             state.variables
           ).then(() => {
             store.dispatch(updateState({ isSpotPassed: true }));
+            isSpotPassed = true;
             return { valid: true };
           });
         } else {
@@ -78,7 +79,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
         }
       }
 
-      if (!state.isSpotPassed && responseJson.checkPassed) {
+      if (!isSpotPassed && responseJson.checkPassed) {
         if (responseJson.checkCondition) {
           const checkCondition = responseJson.checkCondition;
           store.dispatch(
@@ -100,15 +101,12 @@ export const sendTrackScreenRequest = async (screen: string) => {
           state.variables
         ).then(() => {
           store.dispatch(updateState({ isChecksPassed: true }));
+          isChecksPassed = true;
           return { valid: true };
         });
       }
 
-      if (
-        !state.isSpotPassed &&
-        !state.isChecksPassed &&
-        responseJson?.multiShow != null
-      ) {
+      if (!isSpotPassed && !isChecksPassed && responseJson?.multiShow != null) {
         if (responseJson.multiShow) {
           store.dispatch(
             updateState({
@@ -165,7 +163,7 @@ export const sendTrackEventRequest = async (
   const intMax = 4294967296;
   const state = store.getState().spotcheck;
   let selectedSpotCheckID = intMax;
-
+  let { isSpotPassed } = state;
   if (state.customEventsSpotChecks.length > 0) {
     const eventKeys = Object.keys(event);
     for (const spotCheck of state.customEventsSpotChecks) {
@@ -235,12 +233,13 @@ export const sendTrackEventRequest = async (
                       state.variables
                     ).then(() => {
                       store.dispatch(updateState({ isSpotPassed: true }));
+                      isSpotPassed = true;
                       return { valid: true };
                     });
                   }
                 }
 
-                if (!state.isSpotPassed && responseJson?.eventShow) {
+                if (!isSpotPassed && responseJson?.eventShow) {
                   if (responseJson?.checkCondition != null) {
                     const checkCondition = responseJson?.checkCondition;
                     store.dispatch(

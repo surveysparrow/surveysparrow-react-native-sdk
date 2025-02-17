@@ -29,48 +29,50 @@ export const SpotcheckComponent: React.FC = () => {
   useEffect(() => {
     const initializeWidget = async () => {
       try {
-        const SDK = 'REACT NATIVE';
-        const response = await axios.get(
-          `https://${spotcheck.domainName}/api/internal/spotcheck/widget/${spotcheck.targetToken}/init?sdk=${SDK}`
-        );
-        var classicIframe = false;
-        var chatIframe = false;
-        if (response?.data?.filteredSpotChecks)
+        if (spotcheck.targetToken !== '' && spotcheck.domainName !== '') {
+          const SDK = 'REACT NATIVE';
+          const response = await axios.get(
+            `https://${spotcheck.domainName}/api/internal/spotcheck/widget/${spotcheck.targetToken}/init?sdk=${SDK}`
+          );
+          var classicIframe = false;
+          var chatIframe = false;
+          if (response?.data?.filteredSpotChecks)
+            dispatch(
+              updateState({
+                filteredSpotChecks: response.data.filteredSpotChecks,
+              })
+            );
+
+          response.data.filteredSpotChecks.forEach((spotcheck: any) => {
+            if (spotcheck.appearance.mode === 'card') {
+              classicIframe = true;
+            } else if (
+              spotcheck.appearance.mode === 'fullScreen' &&
+              ischatSurvey(spotcheck?.survey?.surveyType)
+            ) {
+              chatIframe = true;
+            } else if (spotcheck.appearance.mode === 'fullScreen') {
+              classicIframe = true;
+            }
+          });
+
           dispatch(
             updateState({
-              filteredSpotChecks: response.data.filteredSpotChecks,
+              chatUrl: chatIframe
+                ? `https://${spotcheck.domainName}/eui-template/chat`
+                : '',
+
+              classicUrl: classicIframe
+                ? `https://${spotcheck.domainName}/eui-template/classic`
+                : '',
             })
           );
 
-        response.data.filteredSpotChecks.forEach((spotcheck: any) => {
-          if (spotcheck.appearance.mode === 'card') {
-            classicIframe = true;
-          } else if (
-            spotcheck.appearance.mode === 'fullScreen' &&
-            ischatSurvey(spotcheck?.survey?.surveyType)
-          ) {
-            chatIframe = true;
-          } else if (spotcheck.appearance.mode === 'fullScreen') {
-            classicIframe = true;
-          }
-        });
-
-        dispatch(
-          updateState({
-            chatUrl: chatIframe
-              ? `https://${spotcheck.domainName}/eui-template/chat`
-              : '',
-
-            classicUrl: classicIframe
-              ? `https://${spotcheck.domainName}/eui-template/classic`
-              : '',
-          })
-        );
-
-        if (Platform.OS === 'android') {
-          const cameraPermission = PermissionsAndroid.PERMISSIONS.CAMERA;
-          if (cameraPermission) {
-            await PermissionsAndroid.request(cameraPermission);
+          if (Platform.OS === 'android') {
+            const cameraPermission = PermissionsAndroid.PERMISSIONS.CAMERA;
+            if (cameraPermission) {
+              await PermissionsAndroid.request(cameraPermission);
+            }
           }
         }
       } catch (error) {
@@ -237,12 +239,20 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         const jsonResponse = JSON.parse(event.nativeEvent?.data);
 
         if (jsonResponse.type === 'spotCheckData') {
-          dispatch(
-            updateState({
-              currentQuestionHeight:
-                jsonResponse.data.currentQuestionSize.height,
-            })
-          );
+          if (jsonResponse.data.currentQuestionSize) {
+            dispatch(
+              updateState({
+                currentQuestionHeight:
+                  jsonResponse.data.currentQuestionSize.height,
+              })
+            );
+          } else if (jsonResponse.data.isCloseButtonEnabled) {
+            dispatch(
+              updateState({
+                isCloseButtonEnabled: jsonResponse.data.isCloseButtonEnabled,
+              })
+            );
+          }
         } else if (jsonResponse.type === 'surveyCompleted') {
           console.log('Survey submitted');
           handleSurveyEnd();
