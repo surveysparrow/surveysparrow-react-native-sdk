@@ -20,6 +20,7 @@ import {
   ischatSurvey,
 } from './HelperFunctions';
 import axios from 'axios';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import WebView from 'react-native-webview';
 
 export const SpotcheckComponent: React.FC = () => {
@@ -99,93 +100,98 @@ export const SpotcheckComponent: React.FC = () => {
             : style.nothing
       }
     >
-      <View>
-        {spotcheck.isCloseButtonEnabled &&
-          ((spotcheck.currentQuestionHeight > 0 &&
-            !spotcheck.isFullScreenMode) ||
-            (spotcheck.isFullScreenMode &&
-              ((!spotcheck.isClassicLoading &&
-                spotcheck.spotCheckType === 'classic') ||
-                (!spotcheck.isChatLoading &&
-                  spotcheck.spotCheckType === 'chat')))) && (
-            <TouchableOpacity
-              onPress={() => {
-                closeSpotCheck(
-                  spotcheck.domainName,
-                  spotcheck.spotcheckContactID,
-                  spotcheck.traceId,
-                  spotcheck.triggerToken
-                );
-                handleSurveyEnd();
-              }}
-              style={style.closeButtonContainer}
+      <KeyboardAwareScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View>
+          {spotcheck.isCloseButtonEnabled &&
+            ((spotcheck.currentQuestionHeight > 0 &&
+              !spotcheck.isFullScreenMode) ||
+              (spotcheck.isFullScreenMode &&
+                ((!spotcheck.isClassicLoading &&
+                  spotcheck.spotCheckType === 'classic') ||
+                  (!spotcheck.isChatLoading &&
+                    spotcheck.spotCheckType === 'chat')))) && (
+              <TouchableOpacity
+                onPress={() => {
+                  closeSpotCheck(
+                    spotcheck.domainName,
+                    spotcheck.spotcheckContactID,
+                    spotcheck.traceId,
+                    spotcheck.triggerToken
+                  );
+                  handleSurveyEnd();
+                }}
+                style={style.closeButtonContainer}
+              >
+                <View style={style.closeButtonOverlay}>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      width: 18,
+                      height: 1.6,
+                      backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
+                      transform: [{ rotate: '45deg' }],
+                    }}
+                  />
+                  <View
+                    style={{
+                      position: 'absolute',
+                      width: 18,
+                      height: 1.6,
+                      backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
+                      transform: [{ rotate: '-45deg' }],
+                    }}
+                  />
+                </View>
+              </TouchableOpacity>
+            )}
+
+          {spotcheck.classicUrl.length > 0 && (
+            <View
+              style={
+                spotcheck.spotcheckURL.length > 0 &&
+                spotcheck.spotCheckType === 'classic'
+                  ? {}
+                  : {
+                      left: '-100%',
+                      right: '-100%',
+                      width: 1,
+                      height: 1,
+                      position: 'absolute',
+                      zIndex: 1,
+                    }
+              }
             >
-              <View style={style.closeButtonOverlay}>
-                <View
-                  style={{
-                    position: 'absolute',
-                    width: 18,
-                    height: 1.6,
-                    backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                    transform: [{ rotate: '45deg' }],
-                  }}
-                />
-                <View
-                  style={{
-                    position: 'absolute',
-                    width: 18,
-                    height: 1.6,
-                    backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                    transform: [{ rotate: '-45deg' }],
-                  }}
-                />
-              </View>
-            </TouchableOpacity>
+              <WebViewComponents
+                webviewType="classic"
+                url={spotcheck.classicUrl}
+              />
+            </View>
           )}
 
-        {spotcheck.classicUrl.length > 0 && (
-          <View
-            style={
-              spotcheck.spotcheckURL.length > 0 &&
-              spotcheck.spotCheckType === 'classic'
-                ? {}
-                : {
-                    left: '-100%',
-                    right: '-100%',
-                    width: 1,
-                    height: 1,
-                    position: 'absolute',
-                    zIndex: 1,
-                  }
-            }
-          >
-            <WebViewComponents
-              webviewType="classic"
-              url={spotcheck.classicUrl}
-            />
-          </View>
-        )}
-
-        {spotcheck.chatUrl.length > 0 && (
-          <View
-            style={
-              spotcheck.spotcheckURL.length > 0 &&
-              spotcheck.spotCheckType === 'chat'
-                ? {}
-                : {
-                    left: '-100%',
-                    right: '-100%',
-                    width: 1,
-                    height: 1,
-                    position: 'absolute',
-                    zIndex: 1,
-                  }
-            }
-          >
-            <WebViewComponents webviewType="chat" url={spotcheck.chatUrl} />
-          </View>
-        )}
-      </View>
+          {spotcheck.chatUrl.length > 0 && (
+            <View
+              style={
+                spotcheck.spotcheckURL.length > 0 &&
+                spotcheck.spotCheckType === 'chat'
+                  ? {}
+                  : {
+                      left: '-100%',
+                      right: '-100%',
+                      width: 1,
+                      height: 1,
+                      position: 'absolute',
+                      zIndex: 1,
+                    }
+              }
+            >
+              <WebViewComponents webviewType="chat" url={spotcheck.chatUrl} />
+            </View>
+          )}
+        </View>
+      </KeyboardAwareScrollView>
     </View>
   );
 };
