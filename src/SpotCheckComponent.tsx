@@ -7,6 +7,7 @@ import {
   type ScaledSize,
   PermissionsAndroid,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -99,7 +100,7 @@ export const SpotcheckComponent: React.FC = () => {
             : style.nothing
       }
     >
-      <View>
+      <KeyboardAvoidingView behavior="padding" enabled>
         {spotcheck.isCloseButtonEnabled &&
           ((spotcheck.currentQuestionHeight > 0 &&
             !spotcheck.isFullScreenMode) ||
@@ -185,7 +186,7 @@ export const SpotcheckComponent: React.FC = () => {
             <WebViewComponents webviewType="chat" url={spotcheck.chatUrl} />
           </View>
         )}
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
