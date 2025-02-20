@@ -283,7 +283,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
                 (spotchecks.isBannerImageOn &&
                 spotchecks.currentQuestionHeight !== 0
                   ? Math.min(width, height) < 600
-                    ? 100
+                    ? 250
                     : 0
                   : 0)
             )
