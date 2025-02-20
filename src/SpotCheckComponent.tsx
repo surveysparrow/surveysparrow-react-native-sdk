@@ -86,7 +86,7 @@ export const SpotcheckComponent: React.FC = () => {
 
   return (
     <KeyboardAwareScrollView
-      contentContainerStyle={
+      style={
         spotcheck.isFullScreenMode && spotcheck.isVisible
           ? style.fullScreenMode
           : spotcheck.isVisible && spotcheck.isMounted
