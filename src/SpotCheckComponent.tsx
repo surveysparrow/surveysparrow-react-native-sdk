@@ -288,7 +288,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
   return (
     <View
       style={{
-        backgroundColor: 'rgba(0,255,255,255)',
         width: width,
         height: !spotchecks.isFullScreenMode
           ? Math.min(
@@ -315,9 +314,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
     >
       <WebView
         scrollEnabled={iosWebviewScroll}
-        style={{
-          backgroundColor: 'red',
-        }}
         ref={webViewRef}
         source={{ uri: url }}
         javaScriptEnabled={true}
