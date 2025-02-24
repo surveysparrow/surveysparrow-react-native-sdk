@@ -7,48 +7,51 @@ import { store, updateState } from './SpotCheckState';
 import type { TrackEventProps } from './Types';
 
 export const sendTrackScreenRequest = async (screen: string) => {
-  const state = store.getState().spotcheck;
-  let traceId = state.traceId;
-  let { isSpotPassed, isChecksPassed } = state;
-  if (traceId === '') {
-    traceId = generateTraceId();
-    store.dispatch(updateState({ traceId }));
-  }
-
-  let payloadUserDetails = { ...state.userDetails };
-
-  if (
-    !payloadUserDetails.email &&
-    !payloadUserDetails.uuid &&
-    !payloadUserDetails.mobile
-  ) {
-    const uuid: string | null | undefined = await loadData();
-    if (typeof uuid === 'string') {
-      payloadUserDetails.uuid = uuid;
-    }
-  }
-
-  const payload = {
-    screenName: screen,
-    variables: state.variables,
-    userDetails: payloadUserDetails,
-    visitor: {
-      deviceType: 'MOBILE',
-      operatingSystem: Platform.OS,
-      screenResolution: {
-        height: Dimensions.get('window').height,
-        width: Dimensions.get('window').width,
-      },
-      currentDate: new Date().toISOString(),
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    },
-    traceId,
-    customProperties: state.customProperties,
-  };
-
-  const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/properties?isSpotCheck=true`;
-
   try {
+    const state = store.getState().spotcheck;
+    if (!state) {
+      throw new Error('Failed to retrieve state.');
+    }
+
+    let traceId = state.traceId;
+    if (!traceId) {
+      traceId = generateTraceId();
+      store.dispatch(updateState({ traceId }));
+    }
+
+    let payloadUserDetails = { ...state.userDetails };
+
+    if (
+      !payloadUserDetails.email &&
+      !payloadUserDetails.uuid &&
+      !payloadUserDetails.mobile
+    ) {
+      const uuid = await loadData();
+      if (typeof uuid === 'string') {
+        payloadUserDetails.uuid = uuid;
+      }
+    }
+
+    const payload = {
+      screenName: screen,
+      variables: state.variables,
+      userDetails: payloadUserDetails,
+      visitor: {
+        deviceType: 'MOBILE',
+        operatingSystem: Platform.OS,
+        screenResolution: {
+          height: Dimensions.get('window').height,
+          width: Dimensions.get('window').width,
+        },
+        currentDate: new Date().toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      },
+      traceId,
+      customProperties: state.customProperties,
+    };
+
+    const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/properties?isSpotCheck=true`;
+
     const response = await axios.post(url, payload, {
       headers: {
         'Content-Type': 'application/json',
@@ -57,29 +60,28 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
     if (response.status === 200) {
       const responseJson = response.data;
+
       if (responseJson.uuid) {
         await saveData(responseJson.uuid);
       }
 
-      if (responseJson.show != null) {
-        if (responseJson.show) {
-          return setAppearance(
+      if (responseJson?.show) {
+        if (responseJson?.show) {
+          await setAppearance(
             responseJson,
             screen,
             state.domainName,
             traceId,
             state.variables
-          ).then(() => {
-            store.dispatch(updateState({ isSpotPassed: true }));
-            isSpotPassed = true;
-            return { valid: true };
-          });
+          );
+          store.dispatch(updateState({ isSpotPassed: true }));
+          return { valid: true };
         } else {
-          return { valid: false };
+          throw new Error('');
         }
       }
 
-      if (!isSpotPassed && responseJson.checkPassed) {
+      if (!state.isSpotPassed && responseJson?.checkPassed) {
         if (responseJson.checkCondition) {
           const checkCondition = responseJson.checkCondition;
           store.dispatch(
@@ -89,24 +91,26 @@ export const sendTrackScreenRequest = async (screen: string) => {
             store.dispatch(
               updateState({ customEventsSpotChecks: [responseJson] })
             );
-            return { valid: false };
+            throw new Error('');
           }
         }
 
-        return setAppearance(
+        await setAppearance(
           responseJson,
           screen,
           state.domainName,
           traceId,
           state.variables
-        ).then(() => {
-          store.dispatch(updateState({ isChecksPassed: true }));
-          isChecksPassed = true;
-          return { valid: true };
-        });
+        );
+        store.dispatch(updateState({ isChecksPassed: true }));
+        return { valid: true };
       }
 
-      if (!isSpotPassed && !isChecksPassed && responseJson?.multiShow != null) {
+      if (
+        !state.isSpotPassed &&
+        !state.isChecksPassed &&
+        responseJson?.multiShow != null
+      ) {
         if (responseJson.multiShow) {
           store.dispatch(
             updateState({
@@ -133,26 +137,24 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
           if (Object.keys(selectedSpotCheck).length > 0) {
             store.dispatch(updateState({ afterDelay: minDelay }));
-            return setAppearance(
+            await setAppearance(
               selectedSpotCheck,
               screen,
               state.domainName,
               traceId,
               state.variables
-            ).then(() => {
-              return { valid: true };
-            });
+            );
+            return { valid: true };
           }
         }
       }
 
-      return { valid: false };
+      throw new Error(responseJson?.reason.toString());
     } else {
-      return { valid: false };
+      throw new Error(`Received status code ${response.status}`);
     }
-  } catch (error) {
-    console.error('Error:', error);
-    return { valid: false };
+  } catch (error: any) {
+    return { valid: false, error: error.message };
   }
 };
 
@@ -160,71 +162,104 @@ export const sendTrackEventRequest = async (
   screen: string,
   event: TrackEventProps
 ) => {
-  const intMax = 4294967296;
-  const state = store.getState().spotcheck;
-  let selectedSpotCheckID = intMax;
-  let { isSpotPassed } = state;
-  if (state.customEventsSpotChecks.length > 0) {
-    const eventKeys = Object.keys(event);
-    for (const spotCheck of state.customEventsSpotChecks) {
-      const checks = spotCheck?.checks ?? spotCheck?.checkCondition;
+  try {
+    const intMax = 4294967296;
+    const state = store.getState().spotcheck;
+    let selectedSpotCheckID = intMax;
+    let { isSpotPassed } = state;
+    if (state.customEventsSpotChecks.length > 0) {
+      const eventKeys = Object.keys(event);
+      for (const spotCheck of state.customEventsSpotChecks) {
+        const checks = spotCheck?.checks ?? spotCheck?.checkCondition;
 
-      if (checks) {
-        const customEvent = checks?.customEvent;
+        if (checks) {
+          const customEvent = checks?.customEvent;
 
-        if (eventKeys.includes(customEvent?.eventName)) {
-          selectedSpotCheckID =
-            spotCheck?.id ?? spotCheck?.spotCheckId ?? intMax;
-          let payloadUserDetails = { ...state.userDetails };
+          if (eventKeys.includes(customEvent?.eventName)) {
+            selectedSpotCheckID =
+              spotCheck?.id ?? spotCheck?.spotCheckId ?? intMax;
+            let payloadUserDetails = { ...state.userDetails };
 
-          if (selectedSpotCheckID !== intMax) {
-            if (
-              !payloadUserDetails?.email &&
-              !payloadUserDetails?.uuid &&
-              !payloadUserDetails?.mobile
-            ) {
-              const uuid = await loadData();
-              if (uuid) {
-                payloadUserDetails.uuid = uuid;
+            if (selectedSpotCheckID !== intMax) {
+              if (
+                !payloadUserDetails?.email &&
+                !payloadUserDetails?.uuid &&
+                !payloadUserDetails?.mobile
+              ) {
+                const uuid = await loadData();
+                if (uuid) {
+                  payloadUserDetails.uuid = uuid;
+                }
               }
-            }
 
-            const payload = {
-              screenName: screen,
-              variables: state.variables,
-              userDetails: payloadUserDetails,
-              visitor: {
-                deviceType: 'MOBILE',
-                operatingSystem: Platform.OS,
-                screenResolution: {
-                  height: Dimensions.get('window').height,
-                  width: Dimensions.get('window').width,
+              const payload = {
+                screenName: screen,
+                variables: state.variables,
+                userDetails: payloadUserDetails,
+                visitor: {
+                  deviceType: 'MOBILE',
+                  operatingSystem: Platform.OS,
+                  screenResolution: {
+                    height: Dimensions.get('window').height,
+                    width: Dimensions.get('window').width,
+                  },
+                  currentDate: new Date().toISOString(),
+                  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 },
-                currentDate: new Date().toISOString(),
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-              },
-              spotCheckId: selectedSpotCheckID,
-              eventTrigger: {
-                customEvent: event,
-              },
-              traceId: state.traceId,
-              customProperties: state.customProperties,
-            };
-
-            const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/eventTrigger?isSpotCheck=true`;
-
-            try {
-              const response = await axios.post(url, payload, {
-                headers: {
-                  'Content-Type': 'application/json',
+                spotCheckId: selectedSpotCheckID,
+                eventTrigger: {
+                  customEvent: event,
                 },
-              });
+                traceId: state.traceId,
+                customProperties: state.customProperties,
+              };
 
-              if (response.status === 200) {
-                const responseJson = response.data;
+              const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/eventTrigger?isSpotCheck=true`;
 
-                if (responseJson?.show != null) {
-                  if (responseJson?.show) {
+              try {
+                const response = await axios.post(url, payload, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                });
+
+                if (response.status === 200) {
+                  const responseJson = response.data;
+                  console.log(responseJson.reason);
+                  if (responseJson?.show != null) {
+                    if (responseJson?.show) {
+                      return setAppearance(
+                        responseJson,
+                        screen,
+                        state.domainName,
+                        state.traceId,
+                        state.variables
+                      ).then(() => {
+                        store.dispatch(updateState({ isSpotPassed: true }));
+                        isSpotPassed = true;
+                        return { valid: true };
+                      });
+                    }
+                  }
+
+                  if (!isSpotPassed && responseJson?.eventShow) {
+                    if (responseJson?.checkCondition != null) {
+                      const checkCondition = responseJson?.checkCondition;
+                      store.dispatch(
+                        updateState({
+                          afterDelay: checkCondition?.afterDelay ?? 0,
+                        })
+                      );
+
+                      if (checkCondition?.customEvent != null) {
+                        store.dispatch(
+                          updateState({
+                            afterDelay:
+                              checkCondition?.customEvent?.delayInSeconds ?? 0,
+                          })
+                        );
+                      }
+                    }
                     return setAppearance(
                       responseJson,
                       screen,
@@ -232,54 +267,26 @@ export const sendTrackEventRequest = async (
                       state.traceId,
                       state.variables
                     ).then(() => {
-                      store.dispatch(updateState({ isSpotPassed: true }));
-                      isSpotPassed = true;
                       return { valid: true };
                     });
                   }
-                }
 
-                if (!isSpotPassed && responseJson?.eventShow) {
-                  if (responseJson?.checkCondition != null) {
-                    const checkCondition = responseJson?.checkCondition;
-                    store.dispatch(
-                      updateState({
-                        afterDelay: checkCondition?.afterDelay ?? 0,
-                      })
-                    );
-
-                    if (checkCondition?.customEvent != null) {
-                      store.dispatch(
-                        updateState({
-                          afterDelay:
-                            checkCondition?.customEvent?.delayInSeconds ?? 0,
-                        })
-                      );
-                    }
-                  }
-                  return setAppearance(
-                    responseJson,
-                    screen,
-                    state.domainName,
-                    state.traceId,
-                    state.variables
-                  ).then(() => {
-                    return { valid: true };
-                  });
+                  throw new Error(responseJson?.reason.toString());
+                } else {
+                  throw new Error(`Received status code ${response.status}`);
                 }
-              } else {
-                return { valid: false };
+              } catch (error: any) {
+                throw new Error(error.message);
               }
-            } catch (error) {
-              console.error('Error:', error);
-              return { valid: false };
             }
           }
         }
       }
+      throw new Error('');
+    } else {
+      throw new Error('');
     }
-    return { valid: false };
-  } else {
-    return { valid: false };
+  } catch (error: any) {
+    return { valid: false, error: error.message };
   }
 };

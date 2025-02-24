@@ -18,13 +18,17 @@ export const trackScreen = async (screen: string) => {
   try {
     const response = await sendTrackScreenRequest(screen);
     if (response.valid) {
-      console.log('TrackScreen Suceeded');
+      console.log('Screen Tracking succeeded.');
       start();
     } else {
-      console.log('TrackScreen Failed');
+      if ('error' in response) {
+        throw new Error(response.error.toString());
+      } else {
+        throw new Error('Tracking failed without an explicit error.');
+      }
     }
-  } catch (error) {
-    console.log('Error in trackScreen: ', error);
+  } catch (error: any) {
+    console.log(`Screen Tracking Failed. ${error.message}`);
   }
 };
 
@@ -32,22 +36,26 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
   try {
     const response = await sendTrackEventRequest(screen, event);
     if (response.valid) {
+      console.log('TrackEvent succeeded.');
       start();
-      console.log('TrackEvent Suceeded');
     } else {
-      console.log('TrackEvent Failed');
+      if ('error' in response) {
+        throw new Error(response.error.toString());
+      } else {
+        throw new Error('Tracking failed without an explicit error.');
+      }
     }
-  } catch (error) {
-    console.log('Error in trackEvent: ', error);
+  } catch (error: any) {
+    console.log(`Event Tracking Failed. ${error.message}`);
   }
 };
 
 export const initializeSpotChecks = ({
   domainName,
   targetToken,
-  userDetails,
-  variables,
-  customProperties,
+  userDetails = {},
+  variables = {},
+  customProperties = {},
 }: SpotcheckProps) => {
   store.dispatch(
     updateState({
