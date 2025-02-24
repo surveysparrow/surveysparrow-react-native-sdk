@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   StatusBar,
   Keyboard,
+  SafeAreaView,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -24,7 +25,6 @@ import {
 } from './HelperFunctions';
 import axios from 'axios';
 import WebView from 'react-native-webview';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
