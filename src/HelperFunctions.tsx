@@ -2,6 +2,7 @@ import axios from 'axios';
 import { store, updateState, type SpotcheckState } from './SpotCheckState';
 import uuid from 'react-native-uuid';
 import { Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 export function generateTraceId() {
   const uuidString = uuid.v4();
@@ -200,22 +201,14 @@ export const handleSurveyEnd = () => {
 
 function getUserAgent() {
   let userAgent = 'Mozilla/5.0 ';
+  const isTabletDevice = DeviceInfo.isTablet();
 
   if (Platform.OS === 'android') {
-    userAgent +=
-      '(Linux; Android ' +
-      Platform.Version +
-      '; Mobile) ' +
-      'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36';
+    userAgent += `(Linux; Android ${Platform.Version}; ${isTabletDevice ? 'Tablet' : 'Mobile'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36`;
   } else if (Platform.OS === 'ios') {
-    userAgent +=
-      '(iPhone; CPU iPhone OS ' +
-      Platform.Version.toString().replace(/\./g, '_') +
-      ' like Mac OS X) ' +
-      'AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/537.36';
+    userAgent += `(${isTabletDevice ? 'iPad' : 'iPhone'}; CPU iOS ${Platform.Version.toString().replace(/\./g, '_')} like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/537.36`;
   }
 
-  console.log(userAgent);
   return userAgent;
 }
 
