@@ -135,6 +135,8 @@ export const setAppearance = async (
 
         if (!isLoading) {
           injectJavaScript();
+          start();
+          return true;
         } else {
           const unsubscribe = store.subscribe(() => {
             const {
@@ -150,14 +152,16 @@ export const setAppearance = async (
                 ? chatWebViewRef
                 : classicWebViewRef
               )?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+              start();
+              return true;
             }
           });
         }
       } else {
-        console.warn('WebView reference is not available');
+        throw new Error('WebView reference is not available');
       }
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      throw new Error(error.message);
     }
   }
 };

@@ -9,11 +9,13 @@ import type { TrackEventProps } from './Types';
 export const sendTrackScreenRequest = async (screen: string) => {
   try {
     const state = store.getState().spotcheck;
+
     if (!state) {
       throw new Error('Failed to retrieve state.');
     }
 
     let traceId = state.traceId;
+    let { isSpotPassed, isChecksPassed } = state;
     if (!traceId) {
       traceId = generateTraceId();
       store.dispatch(updateState({ traceId }));
@@ -67,21 +69,24 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
       if (responseJson?.show) {
         if (responseJson?.show) {
-          await setAppearance(
+          const appearance_response = await setAppearance(
             responseJson,
             screen,
             state.domainName,
             traceId,
             state.variables
           );
-          store.dispatch(updateState({ isSpotPassed: true }));
-          return { valid: true };
+          if (appearance_response) {
+            isSpotPassed = true;
+            store.dispatch(updateState({ isSpotPassed: true }));
+            return { valid: true };
+          }
         } else {
           throw new Error('');
         }
       }
 
-      if (!state.isSpotPassed && responseJson?.checkPassed) {
+      if (!isSpotPassed && responseJson?.checkPassed) {
         if (responseJson.checkCondition) {
           const checkCondition = responseJson.checkCondition;
           store.dispatch(
@@ -95,22 +100,21 @@ export const sendTrackScreenRequest = async (screen: string) => {
           }
         }
 
-        await setAppearance(
+        const appearance_response = await setAppearance(
           responseJson,
           screen,
           state.domainName,
           traceId,
           state.variables
         );
-        store.dispatch(updateState({ isChecksPassed: true }));
-        return { valid: true };
+        if (appearance_response) {
+          isChecksPassed = true;
+          store.dispatch(updateState({ isChecksPassed: true }));
+          return { valid: true };
+        }
       }
 
-      if (
-        !state.isSpotPassed &&
-        !state.isChecksPassed &&
-        responseJson?.multiShow != null
-      ) {
+      if (!isSpotPassed && !isChecksPassed && responseJson?.multiShow != null) {
         if (responseJson.multiShow) {
           store.dispatch(
             updateState({
@@ -137,14 +141,16 @@ export const sendTrackScreenRequest = async (screen: string) => {
 
           if (Object.keys(selectedSpotCheck).length > 0) {
             store.dispatch(updateState({ afterDelay: minDelay }));
-            await setAppearance(
+            const appearance_response = await setAppearance(
               selectedSpotCheck,
               screen,
               state.domainName,
               traceId,
               state.variables
             );
-            return { valid: true };
+            if (appearance_response) {
+              return { valid: true };
+            }
           }
         }
       }
@@ -228,17 +234,19 @@ export const sendTrackEventRequest = async (
                   console.log(responseJson.reason);
                   if (responseJson?.show != null) {
                     if (responseJson?.show) {
-                      return setAppearance(
+                      const appearance_response = await setAppearance(
                         responseJson,
                         screen,
                         state.domainName,
                         state.traceId,
                         state.variables
-                      ).then(() => {
+                      );
+
+                      if (appearance_response) {
                         store.dispatch(updateState({ isSpotPassed: true }));
                         isSpotPassed = true;
                         return { valid: true };
-                      });
+                      }
                     }
                   }
 
@@ -260,15 +268,18 @@ export const sendTrackEventRequest = async (
                         );
                       }
                     }
-                    return setAppearance(
+
+                    const appearance_response = await setAppearance(
                       responseJson,
                       screen,
                       state.domainName,
                       state.traceId,
                       state.variables
-                    ).then(() => {
+                    );
+
+                    if (appearance_response) {
                       return { valid: true };
-                    });
+                    }
                   }
 
                   throw new Error(responseJson?.reason.toString());
