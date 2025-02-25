@@ -154,9 +154,9 @@ export const setAppearance = async (
                   : classicWebViewRef
                 )?.current.injectJavaScript(INJECTED_JAVASCRIPT);
                 start();
-                return true;
               }
             });
+            return true;
           }
         } else {
           throw new Error('WebView reference is not available');
@@ -164,8 +164,6 @@ export const setAppearance = async (
       } catch (error: any) {
         throw new Error(error.message);
       }
-
-      throw new Error('');
     }
     throw new Error('');
   } catch (error: any) {
