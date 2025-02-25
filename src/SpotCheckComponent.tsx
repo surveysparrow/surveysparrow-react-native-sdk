@@ -8,7 +8,6 @@ import {
   PermissionsAndroid,
   Platform,
   KeyboardAvoidingView,
-  StatusBar,
   Keyboard,
   SafeAreaView,
 } from 'react-native';

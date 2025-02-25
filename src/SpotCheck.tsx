@@ -4,7 +4,6 @@ import { store, updateState } from './SpotCheckState';
 import type { SpotcheckProps, TrackEventProps } from './Types';
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
-import { start } from './HelperFunctions';
 
 const Spotcheck: React.FC = () => {
   return (
