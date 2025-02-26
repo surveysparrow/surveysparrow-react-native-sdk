@@ -4,7 +4,6 @@ import { store, updateState } from './SpotCheckState';
 import type { SpotcheckProps, TrackEventProps } from './Types';
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
-import { start } from './HelperFunctions';
 
 const Spotcheck: React.FC = () => {
   return (
@@ -19,7 +18,6 @@ export const trackScreen = async (screen: string) => {
     const response = await sendTrackScreenRequest(screen);
     if (response.valid) {
       console.log('Screen Tracking succeeded.');
-      start();
     } else {
       if ('error' in response) {
         throw new Error(response.error.toString());
@@ -37,7 +35,6 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
     const response = await sendTrackEventRequest(screen, event);
     if (response.valid) {
       console.log('TrackEvent succeeded.');
-      start();
     } else {
       if ('error' in response) {
         throw new Error(response.error.toString());

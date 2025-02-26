@@ -17,148 +17,157 @@ export const setAppearance = async (
   traceId: string,
   variables: Record<string, any>
 ) => {
-  if (responseJson) {
-    const currentSpotcheck = store
-      .getState()
-      .spotcheck.filteredSpotChecks.find(
-        (spotcheck) =>
-          spotcheck.id === responseJson?.spotCheckId ||
-          spotcheck.id === responseJson?.id
-      );
+  try {
+    if (responseJson) {
+      const currentSpotcheck = store
+        .getState()
+        .spotcheck.filteredSpotChecks.find(
+          (spotcheck) =>
+            spotcheck.id === responseJson?.spotCheckId ||
+            spotcheck.id === responseJson?.id
+        );
 
-    const appearance = responseJson?.appearance;
-    let chat = false;
+      const appearance = responseJson?.appearance;
+      let chat = false;
 
-    let updatedState: Partial<SpotcheckState> = {};
+      let updatedState: Partial<SpotcheckState> = {};
 
-    if (appearance) {
-      const {
-        position,
-        closeButton,
-        colors,
-        cardProperties,
-        mode,
-        bannerImage,
-      } = appearance;
-      const { maxHeight } = cardProperties || {};
+      if (appearance) {
+        const {
+          position,
+          closeButton,
+          colors,
+          cardProperties,
+          mode,
+          bannerImage,
+        } = appearance;
+        const { maxHeight } = cardProperties || {};
 
-      updatedState = {
-        spotcheckPosition:
-          position === 'top_full'
-            ? 'top'
-            : position === 'center_center'
-              ? 'center'
-              : 'bottom',
-        isCloseButtonEnabled: closeButton ?? true,
-        closeButtonStyle: colors?.overrides ?? {},
-        maxHeight: maxHeight ? parseFloat(maxHeight) / 100 : 0,
-        spotCheckType:
-          ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
-          mode === 'fullScreen'
-            ? 'chat'
-            : 'classic',
-        isFullScreenMode: mode === 'fullScreen',
-        isBannerImageOn: bannerImage?.enabled ?? false,
-      };
-
-      chat = updatedState.spotCheckType === 'chat';
-    }
-
-    const spotCheckId = responseJson?.spotCheckId ?? 0;
-    const spotCheckContactId =
-      responseJson?.spotCheckContactId ??
-      responseJson?.spotCheckContact?.id ??
-      0;
-    const triggerToken = responseJson?.triggerToken ?? '';
-
-    updatedState = {
-      ...updatedState,
-      spotcheckID: spotCheckId,
-      spotcheckContactID: spotCheckContactId,
-      triggerToken,
-    };
-
-    const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${chat ? 'config' : 'bootstrap'}?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}`;
-
-    let fullSpotcheckURL = baseSpotcheckURL;
-    Object.entries(variables).forEach(([key, value]) => {
-      fullSpotcheckURL += `&${key}=${value}`;
-    });
-
-    updatedState.spotcheckURL = fullSpotcheckURL;
-
-    store.dispatch(updateState(updatedState));
-
-    try {
-      const response = await axios.get(fullSpotcheckURL, {
-        headers: {
-          'User-Agent': getUserAgent(),
-        },
-      });
-      const themeInfo = response.data.config.generatedCSS;
-      const theme_payload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
-
-      const webViewRef = chat
-        ? store.getState().spotcheck.chatWebViewRef
-        : store.getState().spotcheck.classicWebViewRef;
-      const isLoading = chat
-        ? store.getState().spotcheck.isChatLoading
-        : store.getState().spotcheck.isClassicLoading;
-
-      if (webViewRef) {
-        const payload = {
-          type: 'RESET_STATE',
-          state: {
-            ...(response.data || {}),
-            skip: true,
-            spotCheckAppearance: {
-              ...(appearance || {}),
-              targetType: 'MOBILE',
-            },
-            spotcheckUrl: screen,
-            traceId,
-            elementBuilderParams: {
-              ...(variables || {}),
-            },
-          },
+        updatedState = {
+          spotcheckPosition:
+            position === 'top_full'
+              ? 'top'
+              : position === 'center_center'
+                ? 'center'
+                : 'bottom',
+          isCloseButtonEnabled: closeButton ?? true,
+          closeButtonStyle: colors?.overrides ?? {},
+          maxHeight: maxHeight ? parseFloat(maxHeight) / 100 : 0,
+          spotCheckType:
+            ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
+            mode === 'fullScreen'
+              ? 'chat'
+              : 'classic',
+          isFullScreenMode: mode === 'fullScreen',
+          isBannerImageOn: bannerImage?.enabled ?? false,
         };
 
-        const INJECTED_JAVASCRIPT = `
+        chat = updatedState.spotCheckType === 'chat';
+      }
+
+      const spotCheckId = responseJson?.spotCheckId ?? 0;
+      const spotCheckContactId =
+        responseJson?.spotCheckContactId ??
+        responseJson?.spotCheckContact?.id ??
+        0;
+      const triggerToken = responseJson?.triggerToken ?? '';
+
+      updatedState = {
+        ...updatedState,
+        spotcheckID: spotCheckId,
+        spotcheckContactID: spotCheckContactId,
+        triggerToken,
+      };
+
+      const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${chat ? 'config' : 'bootstrap'}?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}`;
+
+      let fullSpotcheckURL = baseSpotcheckURL;
+      Object.entries(variables).forEach(([key, value]) => {
+        fullSpotcheckURL += `&${key}=${value}`;
+      });
+
+      updatedState.spotcheckURL = fullSpotcheckURL;
+
+      store.dispatch(updateState(updatedState));
+
+      try {
+        const response = await axios.get(fullSpotcheckURL, {
+          headers: {
+            'User-Agent': getUserAgent(),
+          },
+        });
+        const themeInfo = response.data.config.generatedCSS;
+        const theme_payload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
+
+        const webViewRef = chat
+          ? store.getState().spotcheck.chatWebViewRef
+          : store.getState().spotcheck.classicWebViewRef;
+        const isLoading = chat
+          ? store.getState().spotcheck.isChatLoading
+          : store.getState().spotcheck.isClassicLoading;
+
+        if (webViewRef) {
+          const payload = {
+            type: 'RESET_STATE',
+            state: {
+              ...(response.data || {}),
+              skip: true,
+              spotCheckAppearance: {
+                ...(appearance || {}),
+                targetType: 'MOBILE',
+              },
+              spotcheckUrl: screen,
+              traceId,
+              elementBuilderParams: {
+                ...(variables || {}),
+              },
+            },
+          };
+
+          const INJECTED_JAVASCRIPT = `
           (function() {
             window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(payload)} }));
             window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(theme_payload)} }));
           })();
         `;
 
-        const injectJavaScript = () =>
-          webViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+          const injectJavaScript = () =>
+            webViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
 
-        if (!isLoading) {
-          injectJavaScript();
+          if (!isLoading) {
+            injectJavaScript();
+            start();
+            return true;
+          } else {
+            const unsubscribe = store.subscribe(() => {
+              const {
+                isChatLoading,
+                isClassicLoading,
+                chatWebViewRef,
+                classicWebViewRef,
+              } = store.getState().spotcheck;
+
+              if (!(isChatLoading || isClassicLoading)) {
+                unsubscribe();
+                (chat
+                  ? chatWebViewRef
+                  : classicWebViewRef
+                )?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+                start();
+              }
+            });
+            return true;
+          }
         } else {
-          const unsubscribe = store.subscribe(() => {
-            const {
-              isChatLoading,
-              isClassicLoading,
-              chatWebViewRef,
-              classicWebViewRef,
-            } = store.getState().spotcheck;
-
-            if (!(isChatLoading || isClassicLoading)) {
-              unsubscribe();
-              (chat
-                ? chatWebViewRef
-                : classicWebViewRef
-              )?.current.injectJavaScript(INJECTED_JAVASCRIPT);
-            }
-          });
+          throw new Error('WebView reference is not available');
         }
-      } else {
-        console.warn('WebView reference is not available');
+      } catch (error: any) {
+        throw new Error(error.message);
       }
-    } catch (error) {
-      console.log(error);
     }
+    throw new Error('');
+  } catch (error: any) {
+    throw new Error(error.message);
   }
 };
 

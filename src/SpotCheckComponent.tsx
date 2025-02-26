@@ -8,8 +8,8 @@ import {
   PermissionsAndroid,
   Platform,
   KeyboardAvoidingView,
-  StatusBar,
   Keyboard,
+  SafeAreaView,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -24,7 +24,6 @@ import {
 } from './HelperFunctions';
 import axios from 'axios';
 import WebView from 'react-native-webview';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -103,10 +102,7 @@ export const SpotcheckComponent: React.FC = () => {
             : style.nothing
       }
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'android' ? 'height' : 'padding'}
-        enabled
-      >
+      <KeyboardAvoidingView behavior="padding" enabled>
         {spotcheck.isCloseButtonEnabled &&
           ((spotcheck.currentQuestionHeight > 0 &&
             !spotcheck.isFullScreenMode) ||
@@ -208,7 +204,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
 }) => {
   const dispatch = useDispatch();
   const spotchecks = useSelector((state: RootState) => state.spotcheck);
-  const [iosWebviewScroll, setIosWebviewScroll] = useState<boolean>(true);
+  const [WebviewScroll, setWebviewScroll] = useState<boolean>(true);
   const webViewRef = useRef(null);
   const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
     Dimensions.get('window')
@@ -216,11 +212,11 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
 
   useEffect(() => {
     Keyboard.addListener('keyboardWillShow', () => {
-      setIosWebviewScroll(false);
+      setWebviewScroll(false);
     });
     Keyboard.addListener('keyboardWillHide', () => {
-      setIosWebviewScroll(true);
-      setIosWebviewScroll(false);
+      setWebviewScroll(true);
+      setWebviewScroll(false);
     });
   }, []);
 
@@ -313,7 +309,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       }}
     >
       <WebView
-        scrollEnabled={iosWebviewScroll}
+        scrollEnabled={WebviewScroll}
         ref={webViewRef}
         source={{ uri: url }}
         javaScriptEnabled={true}
@@ -390,7 +386,6 @@ const style = StyleSheet.create({
     left: 0,
     right: 0,
     top: 0,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     position: 'absolute',
     zIndex: 999999,
     backgroundColor: 'rgba(0,0,0,0.33)',
