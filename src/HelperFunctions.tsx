@@ -91,9 +91,10 @@ export const setAppearance = async (
       store.dispatch(updateState(updatedState));
 
       try {
+        const userAgent = await getUserAgent();
         const response = await axios.get(fullSpotcheckURL, {
           headers: {
-            'User-Agent': getUserAgent(),
+            'User-Agent': userAgent,
           },
         });
         const themeInfo = response.data.config.generatedCSS;
@@ -208,14 +209,14 @@ export const handleSurveyEnd = () => {
     `);
 };
 
-function getUserAgent() {
+async function getUserAgent() {
   let userAgent = 'Mozilla/5.0 ';
   const isTabletDevice = DeviceInfo.isTablet();
 
   if (Platform.OS === 'android') {
     userAgent += `(Linux; Android ${Platform.Version}; ${isTabletDevice ? 'Tablet' : 'Mobile'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36`;
   } else if (Platform.OS === 'ios') {
-    userAgent += `(${isTabletDevice ? 'iPad' : 'iPhone'}; CPU iOS ${Platform.Version.toString().replace(/\./g, '_')} like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/537.36`;
+    userAgent += `(${await DeviceInfo.getDeviceName()} - ${DeviceInfo.getModel()} CPU iOS ${Platform.Version.toString().replace(/\./g, '_')} like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/537.36`;
   }
 
   return userAgent;

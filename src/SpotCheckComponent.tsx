@@ -337,11 +337,28 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
             })
           );
         }}
-        injectedJavaScript={`window.flutterSpotCheckData = {
-          postMessage: function(data) {
-            window.ReactNativeWebView.postMessage(data);
-          }
-        };`}
+        injectedJavaScript={`
+          (function() {
+          
+            const observer = new MutationObserver((mutations, obs) => {
+              const input = document.querySelector(".ss-language-selector__select__input input");
+              if (input) {
+                input.setAttribute("readonly", true);
+              }
+            });
+        
+            observer.observe(document.body, {
+              childList: true,
+              subtree: true
+            });
+          })();
+        
+          window.flutterSpotCheckData = {
+            postMessage: function(data) {
+              window.ReactNativeWebView.postMessage(data);
+            }
+          };
+        `}
       />
     </View>
   );
