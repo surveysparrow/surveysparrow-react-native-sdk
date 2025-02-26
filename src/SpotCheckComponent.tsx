@@ -102,10 +102,7 @@ export const SpotcheckComponent: React.FC = () => {
             : style.nothing
       }
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'android' ? 'height' : 'padding'}
-        enabled
-      >
+      <KeyboardAvoidingView behavior="padding" enabled>
         {spotcheck.isCloseButtonEnabled &&
           ((spotcheck.currentQuestionHeight > 0 &&
             !spotcheck.isFullScreenMode) ||
@@ -207,7 +204,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
 }) => {
   const dispatch = useDispatch();
   const spotchecks = useSelector((state: RootState) => state.spotcheck);
-  const [iosWebviewScroll, setIosWebviewScroll] = useState<boolean>(true);
+  const [WebviewScroll, setWebviewScroll] = useState<boolean>(true);
   const webViewRef = useRef(null);
   const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
     Dimensions.get('window')
@@ -215,11 +212,11 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
 
   useEffect(() => {
     Keyboard.addListener('keyboardWillShow', () => {
-      setIosWebviewScroll(false);
+      setWebviewScroll(false);
     });
     Keyboard.addListener('keyboardWillHide', () => {
-      setIosWebviewScroll(true);
-      setIosWebviewScroll(false);
+      setWebviewScroll(true);
+      setWebviewScroll(false);
     });
   }, []);
 
@@ -312,7 +309,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       }}
     >
       <WebView
-        scrollEnabled={iosWebviewScroll}
+        scrollEnabled={WebviewScroll}
         ref={webViewRef}
         source={{ uri: url }}
         javaScriptEnabled={true}
