@@ -287,15 +287,15 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         width: width,
         height: !spotchecks.isFullScreenMode
           ? Math.min(
-              height,
+              height * 0.9,
               Math.min(
                 spotchecks.currentQuestionHeight,
-                spotchecks.maxHeight * height
+                spotchecks.maxHeight * (height * 0.9)
               ) +
                 (spotchecks.isBannerImageOn &&
                 spotchecks.currentQuestionHeight !== 0
                   ? Math.min(width, height) < 600
-                    ? 250
+                    ? 100
                     : 0
                   : 0)
             )
@@ -309,7 +309,10 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       }}
     >
       <WebView
-        scrollEnabled={WebviewScroll}
+        {...(spotchecks.isFullScreenMode ||
+        spotchecks.spotcheckPosition === 'top'
+          ? {}
+          : { scrollEnabled: WebviewScroll })}
         ref={webViewRef}
         source={{ uri: url }}
         javaScriptEnabled={true}
