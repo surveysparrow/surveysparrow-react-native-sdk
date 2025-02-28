@@ -309,10 +309,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       }}
     >
       <WebView
-        {...(spotchecks.isFullScreenMode ||
-        spotchecks.spotcheckPosition === 'top'
-          ? {}
-          : { scrollEnabled: WebviewScroll })}
+        scrollEnabled={WebviewScroll}
         ref={webViewRef}
         source={{ uri: url }}
         javaScriptEnabled={true}
