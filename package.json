@@ -1,6 +1,6 @@
 {
   "name": "surveysparrow-react-native-sdk",
-  "version": "0.2.1-beta.24",
+  "version": "0.2.1-beta.25",
   "description": "SurveySparrow React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",

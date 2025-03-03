@@ -7,7 +7,6 @@ import {
   type ScaledSize,
   PermissionsAndroid,
   Platform,
-  KeyboardAvoidingView,
   Keyboard,
   SafeAreaView,
 } from 'react-native';
@@ -28,6 +27,9 @@ import WebView from 'react-native-webview';
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
+  const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
+    Dimensions.get('window')
+  );
 
   useEffect(() => {
     const initializeWidget = async () => {
@@ -86,23 +88,102 @@ export const SpotcheckComponent: React.FC = () => {
     initializeWidget();
   }, [spotcheck.domainName, spotcheck.targetToken]);
 
+  useEffect(() => {
+    const onChange = ({ window }: { window: ScaledSize }) => {
+      setScreenDimensions(window);
+    };
+
+    const subscription = Dimensions.addEventListener('change', onChange);
+
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
+
+  const { width, height } = screenDimensions;
+
   return (
     <SafeAreaView
       style={
         spotcheck.isFullScreenMode && spotcheck.isVisible
-          ? style.fullScreenMode
+          ? {
+              flex: 1,
+              top: Math.min(
+                -spotcheck.keyBoardHeight +
+                  (spotcheck.keyBoardHeight > 0
+                    ? height - spotcheck.textPosition - 100
+                    : 0),
+                0
+              ),
+              position: 'absolute',
+              zIndex: 999999,
+              backgroundColor: 'rgba(0,0,0,0.33)',
+              height: '100%',
+            }
           : spotcheck.isVisible && spotcheck.isMounted
             ? spotcheck.spotcheckPosition === 'bottom'
-              ? style.bottom
+              ? {
+                  flex: 1,
+                  top:
+                    spotcheck.keyBoardHeight > 0 &&
+                    spotcheck.currentQuestionHeight
+                      ? -spotcheck.keyBoardHeight
+                      : 0,
+                  position: 'absolute',
+                  zIndex: 999999,
+                  backgroundColor: 'rgba(0,0,0,0.33)',
+                  height: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                  flexDirection: 'column',
+                }
               : spotcheck.spotcheckPosition === 'top'
-                ? style.top
+                ? {
+                    flex: 1,
+
+                    top: Math.min(
+                      -spotcheck.keyBoardHeight +
+                        (spotcheck.keyBoardHeight > 0 &&
+                        spotcheck.currentQuestionHeight
+                          ? height - spotcheck.screenHeight
+                          : 0),
+                      0
+                    ),
+
+                    position: 'absolute',
+                    zIndex: 999999,
+                    backgroundColor: 'rgba(0,0,0,0.33)',
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    flexDirection: 'column',
+                  }
                 : spotcheck.spotcheckPosition === 'center'
-                  ? style.center
+                  ? {
+                      flex: 1,
+                      position: 'absolute',
+                      zIndex: 999999,
+                      top: Math.min(
+                        -spotcheck.keyBoardHeight +
+                          (spotcheck.keyBoardHeight > 0 &&
+                          spotcheck.currentQuestionHeight
+                            ? height - spotcheck.screenHeight
+                            : 0) /
+                            2,
+                        0
+                      ),
+
+                      backgroundColor: 'rgba(0,0,0,0.33)',
+                      height: '100%',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'column',
+                    }
                   : style.nothing
             : style.nothing
       }
     >
-      <KeyboardAvoidingView behavior="padding" enabled>
+      <View>
         {spotcheck.isCloseButtonEnabled &&
           ((spotcheck.currentQuestionHeight > 0 &&
             !spotcheck.isFullScreenMode) ||
@@ -165,6 +246,8 @@ export const SpotcheckComponent: React.FC = () => {
             <WebViewComponents
               webviewType="classic"
               url={spotcheck.classicUrl}
+              height={height}
+              width={width}
             />
           </View>
         )}
@@ -185,10 +268,15 @@ export const SpotcheckComponent: React.FC = () => {
                   }
             }
           >
-            <WebViewComponents webviewType="chat" url={spotcheck.chatUrl} />
+            <WebViewComponents
+              webviewType="chat"
+              url={spotcheck.chatUrl}
+              height={height}
+              width={width}
+            />
           </View>
         )}
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -196,43 +284,35 @@ export const SpotcheckComponent: React.FC = () => {
 interface WebViewComponentProps {
   webviewType: 'classic' | 'chat';
   url: string;
+  height: number;
+  width: number;
 }
 
 const WebViewComponents: React.FC<WebViewComponentProps> = ({
   webviewType,
   url,
+  height,
+  width,
 }) => {
   const dispatch = useDispatch();
   const spotchecks = useSelector((state: RootState) => state.spotcheck);
   const [WebviewScroll, setWebviewScroll] = useState<boolean>(true);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState<boolean>(false);
   const webViewRef = useRef(null);
-  const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
-    Dimensions.get('window')
-  );
 
   useEffect(() => {
-    Keyboard.addListener('keyboardWillShow', () => {
+    Keyboard.addListener('keyboardWillShow', (event) => {
+      dispatch(updateState({ keyBoardHeight: event.endCoordinates.height }));
+      setIsKeyboardOpen(true);
       setWebviewScroll(false);
     });
     Keyboard.addListener('keyboardWillHide', () => {
+      dispatch(updateState({ keyBoardHeight: 0 }));
+      setIsKeyboardOpen(false);
       setWebviewScroll(true);
       setWebviewScroll(false);
     });
   }, []);
-
-  useEffect(() => {
-    const onChange = ({ window }: { window: ScaledSize }) => {
-      setScreenDimensions(window);
-    };
-
-    const subscription = Dimensions.addEventListener('change', onChange);
-
-    return () => {
-      subscription?.remove();
-    };
-  }, []);
-
-  const { width, height } = screenDimensions;
 
   useEffect(() => {
     if (webViewRef.current) {
@@ -259,6 +339,28 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
                   jsonResponse.data.currentQuestionSize.height,
               })
             );
+
+            const data_height = !spotchecks.isFullScreenMode
+              ? Math.min(
+                  height * 0.9,
+                  Math.min(
+                    spotchecks.currentQuestionHeight,
+                    spotchecks.maxHeight * (height * 0.9)
+                  ) +
+                    (spotchecks.isBannerImageOn &&
+                    spotchecks.currentQuestionHeight !== 0
+                      ? Math.min(width, height) < 600
+                        ? 100
+                        : 0
+                      : 0)
+                )
+              : height;
+
+            dispatch(
+              updateState({
+                screenHeight: data_height,
+              })
+            );
           } else if (jsonResponse.data.isCloseButtonEnabled) {
             dispatch(
               updateState({
@@ -274,6 +376,10 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
           jsonResponse?.data.mounted
         ) {
           dispatch(updateState({ isMounted: true }));
+        } else if (jsonResponse.type === 'position') {
+          if (isKeyboardOpen) {
+            dispatch(updateState({ textPosition: jsonResponse.y }));
+          }
         }
       }
     } catch (e) {
@@ -338,6 +444,22 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
           );
         }}
         injectedJavaScript={`
+
+            document.addEventListener('focusin', function(event) {
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+              var rect = event.target.getBoundingClientRect();
+              var yPosition = rect.y + window.scrollY;
+
+              var webViewHeight = window.innerHeight;
+              var scaledY = (yPosition / webViewHeight) * ${height}; 
+
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'position',
+                y: scaledY
+              }));
+            }
+          });
+
           (function() {
           
             const observer = new MutationObserver((mutations, obs) => {
@@ -358,6 +480,8 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
               window.ReactNativeWebView.postMessage(data);
             }
           };
+
+
         `}
       />
     </View>
@@ -365,30 +489,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
 };
 
 const style = StyleSheet.create({
-  fullScreenMode: {
-    flex: 1,
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    right: 0,
-    left: 0,
-    zIndex: 999999,
-    backgroundColor: 'rgba(0,0,0,0.33)',
-    height: '100%',
-  },
-  bottom: {
-    flex: 1,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    position: 'absolute',
-    zIndex: 999999,
-    backgroundColor: 'rgba(0,0,0,0.33)',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    flexDirection: 'column',
-  },
   nothing: {
     left: '-100%',
     right: '-100%',
@@ -396,33 +496,6 @@ const style = StyleSheet.create({
     height: 1,
     position: 'absolute',
     zIndex: 1,
-  },
-
-  top: {
-    flex: 1,
-    left: 0,
-    right: 0,
-    top: 0,
-    position: 'absolute',
-    zIndex: 999999,
-    backgroundColor: 'rgba(0,0,0,0.33)',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'column',
-  },
-
-  center: {
-    flex: 1,
-    left: 0,
-    right: 0,
-    position: 'absolute',
-    zIndex: 999999,
-    backgroundColor: 'rgba(0,0,0,0.33)',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
   },
 
   closeButtonContainer: {
@@ -433,6 +506,7 @@ const style = StyleSheet.create({
     height: 20,
     width: 20,
   },
+
   closeButtonOverlay: {
     justifyContent: 'center',
     top: 5,

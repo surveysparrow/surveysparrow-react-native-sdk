@@ -33,6 +33,9 @@ export interface SpotcheckState {
   filteredSpotChecks: Record<string, any>[];
   spotCheckType: String;
   isMounted: boolean;
+  textPosition: number;
+  screenHeight: number;
+  keyBoardHeight: number;
 }
 
 const initialState: SpotcheckState = {
@@ -67,6 +70,9 @@ const initialState: SpotcheckState = {
   filteredSpotChecks: [],
   spotCheckType: '',
   isMounted: false,
+  textPosition: 0,
+  screenHeight: 0,
+  keyBoardHeight: 0,
 };
 
 const spotcheckSlice = createSlice({

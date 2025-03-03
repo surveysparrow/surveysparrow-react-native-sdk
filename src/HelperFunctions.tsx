@@ -191,6 +191,9 @@ export const handleSurveyEnd = () => {
     spotcheckPosition: 'bottom',
     isMounted: false,
     spotCheckType: '',
+    screenHeight: 0,
+    keyBoardHeight: 0,
+    textPosition: 0,
   };
 
   store.dispatch(updateState(updatedState));
