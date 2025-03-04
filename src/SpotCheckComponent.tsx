@@ -328,7 +328,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         setWebviewScroll(false);
       }
     );
-  }, []);
+  }, [spotchecks.isFullScreenMode, spotchecks.spotcheckPosition]);
 
   useEffect(() => {
     if (webViewRef.current) {
