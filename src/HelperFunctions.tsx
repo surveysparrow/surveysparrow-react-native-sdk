@@ -148,7 +148,7 @@ export const setAppearance = async (
                 classicWebViewRef,
               } = store.getState().spotcheck;
 
-              if (!(isChatLoading || isClassicLoading)) {
+              if ((!isChatLoading && chat) || (!isClassicLoading && !chat)) {
                 unsubscribe();
                 (chat
                   ? chatWebViewRef

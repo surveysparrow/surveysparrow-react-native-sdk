@@ -23,6 +23,7 @@ import {
 } from './HelperFunctions';
 import axios from 'axios';
 import WebView from 'react-native-webview';
+import DeviceInfo from 'react-native-device-info';
 
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -109,16 +110,19 @@ export const SpotcheckComponent: React.FC = () => {
           ? {
               flex: 1,
               top: Math.min(
-                -spotcheck.keyBoardHeight +
-                  (spotcheck.keyBoardHeight > 0
-                    ? height - spotcheck.textPosition - 100
-                    : 0),
+                spotcheck.spotCheckType !== 'chat'
+                  ? -spotcheck.keyBoardHeight +
+                      (spotcheck.keyBoardHeight > 0
+                        ? height - spotcheck.textPosition - 100
+                        : 0)
+                  : -spotcheck.keyBoardHeight,
                 0
               ),
               position: 'absolute',
               zIndex: 999999,
               backgroundColor: 'rgba(0,0,0,0.33)',
               height: '100%',
+
             }
           : spotcheck.isVisible && spotcheck.isMounted
             ? spotcheck.spotcheckPosition === 'bottom'
@@ -301,17 +305,31 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
   const webViewRef = useRef(null);
 
   useEffect(() => {
-    Keyboard.addListener('keyboardWillShow', (event) => {
-      dispatch(updateState({ keyBoardHeight: event.endCoordinates.height }));
-      setIsKeyboardOpen(true);
-      setWebviewScroll(false);
-    });
-    Keyboard.addListener('keyboardWillHide', () => {
-      dispatch(updateState({ keyBoardHeight: 0 }));
-      setIsKeyboardOpen(false);
-      setWebviewScroll(true);
-      setWebviewScroll(false);
-    });
+    Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
+      (event) => {
+        if (
+          Platform.OS === 'ios' ||
+          (Platform.OS === 'android' && spotchecks.isFullScreenMode)
+        ) {
+          dispatch(
+            updateState({ keyBoardHeight: event.endCoordinates.height })
+          );
+        }
+        setIsKeyboardOpen(true);
+        setWebviewScroll(false);
+      }
+    );
+
+    Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide',
+      () => {
+        dispatch(updateState({ keyBoardHeight: 0 }));
+        setIsKeyboardOpen(false);
+        setWebviewScroll(true);
+        setWebviewScroll(false);
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -354,7 +372,11 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
                         : 0
                       : 0)
                 )
-              : height;
+              : Platform.OS === 'ios' && DeviceInfo.hasNotch()
+                ? height * 0.9
+                : Platform.OS === 'ios'
+                  ? height * 0.965
+                  : height * 0.985;
 
             dispatch(
               updateState({
@@ -411,7 +433,11 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
                   : spotchecks.isClassicLoading
               )
             ? 0
-            : height,
+            : Platform.OS === 'ios' && DeviceInfo.hasNotch()
+              ? height * 0.9
+              : Platform.OS === 'ios'
+                ? height * 0.965
+                : height * 0.985,
       }}
     >
       <WebView
