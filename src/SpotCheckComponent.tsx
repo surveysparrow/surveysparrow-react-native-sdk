@@ -110,12 +110,10 @@ export const SpotcheckComponent: React.FC = () => {
           ? {
               flex: 1,
               top: Math.min(
-                spotcheck.spotCheckType !== 'chat'
-                  ? -spotcheck.keyBoardHeight +
-                      (spotcheck.keyBoardHeight > 0
-                        ? height - spotcheck.textPosition - 100
-                        : 0)
-                  : -spotcheck.keyBoardHeight,
+                -spotcheck.keyBoardHeight +
+                     (spotcheck.keyBoardHeight > 0
+                       ? height - spotcheck.textPosition - 100
+                       : 0),
                 0
               ),
               position: 'absolute',
@@ -310,7 +308,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       (event) => {
         if (
           Platform.OS === 'ios' ||
-          (Platform.OS === 'android' && spotchecks.isFullScreenMode)
+          (Platform.OS === 'android' && (spotchecks.isFullScreenMode || spotchecks.spotcheckPosition === "top"))
         ) {
           dispatch(
             updateState({ keyBoardHeight: event.endCoordinates.height })
