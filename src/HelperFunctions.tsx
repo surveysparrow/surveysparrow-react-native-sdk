@@ -179,6 +179,19 @@ export const start = () => {
 };
 
 export const handleSurveyEnd = () => {
+  const webViewRef =
+    store.getState().spotcheck.spotCheckType === 'chat'
+      ? store.getState().spotcheck.chatWebViewRef
+      : store.getState().spotcheck.classicWebViewRef;
+
+  webViewRef?.current?.injectJavaScript(`
+      (function() {
+        window.dispatchEvent(new MessageEvent('message', {
+          data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
+        }));
+      })();
+    `);
+
   const updatedState: Partial<SpotcheckState> = {
     isVisible: false,
     isCloseButtonEnabled: false,
@@ -197,19 +210,6 @@ export const handleSurveyEnd = () => {
   };
 
   store.dispatch(updateState(updatedState));
-
-  const webViewRef =
-    store.getState().spotcheck.spotCheckType === 'chat'
-      ? store.getState().spotcheck.chatWebViewRef
-      : store.getState().spotcheck.classicWebViewRef;
-
-  webViewRef?.current?.injectJavaScript(`
-      (function() {
-        window.dispatchEvent(new MessageEvent('message', {
-          data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
-        }));
-      })();
-    `);
 };
 
 async function getUserAgent() {
