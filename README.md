@@ -3,13 +3,16 @@
 
 
 <br>
+
 # SpotChecks
 
 Introducing Spotchecks in 1.x.x version series. Spotchecks docs is available in [React Native Spotchecks](https://surveysparrow.gitbook.io/spotchecks/how-to-use-spotchecks/mobile-spotchecks/react-native).
 
----
+
 #### Normal SDK Share will be maintained in 0.2.x 
----
+
+<br>
+
 
 ## Features
 1. [Fully customizable pre-build `Full Size View` to take feedback whenever & wherever you want.](#Take-feedback-using-Activity)
