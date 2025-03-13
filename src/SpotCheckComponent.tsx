@@ -9,6 +9,8 @@ import {
   Platform,
   Keyboard,
   SafeAreaView,
+  type ViewStyle,
+  Image,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -50,7 +52,10 @@ export const SpotcheckComponent: React.FC = () => {
             );
 
           response.data.filteredSpotChecks.forEach((spotcheck: any) => {
-            if (spotcheck.appearance.mode === 'card') {
+            if (
+              spotcheck.appearance.mode === 'card' ||
+              spotcheck.appearance.mode === 'miniCard'
+            ) {
               classicIframe = true;
             } else if (
               spotcheck.appearance.mode === 'fullScreen' &&
@@ -103,85 +108,71 @@ export const SpotcheckComponent: React.FC = () => {
 
   const { width, height } = screenDimensions;
 
+  const getTopValue = (baseOffset = 0) =>
+    Math.min(
+      -spotcheck.keyBoardHeight +
+        (spotcheck.keyBoardHeight > 0 && spotcheck.currentQuestionHeight
+          ? height - baseOffset
+          : 0),
+      0
+    );
+
+  const getBaseStyle = (extraStyles: Partial<ViewStyle> = {}): ViewStyle => ({
+    flex: 1,
+    position: 'absolute',
+    zIndex: 999999,
+    backgroundColor: 'rgba(0,0,0,0.33)',
+    height: '100%',
+    width: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    ...extraStyles,
+  });
+
   return (
     <SafeAreaView
       style={
         spotcheck.isFullScreenMode && spotcheck.isVisible
-          ? {
-              flex: 1,
-              top: Math.min(
-                -spotcheck.keyBoardHeight +
-                     (spotcheck.keyBoardHeight > 0
-                       ? height - spotcheck.textPosition - 100
-                       : 0),
-                0
-              ),
-              position: 'absolute',
-              zIndex: 999999,
-              backgroundColor: 'rgba(0,0,0,0.33)',
-              height: '100%',
-
-            }
+          ? getBaseStyle({ top: getTopValue(spotcheck.textPosition + 100) })
           : spotcheck.isVisible && spotcheck.isMounted
-            ? spotcheck.spotcheckPosition === 'bottom'
-              ? {
-                  flex: 1,
+            ? {
+                bottom: getBaseStyle({
                   top:
                     spotcheck.keyBoardHeight > 0 &&
                     spotcheck.currentQuestionHeight
                       ? -spotcheck.keyBoardHeight
                       : 0,
-                  position: 'absolute',
-                  zIndex: 999999,
-                  backgroundColor: 'rgba(0,0,0,0.33)',
-                  height: '100%',
-                  alignItems: 'center',
                   justifyContent: 'flex-end',
-                  flexDirection: 'column',
-                }
-              : spotcheck.spotcheckPosition === 'top'
-                ? {
-                    flex: 1,
-
-                    top: Math.min(
-                      -spotcheck.keyBoardHeight +
-                        (spotcheck.keyBoardHeight > 0 &&
-                        spotcheck.currentQuestionHeight
-                          ? height - spotcheck.screenHeight
-                          : 0),
-                      0
+                }),
+                top: getBaseStyle({
+                  top: Math.min(
+                    getTopValue(
+                      spotcheck.screenHeight +
+                        (spotcheck.avatarEnabled ? 56 : 0) +
+                        (spotcheck.isCloseButtonEnabled &&
+                        spotcheck.spotChecksMode === 'miniCard'
+                          ? 40
+                          : 0)
                     ),
-
-                    position: 'absolute',
-                    zIndex: 999999,
-                    backgroundColor: 'rgba(0,0,0,0.33)',
-                    height: '100%',
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    flexDirection: 'column',
-                  }
-                : spotcheck.spotcheckPosition === 'center'
-                  ? {
-                      flex: 1,
-                      position: 'absolute',
-                      zIndex: 999999,
-                      top: Math.min(
-                        -spotcheck.keyBoardHeight +
-                          (spotcheck.keyBoardHeight > 0 &&
-                          spotcheck.currentQuestionHeight
-                            ? height - spotcheck.screenHeight
-                            : 0) /
-                            2,
-                        0
-                      ),
-
-                      backgroundColor: 'rgba(0,0,0,0.33)',
-                      height: '100%',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexDirection: 'column',
-                    }
-                  : style.nothing
+                    0
+                  ),
+                  justifyContent: 'flex-start',
+                }),
+                center: getBaseStyle({
+                  top: Math.min(
+                    getTopValue(
+                      spotcheck.screenHeight +
+                        (spotcheck.avatarEnabled ? 56 : 0) +
+                        (spotcheck.isCloseButtonEnabled &&
+                        spotcheck.spotChecksMode === 'miniCard'
+                          ? 40
+                          : 0)
+                    ) / 2,
+                    0
+                  ),
+                  justifyContent: 'center',
+                }),
+              }[spotcheck.spotcheckPosition] || style.nothing
             : style.nothing
       }
     >
@@ -204,26 +195,68 @@ export const SpotcheckComponent: React.FC = () => {
                 );
                 handleSurveyEnd();
               }}
-              style={style.closeButtonContainer}
+              style={
+                spotcheck.spotChecksMode === 'miniCard'
+                  ? style.miniCardCloseButtonContainer
+                  : style.closeButtonContainer
+              }
             >
-              <View style={style.closeButtonOverlay}>
+              <View
+                style={
+                  spotcheck.spotChecksMode === 'miniCard'
+                    ? style.miniCardCloseButtonOverlay
+                    : style.closeButtonOverlay
+                }
+              >
                 <View
-                  style={{
-                    position: 'absolute',
-                    width: 18,
-                    height: 1.6,
-                    backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                    transform: [{ rotate: '45deg' }],
-                  }}
+                  style={
+                    spotcheck.spotChecksMode === 'miniCard'
+                      ? {
+                          position: 'absolute',
+                          width: 15,
+                          height: 1.5,
+                          backgroundColor: 'black',
+                          top: '50%',
+                          left: 0,
+                          transform: [
+                            { translateY: -0.75 },
+                            { rotate: '45deg' },
+                          ],
+                        }
+                      : {
+                          position: 'absolute',
+                          width: 18,
+                          height: 1.6,
+                          backgroundColor:
+                            spotcheck.closeButtonStyle?.ctaButton,
+                          transform: [{ rotate: '45deg' }],
+                        }
+                  }
                 />
                 <View
-                  style={{
-                    position: 'absolute',
-                    width: 18,
-                    height: 1.6,
-                    backgroundColor: spotcheck.closeButtonStyle?.ctaButton,
-                    transform: [{ rotate: '-45deg' }],
-                  }}
+                  style={
+                    spotcheck.spotChecksMode === 'miniCard'
+                      ? {
+                          position: 'absolute',
+                          width: 15,
+                          height: 1.5,
+                          backgroundColor: 'black',
+                          top: '50%',
+                          left: 0,
+                          transform: [
+                            { translateY: -0.75 },
+                            { rotate: '-45deg' },
+                          ],
+                        }
+                      : {
+                          position: 'absolute',
+                          width: 18,
+                          height: 1.6,
+                          backgroundColor:
+                            spotcheck.closeButtonStyle?.ctaButton,
+                          transform: [{ rotate: '-45deg' }],
+                        }
+                  }
                 />
               </View>
             </TouchableOpacity>
@@ -278,6 +311,13 @@ export const SpotcheckComponent: React.FC = () => {
             />
           </View>
         )}
+
+        {spotcheck.avatarEnabled && (
+          <Image
+            source={{ uri: spotcheck.avatarUrl }}
+            style={style.avatarContainer}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -306,14 +346,8 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
     Keyboard.addListener(
       Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
       (event) => {
-        if (
-          Platform.OS === 'ios' ||
-          (Platform.OS === 'android' && (spotchecks.isFullScreenMode || spotchecks.spotcheckPosition === "top"))
-        ) {
-          dispatch(
-            updateState({ keyBoardHeight: event.endCoordinates.height })
-          );
-        }
+        dispatch(updateState({ keyBoardHeight: event.endCoordinates.height }));
+
         setIsKeyboardOpen(true);
         setWebviewScroll(false);
       }
@@ -328,7 +362,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         setWebviewScroll(false);
       }
     );
-  }, [spotchecks.isFullScreenMode, spotchecks.spotcheckPosition]);
+  }, []);
 
   useEffect(() => {
     if (webViewRef.current) {
@@ -342,6 +376,64 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
     }
   }, [dispatch, webviewType]);
 
+  useEffect(() => {
+    var data_height = !spotchecks.isFullScreenMode
+      ? Math.min(
+          height * 0.9,
+          Math.min(
+            spotchecks.currentQuestionHeight,
+            spotchecks.maxHeight * (height * 0.9)
+          ) +
+            (spotchecks.isBannerImageOn &&
+            spotchecks.currentQuestionHeight !== 0
+              ? Math.min(width, height) < 600
+                ? 100
+                : 0
+              : 0)
+        )
+      : (
+            webviewType === 'chat'
+              ? spotchecks.isChatLoading
+              : spotchecks.isClassicLoading
+          )
+        ? 0
+        : Platform.OS === 'ios' && DeviceInfo.hasNotch()
+          ? height * 0.9
+          : Platform.OS === 'ios'
+            ? height * 0.965
+            : height * 0.985;
+
+    if (spotchecks.spotChecksMode === 'miniCard' && spotchecks.avatarEnabled) {
+      data_height = data_height - 56;
+    }
+
+    if (
+      spotchecks.spotChecksMode === 'miniCard' &&
+      spotchecks.isCloseButtonEnabled
+    ) {
+      data_height = data_height - 40;
+    }
+
+    dispatch(
+      updateState({
+        screenHeight: data_height,
+      })
+    );
+  }, [
+    height,
+    spotchecks.avatarEnabled,
+    spotchecks.currentQuestionHeight,
+    spotchecks.isBannerImageOn,
+    spotchecks.isChatLoading,
+    spotchecks.isClassicLoading,
+    spotchecks.isCloseButtonEnabled,
+    spotchecks.isFullScreenMode,
+    spotchecks.maxHeight,
+    spotchecks.spotChecksMode,
+    webviewType,
+    width,
+  ]);
+
   const handleOnMessage = async (event: any) => {
     try {
       if (event.nativeEvent?.data !== 'captureImage') {
@@ -353,32 +445,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
               updateState({
                 currentQuestionHeight:
                   jsonResponse.data.currentQuestionSize.height,
-              })
-            );
-
-            const data_height = !spotchecks.isFullScreenMode
-              ? Math.min(
-                  height * 0.9,
-                  Math.min(
-                    spotchecks.currentQuestionHeight,
-                    spotchecks.maxHeight * (height * 0.9)
-                  ) +
-                    (spotchecks.isBannerImageOn &&
-                    spotchecks.currentQuestionHeight !== 0
-                      ? Math.min(width, height) < 600
-                        ? 100
-                        : 0
-                      : 0)
-                )
-              : Platform.OS === 'ios' && DeviceInfo.hasNotch()
-                ? height * 0.9
-                : Platform.OS === 'ios'
-                  ? height * 0.965
-                  : height * 0.985;
-
-            dispatch(
-              updateState({
-                screenHeight: data_height,
               })
             );
           } else if (jsonResponse.data.isCloseButtonEnabled) {
@@ -410,32 +476,11 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
   return (
     <View
       style={{
-        width: width,
-        height: !spotchecks.isFullScreenMode
-          ? Math.min(
-              height * 0.9,
-              Math.min(
-                spotchecks.currentQuestionHeight,
-                spotchecks.maxHeight * (height * 0.9)
-              ) +
-                (spotchecks.isBannerImageOn &&
-                spotchecks.currentQuestionHeight !== 0
-                  ? Math.min(width, height) < 600
-                    ? 100
-                    : 0
-                  : 0)
-            )
-          : (
-                webviewType === 'chat'
-                  ? spotchecks.isChatLoading
-                  : spotchecks.isClassicLoading
-              )
-            ? 0
-            : Platform.OS === 'ios' && DeviceInfo.hasNotch()
-              ? height * 0.9
-              : Platform.OS === 'ios'
-                ? height * 0.965
-                : height * 0.985,
+        width: width - (spotchecks.spotChecksMode === 'miniCard' ? 24 : 0),
+        height: spotchecks.screenHeight,
+        alignSelf: 'center',
+        borderRadius: spotchecks.spotChecksMode === 'miniCard' ? 12 : 0,
+        overflow: 'hidden',
       }}
     >
       <WebView
@@ -531,6 +576,23 @@ const style = StyleSheet.create({
     width: 20,
   },
 
+  miniCardCloseButtonContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    marginVertical: 8,
+
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 10,
+  },
+
   closeButtonOverlay: {
     justifyContent: 'center',
     top: 5,
@@ -541,16 +603,19 @@ const style = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0)',
   },
 
-  progressOverlay: {
-    flex: 1,
-    left: 0,
-    right: 0,
-    position: 'absolute',
-    zIndex: 999999,
-    backgroundColor: 'rgba(0,0,0,0)',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
+  miniCardCloseButtonOverlay: {
+    width: 15,
+    height: 15,
+    position: 'relative',
+  },
+
+  avatarContainer: {
+    position: 'relative',
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    width: 48,
+    height: 48,
+    borderRadius: 26,
+    marginVertical: 8,
   },
 });

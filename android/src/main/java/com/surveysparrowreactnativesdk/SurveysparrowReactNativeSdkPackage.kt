@@ -8,7 +8,8 @@ import com.facebook.react.uimanager.ViewManager
 
 class SurveysparrowReactNativeSdkPackage : ReactPackage {
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-    return listOf(SurveysparrowReactNativeSdkModule(reactContext))
+    return listOf(SurveysparrowReactNativeSdkModule(reactContext),
+    AdjusterModule(reactContext))
   }
 
   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {

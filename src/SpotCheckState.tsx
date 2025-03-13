@@ -36,6 +36,9 @@ export interface SpotcheckState {
   textPosition: number;
   screenHeight: number;
   keyBoardHeight: number;
+  spotChecksMode: string;
+  avatarEnabled: boolean;
+  avatarUrl: string;
 }
 
 const initialState: SpotcheckState = {
@@ -73,6 +76,9 @@ const initialState: SpotcheckState = {
   textPosition: 0,
   screenHeight: 0,
   keyBoardHeight: 0,
+  spotChecksMode: '',
+  avatarEnabled: false,
+  avatarUrl: '',
 };
 
 const spotcheckSlice = createSlice({

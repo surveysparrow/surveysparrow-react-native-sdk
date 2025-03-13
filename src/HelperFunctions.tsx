@@ -1,8 +1,20 @@
 import axios from 'axios';
 import { store, updateState, type SpotcheckState } from './SpotCheckState';
 import uuid from 'react-native-uuid';
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+
+const { AdjusterModule } = NativeModules;
+
+// Function to set SOFT_INPUT_ADJUST_NOTHING
+const disableAdjust = () => {
+  AdjusterModule.setAdjustNothing();
+};
+
+// Function to set SOFT_INPUT_ADJUST_RESIZE
+const enableAdjustResize = () => {
+  AdjusterModule.setAdjustResize();
+};
 
 export function generateTraceId() {
   const uuidString = uuid.v4();
@@ -60,6 +72,9 @@ export const setAppearance = async (
               : 'classic',
           isFullScreenMode: mode === 'fullScreen',
           isBannerImageOn: bannerImage?.enabled ?? false,
+          spotChecksMode: mode,
+          avatarEnabled: appearance?.avatar?.enabled ?? false,
+          avatarUrl: appearance?.avatar?.avatarUrl ?? '',
         };
 
         chat = updatedState.spotCheckType === 'chat';
@@ -100,41 +115,47 @@ export const setAppearance = async (
         const themeInfo = response.data.config.generatedCSS;
         const theme_payload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
 
-        const webViewRef = chat
-          ? store.getState().spotcheck.chatWebViewRef
-          : store.getState().spotcheck.classicWebViewRef;
-        const isLoading = chat
-          ? store.getState().spotcheck.isChatLoading
-          : store.getState().spotcheck.isClassicLoading;
+        const getWebViewRef = () =>
+          chat
+            ? store.getState().spotcheck.chatWebViewRef
+            : store.getState().spotcheck.classicWebViewRef;
 
-        if (webViewRef) {
-          const payload = {
-            type: 'RESET_STATE',
-            state: {
-              ...(response.data || {}),
-              skip: true,
-              spotCheckAppearance: {
-                ...(appearance || {}),
-                targetType: 'MOBILE',
-              },
-              spotcheckUrl: screen,
-              traceId,
-              elementBuilderParams: {
-                ...(variables || {}),
-              },
-            },
-          };
+        const getIsLoading = () =>
+          chat
+            ? store.getState().spotcheck.isChatLoading
+            : store.getState().spotcheck.isClassicLoading;
 
-          const INJECTED_JAVASCRIPT = `
+        let webViewRef = getWebViewRef();
+        let isLoading = getIsLoading();
+
+        const INJECTED_JAVASCRIPT = `
           (function() {
-            window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(payload)} }));
+            window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(
+              {
+                type: 'RESET_STATE',
+                state: {
+                  ...(response.data || {}),
+                  skip: true,
+                  spotCheckAppearance: {
+                    ...(appearance || {}),
+                    targetType: 'MOBILE',
+                  },
+                  spotcheckUrl: screen,
+                  traceId,
+                  elementBuilderParams: {
+                    ...(variables || {}),
+                  },
+                },
+              }
+            )} }));
             window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(theme_payload)} }));
           })();
         `;
 
-          const injectJavaScript = () =>
-            webViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+        const injectJavaScript = () =>
+          webViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
 
+        if (webViewRef) {
           if (!isLoading) {
             injectJavaScript();
             start();
@@ -160,7 +181,17 @@ export const setAppearance = async (
             return true;
           }
         } else {
-          throw new Error('WebView reference is not available');
+          const unsubscribeWebView = store.subscribe(() => {
+            webViewRef = getWebViewRef();
+            if (webViewRef) {
+              if (!getIsLoading()) {
+                unsubscribeWebView();
+                injectJavaScript();
+                start();
+              }
+            }
+          });
+          return true;
         }
       } catch (error: any) {
         throw new Error(error.message);
@@ -175,6 +206,9 @@ export const setAppearance = async (
 export const start = () => {
   setTimeout(async () => {
     store.dispatch(updateState({ isVisible: true }));
+    if (Platform.OS === 'android' && AdjusterModule) {
+      disableAdjust();
+    }
   }, store.getState().spotcheck.afterDelay * 1000);
 };
 
@@ -207,9 +241,16 @@ export const handleSurveyEnd = () => {
     screenHeight: 0,
     keyBoardHeight: 0,
     textPosition: 0,
+    spotChecksMode: '',
+    avatarEnabled: false,
+    avatarUrl: '',
   };
 
   store.dispatch(updateState(updatedState));
+
+  if (Platform.OS === 'android' && AdjusterModule) {
+    enableAdjustResize();
+  }
 };
 
 async function getUserAgent() {
