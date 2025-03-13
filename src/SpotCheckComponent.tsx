@@ -111,7 +111,8 @@ export const SpotcheckComponent: React.FC = () => {
   const getTopValue = (baseOffset = 0) =>
     Math.min(
       -spotcheck.keyBoardHeight +
-        (spotcheck.keyBoardHeight > 0 && spotcheck.currentQuestionHeight
+        (spotcheck.keyBoardHeight > 0 &&
+        (spotcheck.currentQuestionHeight || spotcheck.isFullScreenMode)
           ? height - baseOffset
           : 0),
       0
@@ -133,7 +134,12 @@ export const SpotcheckComponent: React.FC = () => {
     <SafeAreaView
       style={
         spotcheck.isFullScreenMode && spotcheck.isVisible
-          ? getBaseStyle({ top: getTopValue(spotcheck.textPosition + 100) })
+          ? getBaseStyle({
+              top:
+                spotcheck.spotCheckType === 'chat'
+                  ? -spotcheck.keyBoardHeight
+                  : getTopValue(spotcheck.textPosition + 100),
+            })
           : spotcheck.isVisible && spotcheck.isMounted
             ? {
                 bottom: getBaseStyle({
@@ -339,7 +345,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
   const dispatch = useDispatch();
   const spotchecks = useSelector((state: RootState) => state.spotcheck);
   const [WebviewScroll, setWebviewScroll] = useState<boolean>(true);
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState<boolean>(false);
   const webViewRef = useRef(null);
 
   useEffect(() => {
@@ -347,8 +352,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
       (event) => {
         dispatch(updateState({ keyBoardHeight: event.endCoordinates.height }));
-
-        setIsKeyboardOpen(true);
         setWebviewScroll(false);
       }
     );
@@ -357,7 +360,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide',
       () => {
         dispatch(updateState({ keyBoardHeight: 0 }));
-        setIsKeyboardOpen(false);
         setWebviewScroll(true);
         setWebviewScroll(false);
       }
@@ -463,7 +465,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         ) {
           dispatch(updateState({ isMounted: true }));
         } else if (jsonResponse.type === 'position') {
-          if (isKeyboardOpen) {
+          if (spotchecks.isFullScreenMode) {
             dispatch(updateState({ textPosition: jsonResponse.y }));
           }
         }
