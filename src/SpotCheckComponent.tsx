@@ -318,7 +318,7 @@ export const SpotcheckComponent: React.FC = () => {
           </View>
         )}
 
-        {spotcheck.avatarEnabled && (
+        {(spotcheck.avatarEnabled && spotcheck.spotChecksMode === "miniCard") &&  (
           <Image
             source={{ uri: spotcheck.avatarUrl }}
             style={style.avatarContainer}
