@@ -52,7 +52,7 @@ export const sendTrackScreenRequest = async (screen: string) => {
       customProperties: state.customProperties,
     };
 
-    const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/properties?isSpotCheck=true`;
+    const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/properties?isSpotCheck=true&sdk=REACT%20NATIVE`;
 
     const response = await axios.post(url, payload, {
       headers: {

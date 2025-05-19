@@ -38,9 +38,8 @@ export const SpotcheckComponent: React.FC = () => {
     const initializeWidget = async () => {
       try {
         if (spotcheck.targetToken !== '' && spotcheck.domainName !== '') {
-          const SDK = 'REACT NATIVE';
           const response = await axios.get(
-            `https://${spotcheck.domainName}/api/internal/spotcheck/widget/${spotcheck.targetToken}/init?sdk=${SDK}`
+            `https://${spotcheck.domainName}/api/internal/spotcheck/widget/${spotcheck.targetToken}/init`
           );
           var classicIframe = false;
           var chatIframe = false;
