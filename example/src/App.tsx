@@ -5,13 +5,29 @@ import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
 import SettingsScreen from './SettingsScreen';
 import Spotcheck from 'surveysparrow-react-native-sdk';
-import { SpotcheckProps } from 'surveysparrow-react-native-sdk';
+import { SpotcheckProps, SsSpotcheckListener } from 'surveysparrow-react-native-sdk';
 import { initializeSpotChecks } from 'surveysparrow-react-native-sdk';
 
 export type RootStackParamList = {
   Home: undefined;
   Profile: undefined;
   Settings: undefined;
+};
+
+const listener:SsSpotcheckListener = {
+  onSurveyLoaded: async (response:Record<string,any>) => {
+
+    console.log('Survey Loaded${}', response);
+  },
+  onSurveyResponse: async (response:Record<string,any>) => {
+    console.log('Survey Response', response);
+  },
+  onPartialSubmission: async (response:Record<string,any>) => {
+    console.log('Partial Submission', response);
+  },
+  onCloseButtonTap: async () => {
+    console.log('Close Button Tapped');
+  },
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -25,6 +41,7 @@ export default function App() {
         userDetails: {},
         variables: {},
         customProperties: {},
+        listener: listener
       } as SpotcheckProps
     });
   },[]);

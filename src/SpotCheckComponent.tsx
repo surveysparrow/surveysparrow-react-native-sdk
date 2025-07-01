@@ -111,16 +111,15 @@ export const SpotcheckComponent: React.FC = () => {
               flex: 1,
               top: Math.min(
                 -spotcheck.keyBoardHeight +
-                     (spotcheck.keyBoardHeight > 0
-                       ? height - spotcheck.textPosition - 100
-                       : 0),
+                  (spotcheck.keyBoardHeight > 0
+                    ? height - spotcheck.textPosition - 100
+                    : 0),
                 0
               ),
               position: 'absolute',
               zIndex: 999999,
               backgroundColor: 'rgba(0,0,0,0.33)',
               height: '100%',
-
             }
           : spotcheck.isVisible && spotcheck.isMounted
             ? spotcheck.spotcheckPosition === 'bottom'
@@ -308,7 +307,9 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       (event) => {
         if (
           Platform.OS === 'ios' ||
-          (Platform.OS === 'android' && (spotchecks.isFullScreenMode || spotchecks.spotcheckPosition === "top"))
+          (Platform.OS === 'android' &&
+            (spotchecks.isFullScreenMode ||
+              spotchecks.spotcheckPosition === 'top'))
         ) {
           dispatch(
             updateState({ keyBoardHeight: event.endCoordinates.height })
@@ -389,8 +390,13 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
             );
           }
         } else if (jsonResponse.type === 'surveyCompleted') {
+          await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
           console.log('Survey submitted');
           handleSurveyEnd();
+        } else if (jsonResponse.type === 'surveyLoadStarted') {
+          await spotchecks.listener?.onSurveyLoaded?.(jsonResponse.data);
+        } else if (jsonResponse.type === 'partialSubmission') {
+          await spotchecks.listener?.onPartialSubmission?.(jsonResponse.data);
         } else if (
           jsonResponse.type === 'slideInFrame' &&
           jsonResponse?.data.mounted

@@ -251,6 +251,7 @@ export const closeSpotCheck = async (
     if (response.status === 200) {
       const data = await response.json();
       if (data.success) {
+        await store.getState().spotcheck.listener?.onCloseButtonTap?.();
         console.log('SpotCheck Closed');
       }
     } else {

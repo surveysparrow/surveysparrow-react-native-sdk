@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { SsSpotcheckListener } from './Types';
 
 export interface SpotcheckState {
   isVisible: boolean;
@@ -36,6 +37,7 @@ export interface SpotcheckState {
   textPosition: number;
   screenHeight: number;
   keyBoardHeight: number;
+  listener: SsSpotcheckListener;
 }
 
 const initialState: SpotcheckState = {
@@ -73,6 +75,7 @@ const initialState: SpotcheckState = {
   textPosition: 0,
   screenHeight: 0,
   keyBoardHeight: 0,
+  listener: {},
 };
 
 const spotcheckSlice = createSlice({
