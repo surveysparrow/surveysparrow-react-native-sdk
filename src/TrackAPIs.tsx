@@ -6,7 +6,11 @@ import { loadData, saveData } from './LocalStorage';
 import { store, updateState } from './SpotCheckState';
 import type { TrackEventProps } from './Types';
 
-export const sendTrackScreenRequest = async (screen: string) => {
+export const sendTrackScreenRequest = async (screen: string, options: {
+  variables?: Record<string, any>;
+  customProperties?: Record<string, any>;
+  userDetails?: Record<string, any>;
+}) => {
   try {
     const state = store.getState().spotcheck;
 
@@ -19,6 +23,16 @@ export const sendTrackScreenRequest = async (screen: string) => {
     if (!traceId) {
       traceId = generateTraceId();
       store.dispatch(updateState({ traceId }));
+    }
+
+    if (options.variables && Object.keys(options.variables).length > 0) {
+      store.dispatch(updateState({ variables: options.variables }));
+    }
+    if (options.customProperties && Object.keys(options.customProperties).length > 0) {
+      store.dispatch(updateState({ customProperties: options.customProperties }));
+    }
+    if (options.userDetails && Object.keys(options.userDetails).length > 0) {
+      store.dispatch(updateState({ userDetails: options.userDetails }));
     }
 
     let payloadUserDetails = { ...state.userDetails };
