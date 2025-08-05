@@ -1,7 +1,13 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { store, updateState } from './SpotCheckState';
-import type { CustomProperties, SpotcheckProps, TrackEventProps, UserDetails, Variables } from './Types';
+import type {
+  CustomProperties,
+  SpotcheckProps,
+  TrackEventProps,
+  UserDetails,
+  Variables,
+} from './Types';
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
 
