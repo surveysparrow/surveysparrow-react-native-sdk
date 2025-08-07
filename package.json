@@ -84,7 +84,9 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-webview": "^13.13.2",
+    "react-native-device-info": "^14.0.4"
   },
   "workspaces": [
     "example",
