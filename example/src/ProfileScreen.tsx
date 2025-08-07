@@ -16,7 +16,15 @@ type Props = {
 
 const ProfileScreen: React.FC<Props> = ({navigation}) => {
   useEffect(() => {
-    trackScreen('ProfileScreen');
+    trackScreen('ProfileScreen',
+        {
+            variables: {
+              sparrowlang: 'en',
+            },
+            customProperties: {},
+            userDetails: {},
+          }
+    );
   }, []);
   return (
     <View style={styles.container}>

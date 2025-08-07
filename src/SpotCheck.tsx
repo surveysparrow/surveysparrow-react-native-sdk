@@ -1,7 +1,13 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { store, updateState } from './SpotCheckState';
-import type { SpotcheckProps, TrackEventProps } from './Types';
+import type {
+  CustomProperties,
+  SpotcheckProps,
+  TrackEventProps,
+  UserDetails,
+  Variables,
+} from './Types';
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
 
@@ -13,9 +19,20 @@ const Spotcheck: React.FC = () => {
   );
 };
 
-export const trackScreen = async (screen: string) => {
+export const trackScreen = async (
+  screen: string,
+  options: {
+    variables?: Variables;
+    customProperties?: CustomProperties;
+    userDetails?: UserDetails;
+  } = {
+    variables: {},
+    customProperties: {},
+    userDetails: {},
+  }
+) => {
   try {
-    const response = await sendTrackScreenRequest(screen);
+    const response = await sendTrackScreenRequest(screen, options);
     if (response.valid) {
       console.log('Screen Tracking succeeded.');
     } else {

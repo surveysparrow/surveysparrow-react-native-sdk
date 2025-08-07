@@ -57,7 +57,7 @@ export const setAppearance = async (
 
         updatedState = {
           spotcheckPosition:
-            position === 'top_full'
+            position === 'top_full' || position === 'center_top'
               ? 'top'
               : position === 'center_center'
                 ? 'center'

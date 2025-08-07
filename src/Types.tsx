@@ -1,4 +1,4 @@
-interface UserDetails {
+export interface UserDetails {
   uuid?: string;
   email?: string;
   firstName?: string;
@@ -7,12 +7,12 @@ interface UserDetails {
   [key: string]: any;
 }
 
-interface Variables {
+export interface Variables {
   sparrowLang?: string;
   [key: string]: any;
 }
 
-interface CustomProperties {
+export interface CustomProperties {
   [key: string]: any;
 }
 
