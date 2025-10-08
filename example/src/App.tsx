@@ -3,6 +3,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SettingsScreen from './SettingsScreen';
 import Spotcheck from 'surveysparrow-react-native-sdk';
 import { SpotcheckProps } from 'surveysparrow-react-native-sdk';
@@ -30,6 +31,7 @@ export default function App() {
   },[]);
 
   return (
+    <SafeAreaProvider>
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
@@ -40,5 +42,6 @@ export default function App() {
       </Stack.Navigator>
       <Spotcheck/>
     </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
