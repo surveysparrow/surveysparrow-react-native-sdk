@@ -8,7 +8,6 @@ import {
   PermissionsAndroid,
   Platform,
   Keyboard,
-  SafeAreaView,
   type ViewStyle,
   Image,
 } from 'react-native';
