@@ -8,7 +8,6 @@ import {
   PermissionsAndroid,
   Platform,
   Keyboard,
-  SafeAreaView,
   type ViewStyle,
   Image,
 } from 'react-native';
@@ -26,6 +25,7 @@ import {
 import axios from 'axios';
 import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -33,6 +33,7 @@ export const SpotcheckComponent: React.FC = () => {
   const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
     Dimensions.get('window')
   );
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const initializeWidget = async () => {
@@ -116,7 +117,6 @@ export const SpotcheckComponent: React.FC = () => {
           : 0),
       0
     );
-
   const getBaseStyle = (extraStyles: Partial<ViewStyle> = {}): ViewStyle => ({
     flex: 1,
     position: 'absolute',
@@ -126,11 +126,13 @@ export const SpotcheckComponent: React.FC = () => {
     width: '100%',
     flexDirection: 'column',
     alignItems: 'center',
+    paddingBottom: insets.bottom,
+    marginTop: insets.top,
     ...extraStyles,
   });
 
   return (
-    <SafeAreaView
+    <View
       style={
         spotcheck.isFullScreenMode && spotcheck.isVisible
           ? getBaseStyle({
@@ -145,7 +147,18 @@ export const SpotcheckComponent: React.FC = () => {
                   top:
                     spotcheck.keyBoardHeight > 0 &&
                     spotcheck.currentQuestionHeight
-                      ? -spotcheck.keyBoardHeight
+                      ? Math.min(
+                          -spotcheck.keyBoardHeight +
+                            (spotcheck.keyBoardHeight > 0
+                              ? Math.max(
+                                  spotcheck.currentQuestionHeight -
+                                    spotcheck.textPosition -
+                                    350,
+                                  0
+                                )
+                              : 0),
+                          0
+                        )
                       : 0,
                   justifyContent: 'flex-end',
                 }),
@@ -158,7 +171,15 @@ export const SpotcheckComponent: React.FC = () => {
                         spotcheck.spotChecksMode === 'miniCard'
                           ? 40
                           : 0)
-                    ),
+                    ) +
+                      (spotcheck.keyBoardHeight > 0
+                        ? Math.max(
+                            spotcheck.currentQuestionHeight -
+                              spotcheck.textPosition -
+                              350,
+                            0
+                          )
+                        : 0),
                     0
                   ),
                   justifyContent: 'flex-start',
@@ -172,7 +193,19 @@ export const SpotcheckComponent: React.FC = () => {
                         spotcheck.spotChecksMode === 'miniCard'
                           ? 40
                           : 0)
-                    ) / 2,
+                    ) /
+                      2 +
+                      (spotcheck.keyBoardHeight > 0
+                        ? Math.max(
+                            spotcheck.currentQuestionHeight -
+                              spotcheck.textPosition -
+                              450,
+                            (height - spotcheck.screenHeight) / 2 <
+                              spotcheck.keyBoardHeight
+                              ? -100
+                              : 0
+                          )
+                        : 0),
                     0
                   ),
                   justifyContent: 'center',
@@ -317,14 +350,14 @@ export const SpotcheckComponent: React.FC = () => {
           </View>
         )}
 
-        {(spotcheck.avatarEnabled && spotcheck.spotChecksMode === "miniCard") &&  (
+        {spotcheck.avatarEnabled && spotcheck.spotChecksMode === 'miniCard' && (
           <Image
             source={{ uri: spotcheck.avatarUrl }}
             style={style.avatarContainer}
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -464,9 +497,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         ) {
           dispatch(updateState({ isMounted: true }));
         } else if (jsonResponse.type === 'position') {
-          if (spotchecks.isFullScreenMode) {
-            dispatch(updateState({ textPosition: jsonResponse.y }));
-          }
+          dispatch(updateState({ textPosition: jsonResponse.y }));
         }
       }
     } catch (e) {
