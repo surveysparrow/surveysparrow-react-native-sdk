@@ -25,7 +25,7 @@ const SsSurveyViewComponentAndroid: FC<Props> = ({
   config: { domain, token, surveyType, customParams = [] },
 }) => {
   const webViewRef = useRef<WebView>(null);
-  const [progress, setProgress] = useState(new Animated.Value(0));
+  const [progress, _] = useState(new Animated.Value(0));
 
   const generateUrl = () => {
     let params = '';
