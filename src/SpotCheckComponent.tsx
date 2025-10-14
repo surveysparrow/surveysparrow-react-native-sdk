@@ -399,7 +399,11 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
   }, []);
 
   useEffect(() => {
-    if (webViewRef.current) {
+    if (
+      webViewRef.current &&
+      ((webviewType === 'classic' && !spotchecks?.classicWebViewRef?.current) ||
+        (webviewType === 'chat' && !spotchecks?.chatWebViewRef?.current))
+    ) {
       dispatch(
         updateState(
           webviewType === 'classic'
