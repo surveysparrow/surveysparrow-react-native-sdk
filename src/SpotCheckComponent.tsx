@@ -398,7 +398,24 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
     );
   }, []);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (
+      webViewRef.current &&
+      ((webviewType === 'classic' && !spotchecks?.classicWebViewRef?.current) ||
+        (webviewType === 'chat' && !spotchecks?.chatWebViewRef?.current))
+    ) {
+      console.log('Updating webview ref');
+      console.log(spotchecks?.classicWebViewRef, spotchecks?.chatWebViewRef);
+      dispatch(
+        updateState(
+          webviewType === 'classic'
+            ? { classicWebViewRef: webViewRef }
+            : { chatWebViewRef: webViewRef }
+        )
+      );
+      console.log('Webview ref updated');
+    }
+  }, [dispatch, webviewType]);
 
   useEffect(() => {
     var data_height = !spotchecks.isFullScreenMode
