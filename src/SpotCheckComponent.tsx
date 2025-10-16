@@ -409,8 +409,8 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
       dispatch(
         updateState(
           webviewType === 'classic'
-            ? { classicWebViewRef: webViewRef }
-            : { chatWebViewRef: webViewRef }
+            ? { classicWebViewRef: webViewRef.current }
+            : { chatWebViewRef: webViewRef.current }
         )
       );
       console.log('Webview ref updated');
