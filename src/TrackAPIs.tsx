@@ -15,19 +15,39 @@ export const sendTrackScreenRequest = async (
   }
 ) => {
   try {
+    const oldState = store.getState().spotcheck;
+
     if (options.variables && Object.keys(options.variables).length > 0) {
-      store.dispatch(updateState({ variables: options.variables }));
-    }
-    if (
-      options.customProperties &&
-      Object.keys(options.customProperties).length > 0
-    ) {
       store.dispatch(
-        updateState({ customProperties: options.customProperties })
+        updateState({
+          variables: {
+            ...oldState.variables,
+            ...options.variables,
+          },
+        })
       );
     }
+
+    if (options.customProperties && Object.keys(options.customProperties).length > 0) {
+      store.dispatch(
+        updateState({
+          customProperties: {
+            ...oldState.customProperties,
+            ...options.customProperties,
+          },
+        })
+      );
+    }
+    
     if (options.userDetails && Object.keys(options.userDetails).length > 0) {
-      store.dispatch(updateState({ userDetails: options.userDetails }));
+      store.dispatch(
+        updateState({
+          userDetails: {
+            ...oldState.userDetails,
+            ...options.userDetails,
+          },
+        })
+      );
     }
 
     const state = store.getState().spotcheck;
