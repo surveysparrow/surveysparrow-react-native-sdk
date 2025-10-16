@@ -153,7 +153,7 @@ export const setAppearance = async (
         `;
 
         const injectJavaScript = () =>
-          webViewRef?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+          webViewRef?.injectJavaScript(INJECTED_JAVASCRIPT);
 
         if (webViewRef) {
           if (!isLoading) {
@@ -171,10 +171,9 @@ export const setAppearance = async (
 
               if ((!isChatLoading && chat) || (!isClassicLoading && !chat)) {
                 unsubscribe();
-                (chat
-                  ? chatWebViewRef
-                  : classicWebViewRef
-                )?.current.injectJavaScript(INJECTED_JAVASCRIPT);
+                (chat ? chatWebViewRef : classicWebViewRef)?.injectJavaScript(
+                  INJECTED_JAVASCRIPT
+                );
                 start();
               }
             });
@@ -218,7 +217,7 @@ export const handleSurveyEnd = () => {
       ? store.getState().spotcheck.chatWebViewRef
       : store.getState().spotcheck.classicWebViewRef;
 
-  webViewRef?.current?.injectJavaScript(`
+  webViewRef?.injectJavaScript(`
       (function() {
         window.dispatchEvent(new MessageEvent('message', {
           data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
