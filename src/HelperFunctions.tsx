@@ -251,6 +251,7 @@ export const handleSurveyEnd = () => {
     avatarUrl: '',
     isSpotCheckButton: false,
     spotCheckButtonConfig: {},
+    isThankyouPageSubmission: false,
   };
 
   store.dispatch(updateState(updatedState));

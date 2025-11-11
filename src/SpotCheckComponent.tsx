@@ -240,13 +240,27 @@ export const SpotcheckComponent: React.FC = () => {
                     spotcheck.spotCheckType === 'chat')))) && (
               <TouchableOpacity
                 onPress={() => {
-                  closeSpotCheck(
-                    spotcheck.domainName,
-                    spotcheck.spotcheckContactID,
-                    spotcheck.traceId,
-                    spotcheck.triggerToken
-                  );
-                  handleSurveyEnd();
+                  if (spotcheck.isSpotCheckButton) {
+                    if (spotcheck.isThankyouPageSubmission) {
+                      closeSpotCheck(
+                        spotcheck.domainName,
+                        spotcheck.spotcheckContactID,
+                        spotcheck.traceId,
+                        spotcheck.triggerToken
+                      );
+                      handleSurveyEnd();
+                    } else {
+                      setShowSurveyContent(false);
+                    }
+                  } else {
+                    closeSpotCheck(
+                      spotcheck.domainName,
+                      spotcheck.spotcheckContactID,
+                      spotcheck.traceId,
+                      spotcheck.triggerToken
+                    );
+                    handleSurveyEnd();
+                  }
                 }}
                 style={
                   spotcheck.spotChecksMode === 'miniCard'
@@ -365,13 +379,22 @@ export const SpotcheckComponent: React.FC = () => {
             </View>
           )}
 
-          {spotcheck.avatarEnabled &&
-            spotcheck.spotChecksMode === 'miniCard' && (
-              <Image
-                source={{ uri: spotcheck.avatarUrl }}
-                style={style.avatarContainer}
-              />
-            )}
+          <View
+            style={
+              !(
+                spotcheck.avatarEnabled &&
+                spotcheck.spotChecksMode === 'miniCard'
+              ) && { paddingBottom: 8 }
+            }
+          >
+            {spotcheck.avatarEnabled &&
+              spotcheck.spotChecksMode === 'miniCard' && (
+                <Image
+                  source={{ uri: spotcheck.avatarUrl }}
+                  style={style.avatarContainer}
+                />
+              )}
+          </View>
         </View>
       </View>
       {spotcheck.isSpotCheckButton && !showSurveyContent && (
@@ -529,13 +552,15 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
           dispatch(
             updateState({
               isCloseButtonEnabled: true,
+              isThankyouPageSubmission: true,
             })
           );
           await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
-          if (spotchecks.spotChecksMode === 'miniCard')
+          if (spotchecks.spotChecksMode === 'miniCard') {
             setTimeout(() => {
               handleSurveyEnd();
             }, 4000);
+          }
         } else if (
           jsonResponse.type === 'slideInFrame' &&
           jsonResponse?.data.mounted

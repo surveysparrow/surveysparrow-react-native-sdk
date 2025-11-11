@@ -43,6 +43,7 @@ export interface SpotcheckState {
   isSpotCheckButton: boolean;
   spotCheckButtonConfig: Record<string, any>;
   listener: SsSpotcheckListener;
+  isThankyouPageSubmission: boolean;
 }
 
 const initialState: SpotcheckState = {
@@ -86,6 +87,7 @@ const initialState: SpotcheckState = {
   isSpotCheckButton: false,
   spotCheckButtonConfig: {},
   listener: {},
+  isThankyouPageSubmission: false,
 };
 
 const spotcheckSlice = createSlice({
