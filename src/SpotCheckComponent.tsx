@@ -26,14 +26,24 @@ import axios from 'axios';
 import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import SpotCheckButton from './SpotCheckButton';
 
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
+  const [showSurveyContent, setShowSurveyContent] = useState(true);
   const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
     Dimensions.get('window')
   );
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (spotcheck.isSpotCheckButton) {
+      setShowSurveyContent(false);
+    } else {
+      setShowSurveyContent(true);
+    }
+  }, [spotcheck.isSpotCheckButton]);
 
   useEffect(() => {
     const initializeWidget = async () => {
@@ -70,11 +80,11 @@ export const SpotcheckComponent: React.FC = () => {
           dispatch(
             updateState({
               chatUrl: chatIframe
-                ? `https://${spotcheck.domainName}/eui-template/chat`
+                ? `https://${spotcheck.domainName}/eui-template/chat?isSpotCheck=true`
                 : '',
 
               classicUrl: classicIframe
-                ? `https://${spotcheck.domainName}/eui-template/classic`
+                ? `https://${spotcheck.domainName}/eui-template/classic?isSpotCheck=true`
                 : '',
             })
           );
@@ -126,238 +136,251 @@ export const SpotcheckComponent: React.FC = () => {
     width: '100%',
     flexDirection: 'column',
     alignItems: 'center',
-    paddingBottom: insets.bottom,
-    marginTop: insets.top,
     ...extraStyles,
   });
 
   return (
-    <View
-      style={
-        spotcheck.isFullScreenMode && spotcheck.isVisible
-          ? getBaseStyle({
-              top:
-                spotcheck.spotCheckType === 'chat'
-                  ? -spotcheck.keyBoardHeight
-                  : getTopValue(spotcheck.textPosition + 100),
-            })
-          : spotcheck.isVisible && spotcheck.isMounted
-            ? {
-                bottom: getBaseStyle({
+    <>
+      <View
+        style={
+          showSurveyContent
+            ? spotcheck.isFullScreenMode && spotcheck.isVisible
+              ? getBaseStyle({
                   top:
-                    spotcheck.keyBoardHeight > 0 &&
-                    spotcheck.currentQuestionHeight
-                      ? Math.min(
-                          -spotcheck.keyBoardHeight +
-                            (spotcheck.keyBoardHeight > 0
-                              ? Math.max(
-                                  spotcheck.currentQuestionHeight -
-                                    spotcheck.textPosition -
-                                    350,
-                                  0
-                                )
-                              : 0),
-                          0
-                        )
-                      : 0,
-                  justifyContent: 'flex-end',
-                }),
-                top: getBaseStyle({
-                  top: Math.min(
-                    getTopValue(
-                      spotcheck.screenHeight +
-                        (spotcheck.avatarEnabled ? 56 : 0) +
-                        (spotcheck.isCloseButtonEnabled &&
-                        spotcheck.spotChecksMode === 'miniCard'
-                          ? 40
-                          : 0)
-                    ) +
-                      (spotcheck.keyBoardHeight > 0
-                        ? Math.max(
-                            spotcheck.currentQuestionHeight -
-                              spotcheck.textPosition -
-                              350,
-                            0
-                          )
-                        : 0),
-                    0
-                  ),
-                  justifyContent: 'flex-start',
-                }),
-                center: getBaseStyle({
-                  top: Math.min(
-                    getTopValue(
-                      spotcheck.screenHeight +
-                        (spotcheck.avatarEnabled ? 56 : 0) +
-                        (spotcheck.isCloseButtonEnabled &&
-                        spotcheck.spotChecksMode === 'miniCard'
-                          ? 40
-                          : 0)
-                    ) /
-                      2 +
-                      (spotcheck.keyBoardHeight > 0
-                        ? Math.max(
-                            spotcheck.currentQuestionHeight -
-                              spotcheck.textPosition -
-                              450,
-                            (height - spotcheck.screenHeight) / 2 <
-                              spotcheck.keyBoardHeight
-                              ? -100
-                              : 0
-                          )
-                        : 0),
-                    0
-                  ),
-                  justifyContent: 'center',
-                }),
-              }[spotcheck.spotcheckPosition] || style.nothing
+                    spotcheck.spotCheckType === 'chat'
+                      ? -spotcheck.keyBoardHeight
+                      : getTopValue(spotcheck.textPosition + 100),
+                })
+              : spotcheck.isVisible && spotcheck.isMounted
+                ? {
+                    bottom: getBaseStyle({
+                      top:
+                        spotcheck.keyBoardHeight > 0 &&
+                        spotcheck.currentQuestionHeight
+                          ? Math.min(
+                              -spotcheck.keyBoardHeight +
+                                (spotcheck.keyBoardHeight > 0
+                                  ? Math.max(
+                                      spotcheck.currentQuestionHeight -
+                                        spotcheck.textPosition -
+                                        350,
+                                      0
+                                    )
+                                  : 0),
+                              0
+                            )
+                          : 0,
+                      justifyContent: 'flex-end',
+                      paddingBottom: insets.bottom,
+                    }),
+                    top: getBaseStyle({
+                      top: Math.min(
+                        getTopValue(
+                          spotcheck.screenHeight +
+                            (spotcheck.avatarEnabled ? 56 : 0) +
+                            (spotcheck.isCloseButtonEnabled &&
+                            spotcheck.spotChecksMode === 'miniCard'
+                              ? 40
+                              : 0)
+                        ) +
+                          (spotcheck.keyBoardHeight > 0
+                            ? Math.max(
+                                spotcheck.currentQuestionHeight -
+                                  spotcheck.textPosition -
+                                  350,
+                                0
+                              )
+                            : 0),
+                        0
+                      ),
+                      justifyContent: 'flex-start',
+                      paddingBottom: insets.top,
+                    }),
+                    center: getBaseStyle({
+                      top: Math.min(
+                        getTopValue(
+                          spotcheck.screenHeight +
+                            (spotcheck.avatarEnabled ? 56 : 0) +
+                            (spotcheck.isCloseButtonEnabled &&
+                            spotcheck.spotChecksMode === 'miniCard'
+                              ? 40
+                              : 0)
+                        ) /
+                          2 +
+                          (spotcheck.keyBoardHeight > 0
+                            ? Math.max(
+                                spotcheck.currentQuestionHeight -
+                                  spotcheck.textPosition -
+                                  450,
+                                (height - spotcheck.screenHeight) / 2 <
+                                  spotcheck.keyBoardHeight
+                                  ? -100
+                                  : 0
+                              )
+                            : 0),
+                        0
+                      ),
+                      justifyContent: 'center',
+                      paddingTop: insets.top,
+                      paddingBottom: insets.bottom,
+                    }),
+                  }[spotcheck.spotcheckPosition] || style.nothing
+                : style.nothing
             : style.nothing
-      }
-    >
-      <View>
-        {spotcheck.isCloseButtonEnabled &&
-          ((spotcheck.currentQuestionHeight > 0 &&
-            !spotcheck.isFullScreenMode) ||
-            (spotcheck.isFullScreenMode &&
-              ((!spotcheck.isClassicLoading &&
-                spotcheck.spotCheckType === 'classic') ||
-                (!spotcheck.isChatLoading &&
-                  spotcheck.spotCheckType === 'chat')))) && (
-            <TouchableOpacity
-              onPress={() => {
-                closeSpotCheck(
-                  spotcheck.domainName,
-                  spotcheck.spotcheckContactID,
-                  spotcheck.traceId,
-                  spotcheck.triggerToken
-                );
-                handleSurveyEnd();
-              }}
-              style={
-                spotcheck.spotChecksMode === 'miniCard'
-                  ? style.miniCardCloseButtonContainer
-                  : style.closeButtonContainer
-              }
-            >
-              <View
+        }
+      >
+        <View>
+          {spotcheck.isCloseButtonEnabled &&
+            ((spotcheck.currentQuestionHeight > 0 &&
+              !spotcheck.isFullScreenMode) ||
+              (spotcheck.isFullScreenMode &&
+                ((!spotcheck.isClassicLoading &&
+                  spotcheck.spotCheckType === 'classic') ||
+                  (!spotcheck.isChatLoading &&
+                    spotcheck.spotCheckType === 'chat')))) && (
+              <TouchableOpacity
+                onPress={() => {
+                  closeSpotCheck(
+                    spotcheck.domainName,
+                    spotcheck.spotcheckContactID,
+                    spotcheck.traceId,
+                    spotcheck.triggerToken
+                  );
+                  handleSurveyEnd();
+                }}
                 style={
                   spotcheck.spotChecksMode === 'miniCard'
-                    ? style.miniCardCloseButtonOverlay
-                    : style.closeButtonOverlay
+                    ? style.miniCardCloseButtonContainer
+                    : style.closeButtonContainer
                 }
               >
                 <View
                   style={
                     spotcheck.spotChecksMode === 'miniCard'
-                      ? {
-                          position: 'absolute',
-                          width: 15,
-                          height: 1.5,
-                          backgroundColor: 'black',
-                          top: '50%',
-                          left: 0,
-                          transform: [
-                            { translateY: -0.75 },
-                            { rotate: '45deg' },
-                          ],
-                        }
-                      : {
-                          position: 'absolute',
-                          width: 18,
-                          height: 1.6,
-                          backgroundColor:
-                            spotcheck.closeButtonStyle?.ctaButton,
-                          transform: [{ rotate: '45deg' }],
-                        }
+                      ? style.miniCardCloseButtonOverlay
+                      : style.closeButtonOverlay
                   }
-                />
-                <View
-                  style={
-                    spotcheck.spotChecksMode === 'miniCard'
-                      ? {
-                          position: 'absolute',
-                          width: 15,
-                          height: 1.5,
-                          backgroundColor: 'black',
-                          top: '50%',
-                          left: 0,
-                          transform: [
-                            { translateY: -0.75 },
-                            { rotate: '-45deg' },
-                          ],
-                        }
-                      : {
-                          position: 'absolute',
-                          width: 18,
-                          height: 1.6,
-                          backgroundColor:
-                            spotcheck.closeButtonStyle?.ctaButton,
-                          transform: [{ rotate: '-45deg' }],
-                        }
-                  }
-                />
-              </View>
-            </TouchableOpacity>
+                >
+                  <View
+                    style={
+                      spotcheck.spotChecksMode === 'miniCard'
+                        ? {
+                            position: 'absolute',
+                            width: 15,
+                            height: 1.5,
+                            backgroundColor: 'black',
+                            top: '50%',
+                            left: 0,
+                            transform: [
+                              { translateY: -0.75 },
+                              { rotate: '45deg' },
+                            ],
+                          }
+                        : {
+                            position: 'absolute',
+                            width: 18,
+                            height: 1.6,
+                            backgroundColor:
+                              spotcheck.closeButtonStyle?.ctaButton,
+                            transform: [{ rotate: '45deg' }],
+                          }
+                    }
+                  />
+                  <View
+                    style={
+                      spotcheck.spotChecksMode === 'miniCard'
+                        ? {
+                            position: 'absolute',
+                            width: 15,
+                            height: 1.5,
+                            backgroundColor: 'black',
+                            top: '50%',
+                            left: 0,
+                            transform: [
+                              { translateY: -0.75 },
+                              { rotate: '-45deg' },
+                            ],
+                          }
+                        : {
+                            position: 'absolute',
+                            width: 18,
+                            height: 1.6,
+                            backgroundColor:
+                              spotcheck.closeButtonStyle?.ctaButton,
+                            transform: [{ rotate: '-45deg' }],
+                          }
+                    }
+                  />
+                </View>
+              </TouchableOpacity>
+            )}
+
+          {spotcheck.classicUrl.length > 0 && (
+            <View
+              style={
+                spotcheck.spotcheckURL.length > 0 &&
+                spotcheck.spotCheckType === 'classic'
+                  ? {}
+                  : {
+                      left: '-100%',
+                      right: '-100%',
+                      width: 1,
+                      height: 1,
+                      position: 'absolute',
+                      zIndex: 1,
+                    }
+              }
+            >
+              <WebViewComponents
+                webviewType="classic"
+                url={spotcheck.classicUrl}
+                height={height}
+                width={width}
+              />
+            </View>
           )}
 
-        {spotcheck.classicUrl.length > 0 && (
-          <View
-            style={
-              spotcheck.spotcheckURL.length > 0 &&
-              spotcheck.spotCheckType === 'classic'
-                ? {}
-                : {
-                    left: '-100%',
-                    right: '-100%',
-                    width: 1,
-                    height: 1,
-                    position: 'absolute',
-                    zIndex: 1,
-                  }
-            }
-          >
-            <WebViewComponents
-              webviewType="classic"
-              url={spotcheck.classicUrl}
-              height={height}
-              width={width}
-            />
-          </View>
-        )}
+          {spotcheck.chatUrl.length > 0 && (
+            <View
+              style={
+                spotcheck.spotcheckURL.length > 0 &&
+                spotcheck.spotCheckType === 'chat'
+                  ? {}
+                  : {
+                      left: '-100%',
+                      right: '-100%',
+                      width: 1,
+                      height: 1,
+                      position: 'absolute',
+                      zIndex: 1,
+                    }
+              }
+            >
+              <WebViewComponents
+                webviewType="chat"
+                url={spotcheck.chatUrl}
+                height={height}
+                width={width}
+              />
+            </View>
+          )}
 
-        {spotcheck.chatUrl.length > 0 && (
-          <View
-            style={
-              spotcheck.spotcheckURL.length > 0 &&
-              spotcheck.spotCheckType === 'chat'
-                ? {}
-                : {
-                    left: '-100%',
-                    right: '-100%',
-                    width: 1,
-                    height: 1,
-                    position: 'absolute',
-                    zIndex: 1,
-                  }
-            }
-          >
-            <WebViewComponents
-              webviewType="chat"
-              url={spotcheck.chatUrl}
-              height={height}
-              width={width}
-            />
-          </View>
-        )}
-
-        {spotcheck.avatarEnabled && spotcheck.spotChecksMode === 'miniCard' && (
-          <Image
-            source={{ uri: spotcheck.avatarUrl }}
-            style={style.avatarContainer}
-          />
-        )}
+          {spotcheck.avatarEnabled &&
+            spotcheck.spotChecksMode === 'miniCard' && (
+              <Image
+                source={{ uri: spotcheck.avatarUrl }}
+                style={style.avatarContainer}
+              />
+            )}
+        </View>
       </View>
-    </View>
+      {spotcheck.isSpotCheckButton && !showSurveyContent && (
+        <SpotCheckButton
+          config={spotcheck.spotCheckButtonConfig}
+          onPress={() => setShowSurveyContent(true)}
+        />
+      )}
+    </>
   );
 };
 
@@ -493,8 +516,26 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
             );
           }
         } else if (jsonResponse.type === 'surveyCompleted') {
+          await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
+
           console.log('Survey submitted');
+
           handleSurveyEnd();
+        } else if (jsonResponse.type === 'surveyLoadStarted') {
+          await spotchecks.listener?.onSurveyLoaded?.(jsonResponse.data);
+        } else if (jsonResponse.type === 'partialSubmission') {
+          await spotchecks.listener?.onPartialSubmission?.(jsonResponse.data);
+        } else if (jsonResponse.type === 'thankYouPageSubmission') {
+          dispatch(
+            updateState({
+              isCloseButtonEnabled: true,
+            })
+          );
+          await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
+          if (spotchecks.spotChecksMode === 'miniCard')
+            setTimeout(() => {
+              handleSurveyEnd();
+            }, 4000);
         } else if (
           jsonResponse.type === 'slideInFrame' &&
           jsonResponse?.data.mounted

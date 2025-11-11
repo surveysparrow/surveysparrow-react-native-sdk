@@ -75,6 +75,12 @@ export const setAppearance = async (
           spotChecksMode: mode,
           avatarEnabled: appearance?.avatar?.enabled ?? false,
           avatarUrl: appearance?.avatar?.avatarUrl ?? '',
+          isSpotCheckButton:
+            appearance?.type === 'spotcheckButton' ? true : false,
+          spotCheckButtonConfig:
+            appearance?.type === 'spotcheckButton'
+              ? (currentSpotcheck?.appearance?.buttonConfig ?? {})
+              : {},
         };
 
         chat = updatedState.spotCheckType === 'chat';
@@ -94,7 +100,7 @@ export const setAppearance = async (
         triggerToken,
       };
 
-      const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${chat ? 'config' : 'bootstrap'}?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}`;
+      const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${chat ? 'config' : 'bootstrap'}?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}&isSpotCheck=true`;
 
       let fullSpotcheckURL = baseSpotcheckURL;
       Object.entries(variables).forEach(([key, value]) => {
@@ -243,6 +249,8 @@ export const handleSurveyEnd = () => {
     spotChecksMode: '',
     avatarEnabled: false,
     avatarUrl: '',
+    isSpotCheckButton: false,
+    spotCheckButtonConfig: {},
   };
 
   store.dispatch(updateState(updatedState));
@@ -291,6 +299,7 @@ export const closeSpotCheck = async (
     if (response.status === 200) {
       const data = await response.json();
       if (data.success) {
+        await store.getState().spotcheck.listener?.onCloseButtonTap?.();
         console.log('SpotCheck Closed');
       }
     } else {

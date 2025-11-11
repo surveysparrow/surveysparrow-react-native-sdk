@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { SsSpotcheckListener } from './Types';
 
 export interface SpotcheckState {
   isVisible: boolean;
@@ -39,6 +40,9 @@ export interface SpotcheckState {
   spotChecksMode: string;
   avatarEnabled: boolean;
   avatarUrl: string;
+  isSpotCheckButton: boolean;
+  spotCheckButtonConfig: Record<string, any>;
+  listener: SsSpotcheckListener;
 }
 
 const initialState: SpotcheckState = {
@@ -79,6 +83,9 @@ const initialState: SpotcheckState = {
   spotChecksMode: '',
   avatarEnabled: false,
   avatarUrl: '',
+  isSpotCheckButton: false,
+  spotCheckButtonConfig: {},
+  listener: {},
 };
 
 const spotcheckSlice = createSlice({

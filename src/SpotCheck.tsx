@@ -4,6 +4,7 @@ import { store, updateState } from './SpotCheckState';
 import type {
   CustomProperties,
   SpotcheckProps,
+  SsSpotcheckListener,
   TrackEventProps,
   UserDetails,
   Variables,
@@ -64,12 +65,15 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
   }
 };
 
+const spotchecksListener: SsSpotcheckListener = {};
+
 export const initializeSpotChecks = ({
   domainName,
   targetToken,
   userDetails = {},
   variables = {},
   customProperties = {},
+  listener = spotchecksListener,
 }: SpotcheckProps) => {
   store.dispatch(
     updateState({
@@ -78,6 +82,7 @@ export const initializeSpotChecks = ({
       userDetails,
       variables,
       customProperties,
+      listener,
     })
   );
 };
