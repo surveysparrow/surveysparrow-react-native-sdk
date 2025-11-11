@@ -11,14 +11,17 @@ interface SpotCheckButtonProps {
 const hexToRgba = (hex: string, opacity: number) => {
   if (!/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) return hex;
 
-  let c = hex.substring(1).split('');
-  if (c.length === 3) {
-    c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-  }
-  const value = parseInt(c.join(''), 16);
-  return `rgba(${(value >> 16) & 255},${(value >> 8) & 255},${
-    value & 255
-  },${opacity})`;
+  const raw = hex.slice(1);
+  const fullHex =
+    raw.length === 3
+      ? raw
+          .split('')
+          .map((x) => x + x)
+          .join('')
+      : raw;
+  const value = parseInt(fullHex, 16);
+
+  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${opacity})`;
 };
 
 const renderIcon = (icon: string, buttonSize: string, type?: string) => {
@@ -39,7 +42,7 @@ const renderIcon = (icon: string, buttonSize: string, type?: string) => {
           width: size,
           height: size,
           borderRadius: size / 2,
-          resizeMode: 'fill',
+          resizeMode: 'cover',
         }}
       />
     );
