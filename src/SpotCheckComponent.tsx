@@ -27,7 +27,7 @@ import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SpotCheckButton from './SpotCheckButton';
-import { useNavigationState } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
@@ -35,31 +35,31 @@ export const SpotcheckComponent: React.FC = () => {
     Dimensions.get('window')
   );
   const insets = useSafeAreaInsets();
-  const routeNames = useNavigationState((state) =>
-    state?.routes?.map((r) => r.name)
-  );
+  const navigation = useNavigation();
   const previousRouteName = useRef<string | null>(null);
 
   useEffect(() => {
-    const currentRoute: string | null =
-      routeNames?.[routeNames.length - 1] ?? null;
+    const unsubscribe = navigation.addListener('state', () => {
+      const state = navigation.getState();
+      const index = state?.index ?? 0;
+      const currentRoute = state?.routes?.[index]?.name ?? null;
+      if (currentRoute !== previousRouteName.current) {
+        closeSpotCheck(
+          spotcheck.domainName,
+          spotcheck.spotcheckContactID,
+          spotcheck.traceId,
+          spotcheck.triggerToken
+        );
+        handleSurveyEnd(true);
+      }
 
-    if (
-      previousRouteName.current &&
-      currentRoute &&
-      currentRoute !== previousRouteName.current
-    ) {
-      closeSpotCheck(
-        spotcheck.domainName,
-        spotcheck.spotcheckContactID,
-        spotcheck.traceId,
-        spotcheck.triggerToken
-      );
-      handleSurveyEnd(true);
-    }
+      previousRouteName.current = currentRoute;
+    });
 
-    previousRouteName.current = currentRoute;
-  }, [routeNames]);
+    return unsubscribe;
+  }, [
+    navigation,
+  ]);
 
   useEffect(() => {
     const initializeWidget = async () => {
@@ -166,8 +166,8 @@ export const SpotcheckComponent: React.FC = () => {
                     spotcheck.spotCheckType === 'chat'
                       ? -spotcheck.keyBoardHeight
                       : getTopValue(spotcheck.textPosition + 100),
-                      paddingTop: insets.top,
-                      paddingBottom: insets.bottom,
+                  paddingTop: insets.top,
+                  paddingBottom: insets.bottom,
                 })
               : spotcheck.isVisible && spotcheck.isMounted
                 ? {
