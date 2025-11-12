@@ -27,23 +27,39 @@ import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SpotCheckButton from './SpotCheckButton';
-
+import { useNavigationState } from '@react-navigation/native';
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
-  const [showSurveyContent, setShowSurveyContent] = useState(true);
   const [screenDimensions, setScreenDimensions] = useState<ScaledSize>(
     Dimensions.get('window')
   );
   const insets = useSafeAreaInsets();
+  const routeNames = useNavigationState((state) =>
+    state?.routes?.map((r) => r.name)
+  );
+  const previousRouteName = useRef<string | null>(null);
 
   useEffect(() => {
-    if (spotcheck.isSpotCheckButton) {
-      setShowSurveyContent(false);
-    } else {
-      setShowSurveyContent(true);
+    const currentRoute: string | null =
+      routeNames?.[routeNames.length - 1] ?? null;
+
+    if (
+      previousRouteName.current &&
+      currentRoute &&
+      currentRoute !== previousRouteName.current
+    ) {
+      closeSpotCheck(
+        spotcheck.domainName,
+        spotcheck.spotcheckContactID,
+        spotcheck.traceId,
+        spotcheck.triggerToken
+      );
+      handleSurveyEnd(true);
     }
-  }, [spotcheck.isSpotCheckButton]);
+
+    previousRouteName.current = currentRoute;
+  }, [routeNames]);
 
   useEffect(() => {
     const initializeWidget = async () => {
@@ -143,7 +159,7 @@ export const SpotcheckComponent: React.FC = () => {
     <>
       <View
         style={
-          showSurveyContent
+          spotcheck.showSurveyContent
             ? spotcheck.isFullScreenMode && spotcheck.isVisible
               ? getBaseStyle({
                   top:
@@ -250,7 +266,7 @@ export const SpotcheckComponent: React.FC = () => {
                       );
                       handleSurveyEnd();
                     } else {
-                      setShowSurveyContent(false);
+                      dispatch(updateState({ showSurveyContent: false }));
                     }
                   } else {
                     closeSpotCheck(
@@ -399,12 +415,16 @@ export const SpotcheckComponent: React.FC = () => {
           </View>
         </View>
       </View>
-      {spotcheck.isSpotCheckButton && !showSurveyContent && (
-        <SpotCheckButton
-          config={spotcheck.spotCheckButtonConfig}
-          onPress={() => setShowSurveyContent(true)}
-        />
-      )}
+      {spotcheck.isSpotCheckButton &&
+        !spotcheck.showSurveyContent &&
+        spotcheck.isMounted && (
+          <SpotCheckButton
+            config={spotcheck.spotCheckButtonConfig}
+            onPress={() => {
+              dispatch(updateState({ showSurveyContent: true }));
+            }}
+          />
+        )}
     </>
   );
 };
@@ -553,15 +573,27 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         } else if (jsonResponse.type === 'thankYouPageSubmission') {
           dispatch(
             updateState({
-              isCloseButtonEnabled: true,
               isThankyouPageSubmission: true,
             })
           );
-          await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
-          if (spotchecks.spotChecksMode === 'miniCard') {
+
+          if (spotchecks.listener?.onSurveyResponse) {
+            await spotchecks.listener.onSurveyResponse(jsonResponse.data);
+          }
+
+          if (
+            spotchecks.spotChecksMode === 'miniCard' &&
+            !spotchecks.isCloseButtonEnabled
+          ) {
             setTimeout(() => {
               handleSurveyEnd();
             }, 4000);
+          } else {
+            dispatch(
+              updateState({
+                isCloseButtonEnabled: true,
+              })
+            );
           }
         } else if (
           jsonResponse.type === 'slideInFrame' &&

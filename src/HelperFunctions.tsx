@@ -30,179 +30,179 @@ export const setAppearance = async (
   variables: Record<string, any>
 ) => {
   try {
-    if (responseJson) {
-      const currentSpotcheck = store
-        .getState()
-        .spotcheck.filteredSpotChecks.find(
-          (spotcheck) =>
-            spotcheck.id === responseJson?.spotCheckId ||
-            spotcheck.id === responseJson?.id
-        );
+    if (!responseJson) throw new Error('Invalid response');
 
-      const appearance = responseJson?.appearance;
-      let chat = false;
+    const currentSpotcheck = store
+      .getState()
+      .spotcheck.filteredSpotChecks.find(
+        (spotcheck) =>
+          spotcheck.id === responseJson?.spotCheckId ||
+          spotcheck.id === responseJson?.id
+      );
 
-      let updatedState: Partial<SpotcheckState> = {};
+    const appearance = responseJson?.appearance;
+    let chat = false;
+    let updatedState: Partial<SpotcheckState> = {};
 
-      if (appearance) {
-        const {
-          position,
-          closeButton,
-          colors,
-          cardProperties,
-          mode,
-          bannerImage,
-        } = appearance;
-        const { maxHeight } = cardProperties || {};
+    if (appearance) {
+      const {
+        position,
+        closeButton,
+        colors,
+        cardProperties,
+        mode,
+        bannerImage,
+      } = appearance;
+      const { maxHeight } = cardProperties || {};
 
-        updatedState = {
-          spotcheckPosition:
-            position === 'top_full' || position === 'center_top'
-              ? 'top'
-              : position === 'center_center'
-                ? 'center'
-                : 'bottom',
-          isCloseButtonEnabled: closeButton ?? true,
-          closeButtonStyle: colors?.overrides ?? {},
-          maxHeight: maxHeight ? parseFloat(maxHeight) / 100 : 0,
-          spotCheckType:
-            ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
-            mode === 'fullScreen'
-              ? 'chat'
-              : 'classic',
-          isFullScreenMode: mode === 'fullScreen',
-          isBannerImageOn: bannerImage?.enabled ?? false,
-          spotChecksMode: mode,
-          avatarEnabled: appearance?.avatar?.enabled ?? false,
-          avatarUrl: appearance?.avatar?.avatarUrl ?? '',
-          isSpotCheckButton:
-            appearance?.type === 'spotcheckButton' ? true : false,
-          spotCheckButtonConfig:
-            appearance?.type === 'spotcheckButton'
-              ? (currentSpotcheck?.appearance?.buttonConfig ?? {})
-              : {},
-        };
-
-        chat = updatedState.spotCheckType === 'chat';
-      }
-
-      const spotCheckId = responseJson?.spotCheckId ?? 0;
-      const spotCheckContactId =
-        responseJson?.spotCheckContactId ??
-        responseJson?.spotCheckContact?.id ??
-        0;
-      const triggerToken = responseJson?.triggerToken ?? '';
+      const isChatType =
+        ischatSurvey(currentSpotcheck?.survey?.surveyType) &&
+        mode === 'fullScreen';
 
       updatedState = {
-        ...updatedState,
-        spotcheckID: spotCheckId,
-        spotcheckContactID: spotCheckContactId,
-        triggerToken,
+        spotcheckPosition:
+          position === 'top_full' || position === 'center_top'
+            ? 'top'
+            : position === 'center_center'
+              ? 'center'
+              : 'bottom',
+        isCloseButtonEnabled: closeButton ?? true,
+        closeButtonStyle: colors?.overrides ?? {},
+        maxHeight: maxHeight ? parseFloat(maxHeight) / 100 : 0,
+        spotCheckType: isChatType ? 'chat' : 'classic',
+        isFullScreenMode: mode === 'fullScreen',
+        isBannerImageOn: bannerImage?.enabled ?? false,
+        spotChecksMode: mode,
+        avatarEnabled: appearance?.avatar?.enabled ?? false,
+        avatarUrl: appearance?.avatar?.avatarUrl ?? '',
+        isSpotCheckButton: appearance?.type === 'spotcheckButton',
+        spotCheckButtonConfig:
+          appearance?.type === 'spotcheckButton'
+            ? (currentSpotcheck?.appearance?.buttonConfig ?? {})
+            : {},
+        showSurveyContent: appearance?.type !== 'spotcheckButton',
+        screenName: screen,
+        isChat: isChatType,
+        appearance: appearance,
       };
 
-      const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${chat ? 'config' : 'bootstrap'}?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}&isSpotCheck=true`;
-
-      let fullSpotcheckURL = baseSpotcheckURL;
-      Object.entries(variables).forEach(([key, value]) => {
-        fullSpotcheckURL += `&${key}=${value}`;
-      });
-
-      updatedState.spotcheckURL = fullSpotcheckURL;
-
-      store.dispatch(updateState(updatedState));
-
-      try {
-        const userAgent = await getUserAgent();
-        const response = await axios.get(fullSpotcheckURL, {
-          headers: {
-            'User-Agent': userAgent,
-          },
-        });
-        const themeInfo = response.data.config.generatedCSS;
-        const theme_payload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
-
-        const getWebViewRef = () =>
-          chat
-            ? store.getState().spotcheck.chatWebViewRef
-            : store.getState().spotcheck.classicWebViewRef;
-
-        const getIsLoading = () =>
-          chat
-            ? store.getState().spotcheck.isChatLoading
-            : store.getState().spotcheck.isClassicLoading;
-
-        let webViewRef = getWebViewRef();
-        let isLoading = getIsLoading();
-
-        const INJECTED_JAVASCRIPT = `
-          (function() {
-            window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(
-              {
-                type: 'RESET_STATE',
-                state: {
-                  ...(response.data || {}),
-                  skip: true,
-                  spotCheckAppearance: {
-                    ...(appearance || {}),
-                    targetType: 'MOBILE',
-                  },
-                  spotcheckUrl: screen,
-                  traceId,
-                  elementBuilderParams: {
-                    ...(variables || {}),
-                  },
-                },
-              }
-            )} }));
-            window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(theme_payload)} }));
-          })();
-        `;
-
-        const injectJavaScript = () =>
-          webViewRef?.injectJavaScript(INJECTED_JAVASCRIPT);
-
-        if (webViewRef) {
-          if (!isLoading) {
-            injectJavaScript();
-            start();
-            return true;
-          } else {
-            const unsubscribe = store.subscribe(() => {
-              const {
-                isChatLoading,
-                isClassicLoading,
-                chatWebViewRef,
-                classicWebViewRef,
-              } = store.getState().spotcheck;
-
-              if ((!isChatLoading && chat) || (!isClassicLoading && !chat)) {
-                unsubscribe();
-                (chat ? chatWebViewRef : classicWebViewRef)?.injectJavaScript(
-                  INJECTED_JAVASCRIPT
-                );
-                start();
-              }
-            });
-            return true;
-          }
-        } else {
-          const unsubscribeWebView = store.subscribe(() => {
-            webViewRef = getWebViewRef();
-            if (webViewRef) {
-              if (!getIsLoading()) {
-                unsubscribeWebView();
-                injectJavaScript();
-                start();
-              }
-            }
-          });
-          return true;
-        }
-      } catch (error: any) {
-        throw new Error(error.message);
-      }
+      chat = isChatType;
     }
-    throw new Error('');
+
+    const spotCheckId = responseJson?.spotCheckId ?? 0;
+    const spotCheckContactId =
+      responseJson?.spotCheckContactId ??
+      responseJson?.spotCheckContact?.id ??
+      0;
+    const triggerToken = responseJson?.triggerToken ?? '';
+
+    updatedState = {
+      ...updatedState,
+      spotcheckID: spotCheckId,
+      spotcheckContactID: spotCheckContactId,
+      triggerToken,
+    };
+
+    const existingURL = store.getState().spotcheck.spotcheckURL;
+    let fullSpotcheckURL = existingURL;
+
+    if (!fullSpotcheckURL && domainName && triggerToken) {
+      const baseSpotcheckURL = `https://${domainName}/s/spotcheck/${triggerToken}/${
+        chat ? 'config' : 'bootstrap'
+      }?spotcheckContactId=${spotCheckContactId}&traceId=${traceId}&spotcheckUrl=${screen}&isSpotCheck=true`;
+      fullSpotcheckURL = Object.entries(variables).reduce(
+        (acc, [key, value]) =>
+          acc +
+          `&${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
+        baseSpotcheckURL
+      );
+      updatedState.spotcheckURL = fullSpotcheckURL;
+    }
+
+    store.dispatch(updateState(updatedState));
+
+    await fetchSpotcheckAPI();
+    return true;
+  } catch (error: any) {
+    throw new Error(error?.message ?? 'setAppearance error');
+  }
+};
+
+export const fetchSpotcheckAPI = async () => {
+  try {
+    const state = store.getState().spotcheck;
+    const {
+      spotcheckURL,
+      isChat,
+      screenName,
+      chatWebViewRef,
+      classicWebViewRef,
+      isChatLoading,
+      isClassicLoading,
+      appearance,
+      traceId,
+      variables,
+    } = state;
+
+    if (!spotcheckURL) throw new Error('Missing Spotcheck URL');
+
+    const userAgent = await getUserAgent();
+    const response = await axios.get(spotcheckURL, {
+      headers: { 'User-Agent': userAgent },
+    });
+
+    const themeInfo = response?.data?.config?.generatedCSS;
+    const themePayload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
+
+    const INJECTED_JAVASCRIPT = `
+      (function() {
+        window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(
+          {
+            type: 'RESET_STATE',
+            state: {
+              ...(response?.data || {}),
+              skip: true,
+              spotCheckAppearance: {
+                ...(appearance || {}),
+                targetType: 'MOBILE',
+              },
+              spotcheckUrl: screenName,
+              traceId,
+              elementBuilderParams: {
+                ...(variables || {}),
+              },
+            },
+          }
+        )} }));
+        window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(
+          themePayload
+        )} }));
+      })();
+    `;
+
+    const webViewRef = isChat ? chatWebViewRef : classicWebViewRef;
+    const isLoading = isChat ? isChatLoading : isClassicLoading;
+    const inject = () => webViewRef?.injectJavaScript(INJECTED_JAVASCRIPT);
+
+    if (webViewRef && !isLoading) {
+      inject();
+      start();
+      return true;
+    }
+
+    const unsubscribe = store.subscribe(() => {
+      const s = store.getState().spotcheck;
+      const ready =
+        (s.isChat && !s.isChatLoading) || (!s.isChat && !s.isClassicLoading);
+      if (ready) {
+        unsubscribe();
+        const ref = s.isChat ? s.chatWebViewRef : s.classicWebViewRef;
+        ref?.injectJavaScript(INJECTED_JAVASCRIPT);
+        start();
+      }
+    });
+
+    return true;
   } catch (error: any) {
     throw new Error(error.message);
   }
@@ -217,7 +217,7 @@ export const start = () => {
   }, store.getState().spotcheck.afterDelay * 1000);
 };
 
-export const handleSurveyEnd = () => {
+export const handleSurveyEnd = (navigationChange: boolean = false) => {
   const webViewRef =
     store.getState().spotcheck.spotCheckType === 'chat'
       ? store.getState().spotcheck.chatWebViewRef
@@ -231,30 +231,46 @@ export const handleSurveyEnd = () => {
       })();
     `);
 
-  const updatedState: Partial<SpotcheckState> = {
-    isVisible: false,
-    isCloseButtonEnabled: false,
-    isFullScreenMode: false,
-    spotcheckID: 0,
-    currentQuestionHeight: 0,
-    closeButtonStyle: {},
-    spotcheckContactID: 0,
-    spotcheckURL: '',
-    spotcheckPosition: 'bottom',
-    isMounted: false,
-    spotCheckType: '',
-    screenHeight: 0,
-    keyBoardHeight: 0,
-    textPosition: 0,
-    spotChecksMode: '',
-    avatarEnabled: false,
-    avatarUrl: '',
-    isSpotCheckButton: false,
-    spotCheckButtonConfig: {},
-    isThankyouPageSubmission: false,
-  };
+  if (!store.getState().spotcheck.isSpotCheckButton || navigationChange) {
+    const updatedState: Partial<SpotcheckState> = {
+      isVisible: false,
+      isCloseButtonEnabled: false,
+      isFullScreenMode: false,
+      spotcheckID: 0,
+      currentQuestionHeight: 0,
+      closeButtonStyle: {},
+      spotcheckContactID: 0,
+      spotcheckURL: '',
+      spotcheckPosition: 'bottom',
+      isMounted: false,
+      spotCheckType: '',
+      screenHeight: 0,
+      keyBoardHeight: 0,
+      textPosition: 0,
+      spotChecksMode: '',
+      avatarEnabled: false,
+      avatarUrl: '',
+      isSpotCheckButton: false,
+      spotCheckButtonConfig: {},
+      isThankyouPageSubmission: false,
+      showSurveyContent: true,
+      screenName: '',
+      isChat: false,
+      appearance: {},
+    };
 
-  store.dispatch(updateState(updatedState));
+    store.dispatch(updateState(updatedState));
+  } else {
+    const updatedState: Partial<SpotcheckState> = {
+      isVisible: false,
+      currentQuestionHeight: 0,
+      isMounted: false,
+      isThankyouPageSubmission: false,
+      showSurveyContent: false,
+    };
+    store.dispatch(updateState(updatedState));
+    fetchSpotcheckAPI();
+  }
 
   if (Platform.OS === 'android' && AdjusterModule) {
     enableAdjustResize();
