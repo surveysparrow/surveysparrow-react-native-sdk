@@ -166,6 +166,8 @@ export const SpotcheckComponent: React.FC = () => {
                     spotcheck.spotCheckType === 'chat'
                       ? -spotcheck.keyBoardHeight
                       : getTopValue(spotcheck.textPosition + 100),
+                      paddingTop: insets.top,
+                      paddingBottom: insets.bottom,
                 })
               : spotcheck.isVisible && spotcheck.isMounted
                 ? {
