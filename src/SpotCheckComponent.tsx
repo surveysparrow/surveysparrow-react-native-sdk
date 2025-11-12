@@ -384,7 +384,9 @@ export const SpotcheckComponent: React.FC = () => {
               !(
                 spotcheck.avatarEnabled &&
                 spotcheck.spotChecksMode === 'miniCard'
-              ) && { paddingBottom: 8 }
+              ) && {
+                paddingBottom: spotcheck.spotChecksMode === 'miniCard' ? 8 : 0,
+              }
             }
           >
             {spotcheck.avatarEnabled &&
