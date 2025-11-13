@@ -19,6 +19,7 @@ import {
 } from './SpotCheckState';
 import {
   closeSpotCheck,
+  fetchSpotcheckAPI,
   handleSurveyEnd,
   ischatSurvey,
 } from './HelperFunctions';
@@ -43,7 +44,11 @@ export const SpotcheckComponent: React.FC = () => {
       const state = navigation.getState();
       const index = state?.index ?? 0;
       const currentRoute = state?.routes?.[index]?.name ?? null;
-      if (currentRoute !== previousRouteName.current) {
+
+      if (
+        currentRoute !== previousRouteName.current &&
+        (spotcheck.isVisible || spotcheck.isSpotCheckButton)
+      ) {
         closeSpotCheck(
           spotcheck.domainName,
           spotcheck.spotcheckContactID,
@@ -258,27 +263,13 @@ export const SpotcheckComponent: React.FC = () => {
                     spotcheck.spotCheckType === 'chat')))) && (
               <TouchableOpacity
                 onPress={() => {
-                  if (spotcheck.isSpotCheckButton) {
-                    if (spotcheck.isThankyouPageSubmission) {
-                      closeSpotCheck(
-                        spotcheck.domainName,
-                        spotcheck.spotcheckContactID,
-                        spotcheck.traceId,
-                        spotcheck.triggerToken
-                      );
-                      handleSurveyEnd();
-                    } else {
-                      dispatch(updateState({ showSurveyContent: false }));
-                    }
-                  } else {
-                    closeSpotCheck(
-                      spotcheck.domainName,
-                      spotcheck.spotcheckContactID,
-                      spotcheck.traceId,
-                      spotcheck.triggerToken
-                    );
-                    handleSurveyEnd();
-                  }
+                  closeSpotCheck(
+                    spotcheck.domainName,
+                    spotcheck.spotcheckContactID,
+                    spotcheck.traceId,
+                    spotcheck.triggerToken
+                  );
+                  handleSurveyEnd();
                 }}
                 style={
                   spotcheck.spotChecksMode === 'miniCard'
@@ -417,16 +408,15 @@ export const SpotcheckComponent: React.FC = () => {
           </View>
         </View>
       </View>
-      {spotcheck.isSpotCheckButton &&
-        !spotcheck.showSurveyContent &&
-        spotcheck.isMounted && (
-          <SpotCheckButton
-            config={spotcheck.spotCheckButtonConfig}
-            onPress={() => {
-              dispatch(updateState({ showSurveyContent: true }));
-            }}
-          />
-        )}
+      {spotcheck.isSpotCheckButton && !spotcheck.showSurveyContent && (
+        <SpotCheckButton
+          config={spotcheck.spotCheckButtonConfig}
+          onPress={async () => {
+            fetchSpotcheckAPI();
+            dispatch(updateState({ showSurveyContent: true }));
+          }}
+        />
+      )}
     </>
   );
 };

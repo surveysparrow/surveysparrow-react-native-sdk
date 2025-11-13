@@ -121,7 +121,7 @@ export const setAppearance = async (
 
     store.dispatch(updateState(updatedState));
 
-    await fetchSpotcheckAPI();
+    if (!updatedState.isSpotCheckButton) await fetchSpotcheckAPI();
     return true;
   } catch (error: any) {
     throw new Error(error?.message ?? 'setAppearance error');
