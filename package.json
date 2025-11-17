@@ -194,6 +194,7 @@
     "react-native-svg": "15.8.0",
     "react-native-uuid": "^2.0.3",
     "react-native-webview": "^13.13.2",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "expo-router": "^5.1.7"
   }
 }
