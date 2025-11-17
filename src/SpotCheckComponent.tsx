@@ -28,7 +28,8 @@ import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SpotCheckButton from './SpotCheckButton';
-import { useNavigation } from '@react-navigation/native';
+import { useSpotcheckNavigation } from './NavigationHandler';
+
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
@@ -36,35 +37,13 @@ export const SpotcheckComponent: React.FC = () => {
     Dimensions.get('window')
   );
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
-  const previousRouteName = useRef<string | null>(null);
+
+  const spotcheckRef = useRef(spotcheck);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('state', () => {
-      const state = navigation.getState();
-      const index = state?.index ?? 0;
-      const currentRoute = state?.routes?.[index]?.name ?? null;
-
-      if (
-        currentRoute !== previousRouteName.current &&
-        (spotcheck.isVisible || spotcheck.isSpotCheckButton)
-      ) {
-        closeSpotCheck(
-          spotcheck.domainName,
-          spotcheck.spotcheckContactID,
-          spotcheck.traceId,
-          spotcheck.triggerToken
-        );
-        handleSurveyEnd(true);
-      }
-
-      previousRouteName.current = currentRoute;
-    });
-
-    return unsubscribe;
-  }, [
-    navigation,
-  ]);
+    spotcheckRef.current = spotcheck;
+  }, [spotcheck]);
+  useSpotcheckNavigation(spotcheckRef);
 
   useEffect(() => {
     const initializeWidget = async () => {
