@@ -119,9 +119,11 @@ export const setAppearance = async (
       updatedState.spotcheckURL = fullSpotcheckURL;
     }
 
-    store.dispatch(updateState(updatedState));
+    setTimeout(async () => {
+      store.dispatch(updateState(updatedState));
+      if (!updatedState.isSpotCheckButton) await fetchSpotcheckAPI();
+    }, store.getState().spotcheck.afterDelay * 1000);
 
-    if (!updatedState.isSpotCheckButton) await fetchSpotcheckAPI();
     return true;
   } catch (error: any) {
     throw new Error(error?.message ?? 'setAppearance error');
@@ -209,12 +211,10 @@ export const fetchSpotcheckAPI = async () => {
 };
 
 export const start = () => {
-  setTimeout(async () => {
-    store.dispatch(updateState({ isVisible: true }));
-    if (Platform.OS === 'android' && AdjusterModule) {
-      disableAdjust();
-    }
-  }, store.getState().spotcheck.afterDelay * 1000);
+  store.dispatch(updateState({ isVisible: true }));
+  if (Platform.OS === 'android' && AdjusterModule) {
+    disableAdjust();
+  }
 };
 
 export const handleSurveyEnd = (navigationChange: boolean = false) => {
@@ -268,8 +268,8 @@ export const handleSurveyEnd = (navigationChange: boolean = false) => {
       isThankyouPageSubmission: false,
       showSurveyContent: false,
     };
+
     store.dispatch(updateState(updatedState));
-    fetchSpotcheckAPI();
   }
 
   if (Platform.OS === 'android' && AdjusterModule) {

@@ -412,7 +412,7 @@ export const SpotcheckComponent: React.FC = () => {
         <SpotCheckButton
           config={spotcheck.spotCheckButtonConfig}
           onPress={async () => {
-            fetchSpotcheckAPI();
+            await fetchSpotcheckAPI();
             dispatch(updateState({ showSurveyContent: true }));
           }}
         />
