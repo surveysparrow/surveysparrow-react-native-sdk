@@ -12,6 +12,8 @@ export function useSpotcheckNavigation(
   const segments = useSegmentsHook?.() ?? [];
   useEffect(() => {
     const sc = spotcheckRef.current;
+    let unsubscribe: (() => void) | undefined;
+
     if (segments.length > 0) {
       const currentRoute = segments.join('/');
       if (
@@ -27,14 +29,12 @@ export function useSpotcheckNavigation(
         handleSurveyEnd(true);
       }
       previousRouteName.current = currentRoute;
-      return;
-    }
-
-    if (navigation) {
-      const unsubscribe = navigation.addListener('state', () => {
+    } else if (navigation) {
+      unsubscribe = navigation.addListener('state', () => {
         const state = navigation.getState();
         const index = state?.index ?? 0;
         const currentRoute = state?.routes?.[index]?.name ?? null;
+
         if (
           currentRoute !== previousRouteName.current &&
           (sc.isVisible || sc.isSpotCheckButton)
@@ -47,9 +47,13 @@ export function useSpotcheckNavigation(
           );
           handleSurveyEnd(true);
         }
+
         previousRouteName.current = currentRoute;
       });
-      return unsubscribe;
     }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [navigation, spotcheckRef, segments]);
 }
