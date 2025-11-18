@@ -28,7 +28,10 @@ export const sendTrackScreenRequest = async (
       );
     }
 
-    if (options.customProperties && Object.keys(options.customProperties).length > 0) {
+    if (
+      options.customProperties &&
+      Object.keys(options.customProperties).length > 0
+    ) {
       store.dispatch(
         updateState({
           customProperties: {
@@ -38,7 +41,7 @@ export const sendTrackScreenRequest = async (
         })
       );
     }
-    
+
     if (options.userDetails && Object.keys(options.userDetails).length > 0) {
       store.dispatch(
         updateState({

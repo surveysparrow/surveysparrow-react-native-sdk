@@ -6,7 +6,7 @@ import ProfileScreen from './ProfileScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SettingsScreen from './SettingsScreen';
 import Spotcheck from 'surveysparrow-react-native-sdk';
-import { SpotcheckProps } from 'surveysparrow-react-native-sdk';
+import { SpotcheckProps, SsSpotcheckListener } from 'surveysparrow-react-native-sdk';
 import { initializeSpotChecks } from 'surveysparrow-react-native-sdk';
 
 export type RootStackParamList = {
@@ -17,6 +17,23 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+
+const listener: SsSpotcheckListener = {
+  onSurveyLoaded: async (response:Record<string,any>) => {
+
+    console.log('Survey Loaded', response);
+  },
+  onSurveyResponse: async (response:Record<string,any>) => {
+    console.log('Survey Response', response);
+  },
+  onPartialSubmission: async (response:Record<string,any>) => {
+    console.log('Partial Submission', response);
+  },
+  onCloseButtonTap: async () => {
+    console.log('Close Button Tapped');
+  },
+};
+
 export default function App() {
   useLayoutEffect(() => {
     initializeSpotChecks({
@@ -26,6 +43,7 @@ export default function App() {
         userDetails: {},
         variables: {},
         customProperties: {},
+        listener: listener,
       } as SpotcheckProps
     });
   },[]);
