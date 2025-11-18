@@ -48,7 +48,6 @@ export interface SpotcheckState {
   screenName: string;
   isChat: boolean;
   appearance: Record<string, any>;
-  useSegmentsHook: (() => string[]) | undefined;
 }
 
 const initialState: SpotcheckState = {
@@ -97,7 +96,6 @@ const initialState: SpotcheckState = {
   screenName: '',
   isChat: false,
   appearance: {},
-  useSegmentsHook: undefined,
 };
 
 const spotcheckSlice = createSlice({

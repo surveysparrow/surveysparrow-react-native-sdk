@@ -74,7 +74,6 @@ export const initializeSpotChecks = ({
   variables = {},
   customProperties = {},
   listener = spotchecksListener,
-  useSegmentsHook,
 }: SpotcheckProps) => {
   store.dispatch(
     updateState({
@@ -84,7 +83,6 @@ export const initializeSpotChecks = ({
       variables,
       customProperties,
       listener,
-      useSegmentsHook,
     })
   );
 };

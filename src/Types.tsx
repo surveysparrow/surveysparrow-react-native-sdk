@@ -23,7 +23,6 @@ export interface SpotcheckProps {
   variables?: Variables;
   customProperties?: CustomProperties;
   listener?: SsSpotcheckListener;
-  useSegmentsHook?: () => string[];
 }
 
 export interface TrackEventProps {
