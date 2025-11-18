@@ -1,6 +1,6 @@
 {
   "name": "surveysparrow-react-native-sdk",
-  "version": "1.0.8-beta.7",
+  "version": "1.0.8-beta.8",
   "description": "SurveySparrow React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -11,17 +11,6 @@
       "types": "./lib/typescript/src/index.d.ts",
       "import": "./lib/module/index.js",
       "require": "./lib/commonjs/index.js"
-    },
-    "./NavigationHandler": {
-      "types": "./lib/typescript/src/NavigationHandler.d.ts",
-      "import": {
-        "expo": "./lib/module/NavigationHandler.expo.js",
-        "react-native": "./lib/module/NavigationHandler.native.js"
-      },
-      "require": {
-        "expo": "./lib/commonjs/NavigationHandler.expo.js",
-        "react-native": "./lib/commonjs/NavigationHandler.native.js"
-      }
     }
   },
   "files": [

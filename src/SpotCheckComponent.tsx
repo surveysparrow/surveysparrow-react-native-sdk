@@ -43,7 +43,7 @@ export const SpotcheckComponent: React.FC = () => {
   useEffect(() => {
     spotcheckRef.current = spotcheck;
   }, [spotcheck]);
-  useSpotcheckNavigation(spotcheckRef);
+  useSpotcheckNavigation(spotcheckRef, spotcheck.useSegmentsHook);
 
   useEffect(() => {
     const initializeWidget = async () => {
