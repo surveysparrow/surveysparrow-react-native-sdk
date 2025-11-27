@@ -1,11 +1,11 @@
 # surveysparrow-react-native-sdk
 [SurveySparrow](https:://surveysparrow.com) React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.
 
-| SDK | Latest Version | Branch |
+| SDK | Latest Version | Tag | Branch |
 | :--- | :--- | :--- |
-| **SpotChecks React Native SDK** | [1.0.8 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.8) | spotchecks |
-| **Expo SpotChecks React Native SDK** | [1.0.0(latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/1.0.0) | expo-spotchecks |
-| **Normal React Native SDK** | [0.3.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.3.0) | main |
+| **SpotChecks React Native SDK** | [1.0.8 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.8) | [1.0.8](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.0.8) | spotchecks |
+| **Expo SpotChecks React Native SDK** | [2.0.0(latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/1.0.0) | [2.0.0](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.0.0) |expo-spotchecks |
+| **Normal React Native SDK** | [0.3.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.3.0) | - | main |
 
 <br>
 
