@@ -97,7 +97,7 @@ export const sendTrackScreenRequest = async (
       customProperties: state.customProperties,
     };
 
-    const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/properties?isSpotCheck=true&sdk=REACT%20NATIVE`;
+    const url = `https://${state.domainName}/api/internal/spotcheck/widget/${state.targetToken}/properties?isSpotCheck=true&sdk=EXPO`;
 
     const response = await axios.post(url, payload, {
       headers: {
