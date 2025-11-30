@@ -530,6 +530,18 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
               })
             );
           }
+        } else if (jsonResponse.type === 'classicLoadEvent') {
+          dispatch(
+            updateState({
+              isClassicLoading: false,
+            })
+          );
+        } else if (jsonResponse.type === 'chatLoadEvent') {
+          dispatch(
+            updateState({
+              isChatLoading: false,
+            })
+          );
         } else if (jsonResponse.type === 'surveyCompleted') {
           await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
 
@@ -598,15 +610,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         geolocationEnabled={true}
         mediaPlaybackRequiresUserAction={false}
         originWhitelist={['*']}
-        onLoad={() => {
-          dispatch(
-            updateState(
-              webviewType === 'classic'
-                ? { isClassicLoading: false }
-                : { isChatLoading: false }
-            )
-          );
-        }}
         onMessage={handleOnMessage}
         onError={() => {
           dispatch(
