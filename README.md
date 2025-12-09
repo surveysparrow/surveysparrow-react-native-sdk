@@ -3,15 +3,15 @@
 
 | SDK | Latest Version | Tag | Branch |
 | :--- | :--- | :--- | :--- |
-| **SpotChecks React Native SDK** | [1.0.8 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.8) | [1.0.8](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.0.8) | spotchecks |
-| **Expo SpotChecks React Native SDK** | [2.0.0(latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/1.0.0) | [2.0.0](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.0.0) |expo-spotchecks |
+| **SpotChecks React Native SDK** | [1.0.9 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.9) | [1.0.9](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.0.9) | spotchecks |
+| **Expo SpotChecks React Native SDK** | [2.0.2(latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/2.0.2) | [2.0.2](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.0.2) |expo-spotchecks |
 | **Normal React Native SDK** | [0.3.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.3.0) | - | main |
 
 <br>
 
 # SpotChecks Details
 
-Introducing Spotchecks in 1.x.x version series(surveysparrow-react-native-sdk). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/).
+Introducing Spotchecks in 1.x.x version series(surveysparrow-react-native-sdk). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
 
 Introducing Expo Spotchecks in 2.x.x version series (surveysparrow-expo-spotchecks). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
 
