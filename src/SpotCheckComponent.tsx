@@ -5,7 +5,6 @@ import {
   Dimensions,
   StyleSheet,
   type ScaledSize,
-  PermissionsAndroid,
   Platform,
   Keyboard,
   type ViewStyle,
@@ -87,13 +86,6 @@ export const SpotcheckComponent: React.FC = () => {
                 : '',
             })
           );
-
-          if (Platform.OS === 'android') {
-            const cameraPermission = PermissionsAndroid.PERMISSIONS.CAMERA;
-            if (cameraPermission) {
-              await PermissionsAndroid.request(cameraPermission);
-            }
-          }
         }
       } catch (error) {
         console.log('Error initializing widget:', error);
