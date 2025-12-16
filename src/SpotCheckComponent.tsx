@@ -21,6 +21,8 @@ import {
   fetchSpotcheckAPI,
   handleSurveyEnd,
   ischatSurvey,
+  captureP0Error,
+  captureP1Error,
 } from './HelperFunctions';
 import axios from 'axios';
 import WebView from 'react-native-webview';
@@ -88,6 +90,11 @@ export const SpotcheckComponent: React.FC = () => {
           );
         }
       } catch (error) {
+        captureP0Error(error, 'SPOTCHECK_INITIALIZATION', {
+          component: 'SpotcheckComponent',
+          action: 'initializeWidget',
+          targetToken: spotcheck.targetToken,
+        });
         console.log('Error initializing widget:', error);
       }
     };
@@ -579,6 +586,10 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         }
       }
     } catch (e) {
+      captureP1Error(e, 'WEBVIEW_ERROR', {
+        action: 'handleOnMessage',
+        rawData: event.nativeEvent?.data,
+      });
       console.log('Error decoding JSON:', e);
     }
   };
@@ -611,6 +622,15 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
                 ? { isClassicLoading: true }
                 : { isChatLoading: true }),
             })
+          );
+          captureP0Error(
+            new Error('WebView loading error'),
+            'WEBVIEW_ERROR',
+            {
+              action: 'WebView Loading Error',
+              webviewType,
+              url,
+            }
           );
         }}
         injectedJavaScript={`

@@ -3,6 +3,7 @@ import { store, updateState, type SpotcheckState } from './SpotCheckState';
 import uuid from 'react-native-uuid';
 import { NativeModules, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import * as Sentry from '@sentry/react-native';
 
 const { AdjusterModule } = NativeModules;
 
@@ -320,10 +321,19 @@ export const closeSpotCheck = async (
         console.log('SpotCheck Closed');
       }
     } else {
+      captureP1Error(
+        new Error(`Close spotcheck failed with status ${response.status}`),
+        'CLOSE_SPOTCHECK',
+        { spotcheckContactID, status: response.status }
+      );
       console.log(`Error: ${response.status}`);
     }
   } catch (error) {
-    console.log('Error parsing JSON:', error);
+    captureP1Error(error, 'CLOSE_SPOTCHECK', {
+      domainName,
+      spotcheckContactID,
+    });
+    console.log('Error closing spotcheck:', error);
   }
 };
 
@@ -334,4 +344,219 @@ export const ischatSurvey = (type: String) => {
     type === 'NPSChat' ||
     type === 'CSATChat'
   );
+};
+
+export interface SdkErrorPayload {
+  errorMessage: string;
+  sdkType: string;
+  sdkVersion: string;
+  level: string;
+  tags: Record<string, any>;
+  contexts: Record<string, any>;
+  extra: Record<string, any>;
+  sentryEvent?: Record<string, any>;
+  breadcrumbs?: any;
+}
+
+export const logSdkError = async (
+  domainName: string,
+  payload: SdkErrorPayload
+): Promise<boolean> => {
+  if (!domainName) {
+    console.log('Missing domain name for error logging');
+    return false;
+  }
+
+  try {
+    await axios.post(
+      `https://${domainName}/api/internal/spotcheck/sdkErrors`,
+      payload
+    );
+    console.log('Error successfully logged to Sentry');
+    return true;
+  } catch (loggingError) {
+    console.log('Failed to log error to Sentry:', loggingError);
+    return false;
+  }
+};
+
+let sentryInitialized = false;
+
+export const initializeSentry = () => {
+  if (sentryInitialized) return;
+  sentryInitialized = true;
+
+  Sentry.init({
+    dsn: 'https://dummy@sentry.io/0',
+    beforeSend: async (event: any, _hint: any) => {
+      const state = store.getState().spotcheck;
+
+      const errorPriority = String(event.tags?.error_priority || 'P1');
+      const errorType = event.tags?.errorType || 'UNKNOWN';
+      const severity = errorPriority === 'P0' ? 'CRITICAL' : 'HIGH';
+
+      const payload: SdkErrorPayload = {
+        errorMessage: `${
+          event.message ||
+          event.exception?.values?.[0]?.value ||
+          'Unknown error'
+        }`,
+        sdkType: 'react-native',
+        sdkVersion: '1.0.10-beta.1',
+        level: String(event.level || 'error'),
+        tags: {
+          error_priority: errorPriority,
+          errorType: errorType,
+          severity: severity,
+          source: String(event.tags?.source || 'UNKNOWN'),
+          ...event.tags,
+        },
+        contexts: {
+          user: {
+            spotcheck_token: state.targetToken || '',
+            spotcheck_domain_name: state.domainName || '',
+          },
+          ...(event.contexts || {}),
+        },
+        breadcrumbs: event.breadcrumbs?.map((b: any) => ({
+          category: b.category,
+          message: b.message,
+          level: b.level,
+          timestamp: b.timestamp,
+          data: b.data,
+        })),
+        extra: {
+          error_message: event.message || event.exception?.values?.[0]?.value,
+          variables: state.variables || {},
+          custom_properties: state.customProperties || {},
+          user_details: state.userDetails || {},
+          exception: event.exception?.values?.map((e: any) => ({
+            type: e.type,
+            value: e.value,
+            stacktrace: e.stacktrace?.frames?.slice(-10),
+          })),
+        },
+        sentryEvent: {
+          event_id: event.event_id,
+          timestamp: event.timestamp,
+          platform: event.platform,
+          release: event.release,
+          environment: event.environment,
+          sdk: event.sdk,
+        },
+      };
+
+      if (state.domainName) {
+        await logSdkError(state.domainName, payload);
+      }
+
+      return null;
+    },
+    enableAutoSessionTracking: false,
+  });
+};
+
+export type ErrorPriority = 'P0' | 'P1';
+
+export type ErrorSource =
+  | 'SDK_INITIALIZATION'
+  | 'SPOTCHECK_INITIALIZATION'
+  | 'TRACK_SCREEN'
+  | 'TRACK_EVENT'
+  | 'WEBVIEW_ERROR'
+  | 'CLOSE_SPOTCHECK'
+  | 'APP_CRASH'
+  | 'UNKNOWN';
+
+const getErrorPriority = (source: ErrorSource): ErrorPriority => {
+  const p0Sources: ErrorSource[] = [
+    'SDK_INITIALIZATION',
+    'SPOTCHECK_INITIALIZATION',
+    'APP_CRASH',
+    'WEBVIEW_ERROR',
+  ];
+
+  return p0Sources.includes(source) ? 'P0' : 'P1';
+};
+
+let globalHandlersInitialized = false;
+
+export const initializeGlobalErrorHandlers = () => {
+  if (globalHandlersInitialized) return;
+  globalHandlersInitialized = true;
+
+  const originalHandler = (global as any).ErrorUtils?.getGlobalHandler?.();
+
+  (global as any).ErrorUtils?.setGlobalHandler?.(
+    (error: Error, isFatal?: boolean) => {
+      captureP0Error(error, 'APP_CRASH', {
+        type: 'unhandledException',
+        isFatal,
+      });
+
+      originalHandler?.(error, isFatal);
+    }
+  );
+
+  try {
+    const Promise = require('promise/setimmediate/core');
+    if (!Promise._onReject) {
+      Promise._onReject = (reason: Error) => {
+        captureP1Error(reason, 'UNKNOWN', {
+          type: 'unhandledPromiseRejection',
+        });
+      };
+    }
+  } catch {}
+};
+
+export const captureSDKError = (
+  error: Error | unknown,
+  context?: {
+    tags?: Record<string, string>;
+    extra?: Record<string, any>;
+  }
+) => {
+  const source = (context?.tags?.source as ErrorSource) || 'UNKNOWN';
+  const priority = getErrorPriority(source);
+  const severity = priority === 'P0' ? 'CRITICAL' : 'HIGH';
+
+  Sentry.withScope((scope: Sentry.Scope) => {
+    scope.setTags({
+      ...context?.tags,
+      error_priority: priority,
+      severity: severity,
+      errorType: source,
+    });
+    scope.setExtras(context?.extra || {});
+    Sentry.captureException(error);
+  });
+};
+
+export const captureP0Error = (
+  error: Error | unknown,
+  source: ErrorSource,
+  extra?: Record<string, any>
+) => {
+  Sentry.withScope((scope: Sentry.Scope) => {
+    scope.setTag('error_priority', 'P0');
+    scope.setTag('severity', 'CRITICAL');
+    scope.setTag('errorType', source);
+    scope.setExtras(extra || {});
+    Sentry.captureException(error);
+  });
+};
+
+export const captureP1Error = (
+  error: Error | unknown,
+  source: ErrorSource,
+  extra?: Record<string, any>
+) => {
+  Sentry.withScope((scope: Sentry.Scope) => {
+    scope.setTag('error_priority', 'P1');
+    scope.setTag('severity', 'HIGH');
+    scope.setTag('errorType', source);
+    scope.setExtras(extra || {});
+    Sentry.captureException(error);
+  });
 };

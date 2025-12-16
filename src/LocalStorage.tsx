@@ -1,4 +1,5 @@
 import { NativeModules } from 'react-native';
+import { captureP1Error } from './HelperFunctions';
 
 const { SurveysparrowReactNativeSdk } = NativeModules;
 
@@ -34,6 +35,10 @@ export const saveData = async (value: string) => {
   try {
     await putString('SurveySparrowUUID', value);
   } catch (error) {
+    captureP1Error(error, 'UNKNOWN', {
+      action: 'saveData',
+      value,
+    });
     console.error('Error saving data:', error);
   }
 };
@@ -43,6 +48,9 @@ export const loadData = async () => {
     const value = await getString('SurveySparrowUUID');
     return value;
   } catch (error) {
+    captureP1Error(error, 'UNKNOWN', {
+      action: 'loadData',
+    });
     console.error('Error retrieving data:', error);
     return null;
   }

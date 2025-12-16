@@ -15,7 +15,7 @@ class AdjusterModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
 
     @ReactMethod
     fun setAdjustNothing() {
-        val activity: Activity? = currentActivity
+        val activity: Activity? = reactApplicationContext.currentActivity
 
         activity?.runOnUiThread {
             activity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
@@ -24,7 +24,7 @@ class AdjusterModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
 
     @ReactMethod
     fun setAdjustResize() {
-        val activity: Activity? = currentActivity
+        val activity: Activity? = reactApplicationContext.currentActivity
         activity?.runOnUiThread {
             activity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
