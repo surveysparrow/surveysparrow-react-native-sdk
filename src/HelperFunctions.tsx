@@ -350,7 +350,6 @@ export interface SdkErrorPayload {
   errorMessage: string;
   sdkType: string;
   sdkVersion: string;
-  level: string;
   tags: Record<string, any>;
   contexts: Record<string, any>;
   extra: Record<string, any>;
@@ -394,6 +393,7 @@ export const initializeSentry = () => {
       const errorPriority = String(event.tags?.error_priority || 'P1');
       const errorType = event.tags?.errorType || 'UNKNOWN';
       const severity = errorPriority === 'P0' ? 'CRITICAL' : 'HIGH';
+      const level = errorPriority === 'P0' ? 'fatal' : 'error';
 
       const payload: SdkErrorPayload = {
         errorMessage: `${
@@ -402,13 +402,12 @@ export const initializeSentry = () => {
           'Unknown error'
         }`,
         sdkType: 'react-native',
-        sdkVersion: '1.0.10-beta.1',
-        level: String(event.level || 'error'),
+        sdkVersion: require('../package.json').version,
         tags: {
+          level: level,
           error_priority: errorPriority,
           errorType: errorType,
           severity: severity,
-          source: String(event.tags?.source || 'UNKNOWN'),
           ...event.tags,
         },
         contexts: {
