@@ -320,14 +320,14 @@ export const closeSpotCheck = async (
         await store.getState().spotcheck.listener?.onCloseButtonTap?.();
       }
     } else {
-      captureP1Error(
+      captureP0Error(
         new Error(`Close spotcheck failed with status ${response.status}`),
         'CLOSE_SPOTCHECK',
         { spotcheckContactID, status: response.status }
       );
     }
   } catch (error) {
-    captureP1Error(error, 'CLOSE_SPOTCHECK', {
+    captureP0Error(error, 'CLOSE_SPOTCHECK', {
       domainName,
       spotcheckContactID,
     });
@@ -385,7 +385,7 @@ export const initializeSentry = () => {
       const state = store.getState().spotcheck;
 
       const error_priority = String(event.tags?.error_priority || 'P1');
-      const errorType = event.tags?.errorType || 'UNKNOWN';
+      const errorType = event.tags?.errorType || 'GENERAL';
       const severity = error_priority === 'P0' ? 'CRITICAL' : 'HIGH';
       const level = error_priority === 'P0' ? 'fatal' : 'error';
 
@@ -459,41 +459,7 @@ export type ErrorSource =
   | 'WEBVIEW_ERROR'
   | 'CLOSE_SPOTCHECK'
   | 'APP_CRASH'
-  | 'UNKNOWN';
-
-const getErrorPriority = (source: ErrorSource): ErrorPriority => {
-  const p0Sources: ErrorSource[] = [
-    'SDK_INITIALIZATION',
-    'SPOTCHECK_INITIALIZATION',
-    'APP_CRASH',
-    'WEBVIEW_ERROR',
-  ];
-
-  return p0Sources.includes(source) ? 'P0' : 'P1';
-};
-
-export const captureSDKError = (
-  error: Error | unknown,
-  context?: {
-    tags?: Record<string, string>;
-    extra?: Record<string, any>;
-  }
-) => {
-  const source = (context?.tags?.source as ErrorSource) || 'UNKNOWN';
-  const priority = getErrorPriority(source);
-  const severity = priority === 'P0' ? 'CRITICAL' : 'HIGH';
-
-  Sentry.withScope((scope: Sentry.Scope) => {
-    scope.setTags({
-      ...context?.tags,
-      error_priority: priority,
-      severity: severity,
-      errorType: source,
-    });
-    scope.setExtras(context?.extra || {});
-    Sentry.captureException(error);
-  });
-};
+  | 'GENERAL';
 
 export const captureP0Error = (
   error: Error | unknown,

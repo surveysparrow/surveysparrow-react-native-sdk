@@ -22,7 +22,6 @@ import {
   handleSurveyEnd,
   ischatSurvey,
   captureP0Error,
-  captureP1Error,
 } from './HelperFunctions';
 import axios from 'axios';
 import WebView from 'react-native-webview';
@@ -582,7 +581,7 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         }
       }
     } catch (e) {
-      captureP1Error(e, 'WEBVIEW_ERROR', {
+      captureP0Error(e, 'WEBVIEW_ERROR', {
         action: 'handleOnMessage',
         rawData: event.nativeEvent?.data,
       });

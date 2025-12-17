@@ -11,19 +11,9 @@ import type {
 } from './Types';
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
-import {
-  initializeSentry,
-  captureSDKError,
-  captureP0Error,
-  captureP1Error,
-  type ErrorSource,
-} from './HelperFunctions';
+import { initializeSentry, captureP0Error } from './HelperFunctions';
 
 initializeSentry();
-
-export { captureSDKError, captureP0Error, captureP1Error };
-export type { ErrorSource };
-
 interface ErrorBoundaryState {
   hasError: boolean;
 }
@@ -91,7 +81,7 @@ export const trackScreen = async (
       }
     }
   } catch (error: any) {
-    captureP1Error(error, 'TRACK_SCREEN', {
+    captureP0Error(error, 'TRACK_SCREEN', {
       screen,
       options,
       errorMessage: error.message,
@@ -116,7 +106,7 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
       }
     }
   } catch (error: any) {
-    captureP1Error(error, 'TRACK_EVENT', {
+    captureP0Error(error, 'TRACK_EVENT', {
       screen,
       event,
       errorMessage: error.message,
