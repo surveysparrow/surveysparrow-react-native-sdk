@@ -96,7 +96,6 @@ export const trackScreen = async (
       options,
       errorMessage: error.message,
     });
-    console.log(`Screen Tracking Failed. ${error.message}`);
   }
 };
 
@@ -122,7 +121,6 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
       event,
       errorMessage: error.message,
     });
-    console.log(`Event Tracking Failed. ${error.message}`);
   }
 };
 
