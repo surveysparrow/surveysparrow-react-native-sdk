@@ -80,7 +80,9 @@ export const trackScreen = async (
     if (response.valid) {
       console.log('Screen Tracking succeeded.');
     } else {
-      if (response?.error?.length > 0) {
+      if (response?.userLogs) {
+        console.log(`Screen Tracking Failed. ${response.error}`);
+      } else if (response?.error?.length > 0) {
         throw new Error(response.error.toString());
       } else if (response?.error === undefined) {
         throw new Error('Tracking failed without an explicit error.');
@@ -104,7 +106,9 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
     if (response.valid) {
       console.log('TrackEvent succeeded.');
     } else {
-      if (response?.error?.length > 0) {
+      if (response?.userLogs) {
+        console.log(`Event Tracking Failed. ${response.error}`);
+      } else if (response?.error?.length > 0) {
         throw new Error(response.error.toString());
       } else if (response?.error === undefined) {
         throw new Error('Tracking failed without an explicit error.');
