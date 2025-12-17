@@ -200,7 +200,7 @@ export const sendTrackScreenRequest = async (
         }
       }
 
-      throw new Error(responseJson?.reason.toString());
+      throw new Error('');
     } else {
       throw new Error(`Received status code ${response.status}`);
     }
@@ -327,7 +327,7 @@ export const sendTrackEventRequest = async (
                     }
                   }
 
-                  throw new Error(responseJson?.reason.toString());
+                  throw new Error('');
                 } else {
                   throw new Error(`Received status code ${response.status}`);
                 }

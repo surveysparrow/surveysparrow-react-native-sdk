@@ -13,7 +13,6 @@ import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
 import {
   initializeSentry,
-  initializeGlobalErrorHandlers,
   captureSDKError,
   captureP0Error,
   captureP1Error,
@@ -21,7 +20,6 @@ import {
 } from './HelperFunctions';
 
 initializeSentry();
-initializeGlobalErrorHandlers();
 
 export { captureSDKError, captureP0Error, captureP1Error };
 export type { ErrorSource };
@@ -81,6 +79,14 @@ export const trackScreen = async (
     const response = await sendTrackScreenRequest(screen, options);
     if (response.valid) {
       console.log('Screen Tracking succeeded.');
+    } else {
+      if (response?.error?.length > 0) {
+        throw new Error(response.error.toString());
+      } else if (response?.error === undefined) {
+        throw new Error('Tracking failed without an explicit error.');
+      } else {
+        console.log(`Screen Tracking Failed.`);
+      }
     }
   } catch (error: any) {
     captureP1Error(error, 'TRACK_SCREEN', {
@@ -97,6 +103,14 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
     const response = await sendTrackEventRequest(screen, event);
     if (response.valid) {
       console.log('TrackEvent succeeded.');
+    } else {
+      if (response?.error?.length > 0) {
+        throw new Error(response.error.toString());
+      } else if (response?.error === undefined) {
+        throw new Error('Tracking failed without an explicit error.');
+      } else {
+        console.log(`Event Tracking Failed.`);
+      }
     }
   } catch (error: any) {
     captureP1Error(error, 'TRACK_EVENT', {

@@ -362,7 +362,6 @@ export const logSdkError = async (
   payload: SdkErrorPayload
 ): Promise<boolean> => {
   if (!domainName) {
-    console.log('Missing domain name for error logging');
     return false;
   }
 
@@ -387,13 +386,13 @@ export const initializeSentry = () => {
 
   Sentry.init({
     dsn: 'https://dummy@sentry.io/0',
-    beforeSend: async (event: any, _hint: any) => {
+    beforeSend: async (event: any) => {
       const state = store.getState().spotcheck;
 
-      const errorPriority = String(event.tags?.error_priority || 'P1');
+      const error_priority = String(event.tags?.error_priority || 'P1');
       const errorType = event.tags?.errorType || 'UNKNOWN';
-      const severity = errorPriority === 'P0' ? 'CRITICAL' : 'HIGH';
-      const level = errorPriority === 'P0' ? 'fatal' : 'error';
+      const severity = error_priority === 'P0' ? 'CRITICAL' : 'HIGH';
+      const level = error_priority === 'P0' ? 'fatal' : 'error';
 
       const payload: SdkErrorPayload = {
         errorMessage: `${
@@ -404,10 +403,10 @@ export const initializeSentry = () => {
         sdkType: 'react-native',
         sdkVersion: require('../package.json').version,
         tags: {
-          level: level,
-          error_priority: errorPriority,
-          errorType: errorType,
-          severity: severity,
+          level,
+          error_priority,
+          errorType,
+          severity,
           ...event.tags,
         },
         contexts: {
@@ -476,37 +475,6 @@ const getErrorPriority = (source: ErrorSource): ErrorPriority => {
   ];
 
   return p0Sources.includes(source) ? 'P0' : 'P1';
-};
-
-let globalHandlersInitialized = false;
-
-export const initializeGlobalErrorHandlers = () => {
-  if (globalHandlersInitialized) return;
-  globalHandlersInitialized = true;
-
-  const originalHandler = (global as any).ErrorUtils?.getGlobalHandler?.();
-
-  (global as any).ErrorUtils?.setGlobalHandler?.(
-    (error: Error, isFatal?: boolean) => {
-      captureP0Error(error, 'APP_CRASH', {
-        type: 'unhandledException',
-        isFatal,
-      });
-
-      originalHandler?.(error, isFatal);
-    }
-  );
-
-  try {
-    const Promise = require('promise/setimmediate/core');
-    if (!Promise._onReject) {
-      Promise._onReject = (reason: Error) => {
-        captureP1Error(reason, 'UNKNOWN', {
-          type: 'unhandledPromiseRejection',
-        });
-      };
-    }
-  } catch {}
 };
 
 export const captureSDKError = (
