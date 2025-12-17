@@ -396,7 +396,7 @@ export const initializeSentry = () => {
           'Unknown error'
         }`,
         sdkType: 'react-native',
-        sdkVersion: require('../package.json').version,
+        sdkVersion: '1.0.10-beta.4',
         tags: {
           level,
           error_priority,
