@@ -95,7 +95,6 @@ export const SpotcheckComponent: React.FC = () => {
           action: 'initializeWidget',
           targetToken: spotcheck.targetToken,
         });
-        console.log('Error initializing widget:', error);
       }
     };
 
@@ -543,9 +542,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
           );
         } else if (jsonResponse.type === 'surveyCompleted') {
           await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
-
-          console.log('Survey submitted');
-
           handleSurveyEnd();
         } else if (jsonResponse.type === 'surveyLoadStarted') {
           await spotchecks.listener?.onSurveyLoaded?.(jsonResponse.data);
@@ -590,7 +586,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         action: 'handleOnMessage',
         rawData: event.nativeEvent?.data,
       });
-      console.log('Error decoding JSON:', e);
     }
   };
 

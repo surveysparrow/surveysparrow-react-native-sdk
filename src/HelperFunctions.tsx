@@ -318,7 +318,6 @@ export const closeSpotCheck = async (
       const data = await response.json();
       if (data.success) {
         await store.getState().spotcheck.listener?.onCloseButtonTap?.();
-        console.log('SpotCheck Closed');
       }
     } else {
       captureP1Error(
@@ -326,14 +325,12 @@ export const closeSpotCheck = async (
         'CLOSE_SPOTCHECK',
         { spotcheckContactID, status: response.status }
       );
-      console.log(`Error: ${response.status}`);
     }
   } catch (error) {
     captureP1Error(error, 'CLOSE_SPOTCHECK', {
       domainName,
       spotcheckContactID,
     });
-    console.log('Error closing spotcheck:', error);
   }
 };
 
@@ -370,10 +367,8 @@ export const logSdkError = async (
       `https://${domainName}/api/internal/spotcheck/sdkErrors`,
       payload
     );
-    console.log('Error successfully logged to Sentry');
     return true;
   } catch (loggingError) {
-    console.log('Failed to log error to Sentry:', loggingError);
     return false;
   }
 };

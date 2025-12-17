@@ -276,7 +276,6 @@ export const sendTrackEventRequest = async (
 
                 if (response.status === 200) {
                   const responseJson = response.data;
-                  console.log(responseJson.reason);
                   if (responseJson?.show != null) {
                     if (responseJson?.show) {
                       const appearance_response = await setAppearance(
