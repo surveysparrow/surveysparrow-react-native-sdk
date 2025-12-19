@@ -1,25 +1,40 @@
 package com.surveysparrowreactnativesdk
 
+import android.content.SharedPreferences
+import android.preference.PreferenceManager
+import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.facebook.react.bridge.Promise
 
 class SurveysparrowReactNativeSdkModule(reactContext: ReactApplicationContext) :
-  ReactContextBaseJavaModule(reactContext) {
+    ReactContextBaseJavaModule(reactContext) {
 
-  override fun getName(): String {
-    return NAME
-  }
+    private val sharedPreferences: SharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(reactContext)
 
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-  @ReactMethod
-  fun multiply(a: Double, b: Double, promise: Promise) {
-    promise.resolve(a * b)
-  }
+    override fun getName(): String {
+        return NAME
+    }
 
-  companion object {
-    const val NAME = "SurveysparrowReactNativeSdk"
-  }
+    @ReactMethod
+    fun putString(key: String, value: String, promise: Promise) {
+        val editor = sharedPreferences.edit()
+        editor.putString(key, value)
+        if (editor.commit()) {
+            promise.resolve(true)
+        } else {
+            promise.reject("SAVE_ERROR", "Could not save string")
+        }
+    }
+
+    @ReactMethod
+    fun getString(key: String, promise: Promise) {
+        val value = sharedPreferences.getString(key, null)
+        promise.resolve(value)
+    }
+
+    companion object {
+        const val NAME = "SurveysparrowReactNativeSdk"
+    }
 }

@@ -1,16 +1,16 @@
 {
   "name": "surveysparrow-react-native-sdk",
-  "version": "0.1.0",
+  "version": "1.0.10",
   "description": "SurveySparrow React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.",
   "source": "./src/index.tsx",
-  "main": "./lib/commonjs/index.cjs",
-  "module": "./lib/module/index.mjs",
+  "main": "./lib/commonjs/index.js",
+  "module": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
       "types": "./lib/typescript/src/index.d.ts",
-      "import": "./lib/module/index.mjs",
-      "require": "./lib/commonjs/index.cjs"
+      "import": "./lib/module/index.js",
+      "require": "./lib/commonjs/index.js"
     }
   },
   "files": [
@@ -84,10 +84,15 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-device-info": "^14.0.4",
+    "react-native-safe-area-context": "^5.6.2",
+    "react-native-svg": "^15.15.1",
+    "react-native-webview": "^13.13.2"
   },
   "workspaces": [
-    "example"
+    "example",
+    "."
   ],
   "packageManager": "yarn@3.6.1",
   "jest": {
@@ -178,5 +183,15 @@
     "type": "module-legacy",
     "languages": "kotlin-swift",
     "version": "0.38.1"
+  },
+  "dependencies": {
+    "@react-navigation/native": "^7.0.14",
+    "@react-navigation/stack": "^7.1.1",
+    "@reduxjs/toolkit": "^2.5.1",
+    "axios": "^1.7.9",
+    "react-native-device-info": "^14.0.4",
+    "react-native-uuid": "^2.0.3",
+    "react-native-webview": "^13.13.2",
+    "react-redux": "^9.2.0"
   }
 }
