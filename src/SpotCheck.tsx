@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import { store, updateState } from './SpotCheckState';
 import type {
@@ -11,12 +11,45 @@ import type {
 } from './Types';
 import { SpotcheckComponent } from './SpotCheckComponent';
 import { sendTrackScreenRequest, sendTrackEventRequest } from './TrackAPIs';
+import { initializeSentry, captureP0Error } from './HelperFunctions';
+
+initializeSentry();
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class SpotcheckErrorBoundary extends Component<
+  { children: ReactNode },
+  ErrorBoundaryState
+> {
+  state: ErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    captureP0Error(error, 'APP_CRASH', {
+      type: 'appCrash',
+      componentStack: errorInfo.componentStack,
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
 
 const Spotcheck: React.FC = () => {
   return (
-    <Provider store={store}>
-      <SpotcheckComponent />
-    </Provider>
+    <SpotcheckErrorBoundary>
+      <Provider store={store}>
+        <SpotcheckComponent />
+      </Provider>
+    </SpotcheckErrorBoundary>
   );
 };
 
@@ -37,14 +70,22 @@ export const trackScreen = async (
     if (response.valid) {
       console.log('Screen Tracking succeeded.');
     } else {
-      if ('error' in response) {
+      if (response?.userLogs) {
+        console.log(`Screen Tracking Failed. ${response.error}`);
+      } else if (response?.error?.length > 0) {
         throw new Error(response.error.toString());
-      } else {
+      } else if (response?.error === undefined) {
         throw new Error('Tracking failed without an explicit error.');
+      } else {
+        console.log(`Screen Tracking Failed.`);
       }
     }
   } catch (error: any) {
-    console.log(`Screen Tracking Failed. ${error.message}`);
+    captureP0Error(error, 'TRACK_SCREEN', {
+      screen,
+      options,
+      errorMessage: error.message,
+    });
   }
 };
 
@@ -54,14 +95,22 @@ export const trackEvent = async (screen: string, event: TrackEventProps) => {
     if (response.valid) {
       console.log('TrackEvent succeeded.');
     } else {
-      if ('error' in response) {
+      if (response?.userLogs) {
+        console.log(`Event Tracking Failed. ${response.error}`);
+      } else if (response?.error?.length > 0) {
         throw new Error(response.error.toString());
-      } else {
+      } else if (response?.error === undefined) {
         throw new Error('Tracking failed without an explicit error.');
+      } else {
+        console.log(`Event Tracking Failed.`);
       }
     }
   } catch (error: any) {
-    console.log(`Event Tracking Failed. ${error.message}`);
+    captureP0Error(error, 'TRACK_EVENT', {
+      screen,
+      event,
+      errorMessage: error.message,
+    });
   }
 };
 
@@ -75,16 +124,33 @@ export const initializeSpotChecks = ({
   customProperties = {},
   listener = spotchecksListener,
 }: SpotcheckProps) => {
-  store.dispatch(
-    updateState({
+  try {
+    if (!targetToken) {
+      captureP0Error(
+        new Error('Missing required parameters: targetToken'),
+        'SDK_INITIALIZATION',
+        { domainName, targetToken }
+      );
+      return;
+    }
+
+    store.dispatch(
+      updateState({
+        domainName,
+        targetToken,
+        userDetails,
+        variables,
+        customProperties,
+        listener,
+      })
+    );
+  } catch (error: any) {
+    captureP0Error(error, 'SDK_INITIALIZATION', {
       domainName,
       targetToken,
-      userDetails,
-      variables,
-      customProperties,
-      listener,
-    })
-  );
+      errorMessage: error.message,
+    });
+  }
 };
 
 export default Spotcheck;

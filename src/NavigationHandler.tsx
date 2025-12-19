@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { closeSpotCheck, handleSurveyEnd } from './HelperFunctions';
+import {
+  closeSpotCheck,
+  handleSurveyEnd,
+  captureP1Error,
+} from './HelperFunctions';
 import type { SpotcheckState } from './SpotCheckState';
 
 export function useSpotcheckNavigation(
@@ -18,13 +22,22 @@ export function useSpotcheckNavigation(
         currentRoute !== previousRouteName.current &&
         (sc.isVisible || sc.isSpotCheckButton)
       ) {
-        closeSpotCheck(
-          sc.domainName,
-          sc.spotcheckContactID,
-          sc.traceId,
-          sc.triggerToken
-        );
-        handleSurveyEnd(true);
+        try {
+          closeSpotCheck(
+            sc.domainName,
+            sc.spotcheckContactID,
+            sc.traceId,
+            sc.triggerToken
+          );
+          handleSurveyEnd(true);
+        } catch (error) {
+          captureP1Error(error, 'CLOSE_SPOTCHECK', {
+            component: 'NavigationHandler',
+            action: 'closeSpotCheckOnNavigation',
+            currentRoute,
+            previousRouteName: previousRouteName.current,
+          });
+        }
       }
       previousRouteName.current = currentRoute;
     });

@@ -4,14 +4,57 @@ import uuid from 'react-native-uuid';
 import { NativeModules, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+let ReactNativeClient: any = null;
+let Scope: any = null;
+let dedupeIntegration: any = null;
+let functionToStringIntegration: any = null;
+let inboundFiltersIntegration: any = null;
+let defaultStackParser: any = null;
+let makeFetchTransport: any = null;
+let httpContextIntegration: any = null;
+let breadcrumbsIntegration: any = null;
+let deviceContextIntegration: any = null;
+let reactNativeInfoIntegration: any = null;
+let nativeReleaseIntegration: any = null;
+let eventOriginIntegration: any = null;
+let sdkInfoIntegration: any = null;
+let expoContextIntegration: any = null;
+
+let isSentryAvailable = false;
+
+try {
+  const sentryReactNative = require('@sentry/react-native');
+  ReactNativeClient = sentryReactNative.ReactNativeClient;
+  deviceContextIntegration = sentryReactNative.deviceContextIntegration;
+  reactNativeInfoIntegration = sentryReactNative.reactNativeInfoIntegration;
+  nativeReleaseIntegration = sentryReactNative.nativeReleaseIntegration;
+  eventOriginIntegration = sentryReactNative.eventOriginIntegration;
+  sdkInfoIntegration = sentryReactNative.sdkInfoIntegration;
+  expoContextIntegration = sentryReactNative.expoContextIntegration;
+
+  const sentryCore = require('@sentry/core');
+  Scope = sentryCore.Scope;
+  dedupeIntegration = sentryCore.dedupeIntegration;
+  functionToStringIntegration = sentryCore.functionToStringIntegration;
+  inboundFiltersIntegration = sentryCore.inboundFiltersIntegration;
+
+  const sentryReact = require('@sentry/react');
+  defaultStackParser = sentryReact.defaultStackParser;
+  makeFetchTransport = sentryReact.makeFetchTransport;
+  httpContextIntegration = sentryReact.httpContextIntegration;
+  breadcrumbsIntegration = sentryReact.breadcrumbsIntegration;
+
+  isSentryAvailable = true;
+} catch (e) {
+  isSentryAvailable = false;
+}
+
 const { AdjusterModule } = NativeModules;
 
-// Function to set SOFT_INPUT_ADJUST_NOTHING
 const disableAdjust = () => {
   AdjusterModule.setAdjustNothing();
 };
 
-// Function to set SOFT_INPUT_ADJUST_RESIZE
 const enableAdjustResize = () => {
   AdjusterModule.setAdjustResize();
 };
@@ -282,9 +325,14 @@ async function getUserAgent() {
   const isTabletDevice = DeviceInfo.isTablet();
 
   if (Platform.OS === 'android') {
-    userAgent += `(Linux; Android ${Platform.Version}; ${isTabletDevice ? 'Tablet' : 'Mobile'}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36`;
+    userAgent += `(Linux; Android ${Platform.Version}; ${
+      isTabletDevice ? 'Tablet' : 'Mobile'
+    }) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36`;
   } else if (Platform.OS === 'ios') {
-    userAgent += `(${await DeviceInfo.getDeviceName()} - ${DeviceInfo.getModel()} CPU iOS ${Platform.Version.toString().replace(/\./g, '_')} like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/537.36`;
+    userAgent += `(${await DeviceInfo.getDeviceName()} - ${DeviceInfo.getModel()} CPU iOS ${Platform.Version.toString().replace(
+      /\./g,
+      '_'
+    )} like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/537.36`;
   }
 
   return userAgent;
@@ -317,13 +365,19 @@ export const closeSpotCheck = async (
       const data = await response.json();
       if (data.success) {
         await store.getState().spotcheck.listener?.onCloseButtonTap?.();
-        console.log('SpotCheck Closed');
       }
     } else {
-      console.log(`Error: ${response.status}`);
+      captureP0Error(
+        new Error(`Close spotcheck failed with status ${response.status}`),
+        'CLOSE_SPOTCHECK',
+        { spotcheckContactID, status: response.status }
+      );
     }
   } catch (error) {
-    console.log('Error parsing JSON:', error);
+    captureP0Error(error, 'CLOSE_SPOTCHECK', {
+      domainName,
+      spotcheckContactID,
+    });
   }
 };
 
@@ -334,4 +388,208 @@ export const ischatSurvey = (type: String) => {
     type === 'NPSChat' ||
     type === 'CSATChat'
   );
+};
+
+export interface SdkErrorPayload {
+  errorMessage: string;
+  sdkType: string;
+  sdkVersion: string;
+  tags: Record<string, any>;
+  contexts: Record<string, any>;
+  extra: Record<string, any>;
+  sentryEvent?: Record<string, any>;
+  breadcrumbs?: any;
+}
+
+export const logSdkError = async (
+  domainName: string,
+  payload: SdkErrorPayload
+): Promise<boolean> => {
+  if (!domainName) {
+    return false;
+  }
+
+  try {
+    await axios.post(
+      `https://${domainName}/api/internal/spotcheck/sdkErrors`,
+      payload
+    );
+    return true;
+  } catch (loggingError) {
+    return false;
+  }
+};
+
+let sdkScope: any = null;
+let sdkClient: any = null;
+
+export const initializeSentry = () => {
+  if (!isSentryAvailable) {
+    return;
+  }
+
+  if (sdkScope && sdkClient) return;
+
+  try {
+    const client = new ReactNativeClient({
+      dsn: 'https://dummy@sentry.io/0',
+      transport: makeFetchTransport,
+      stackParser: defaultStackParser,
+      enableNative: true,
+      enableAutoSessionTracking: false,
+      integrations: [
+        inboundFiltersIntegration(),
+        functionToStringIntegration(),
+        breadcrumbsIntegration(),
+        dedupeIntegration(),
+        httpContextIntegration(),
+        deviceContextIntegration(),
+        nativeReleaseIntegration(),
+        eventOriginIntegration(),
+        sdkInfoIntegration(),
+        reactNativeInfoIntegration(),
+        expoContextIntegration(),
+      ],
+      beforeSend: async (event: any) => {
+        const state = store.getState().spotcheck;
+        const error_priority = String(event.tags?.error_priority || 'P1');
+        const errorType = event.tags?.errorType || 'GENERAL';
+        const severity = error_priority === 'P0' ? 'CRITICAL' : 'HIGH';
+        const level = error_priority === 'P0' ? 'fatal' : 'error';
+
+        const payload: SdkErrorPayload = {
+          errorMessage: `${
+            event.message ||
+            event.exception?.values?.[0]?.value ||
+            'Unknown error'
+          }`,
+          sdkType: 'react-native',
+          sdkVersion: '1.0.10-beta.4',
+          tags: {
+            level,
+            error_priority,
+            errorType,
+            severity,
+            ...event.tags,
+          },
+          contexts: {
+            user: {
+              spotcheck_token: state.targetToken || '',
+              spotcheck_domain_name: state.domainName || '',
+            },
+            ...(event.contexts || {}),
+          },
+          breadcrumbs: event.breadcrumbs,
+          extra: {
+            error_message: event.message || event.exception?.values?.[0]?.value,
+            variables: state.variables || {},
+            custom_properties: state.customProperties || {},
+            user_details: state.userDetails || {},
+            exception: event.exception?.values?.map((e: any) => ({
+              type: e.type,
+              value: e.value,
+              stacktrace: e.stacktrace?.frames?.slice(-10),
+            })),
+            breadcrumbs: event.breadcrumbs,
+          },
+          sentryEvent: {
+            event_id: event.event_id,
+            timestamp: event.timestamp,
+            platform: event.platform,
+            release: event.release,
+            environment: event.environment,
+            sdk: event.sdk,
+          },
+        };
+
+        if (state.domainName) {
+          await logSdkError(state.domainName, payload);
+        }
+
+        return null;
+      },
+    });
+
+    client.init();
+
+    const scope = new Scope();
+    scope.setClient(client);
+
+    sdkClient = client;
+    sdkScope = scope;
+  } catch (e) {
+    isSentryAvailable = false;
+  }
+};
+
+export type ErrorPriority = 'P0' | 'P1';
+
+export type ErrorSource =
+  | 'SDK_INITIALIZATION'
+  | 'SPOTCHECK_INITIALIZATION'
+  | 'TRACK_SCREEN'
+  | 'TRACK_EVENT'
+  | 'WEBVIEW_ERROR'
+  | 'CLOSE_SPOTCHECK'
+  | 'APP_CRASH'
+  | 'GENERAL';
+
+export const captureP0Error = (
+  error: Error | unknown,
+  source: ErrorSource,
+  extra?: Record<string, any>
+) => {
+  if (!isSentryAvailable) {
+    return;
+  }
+
+  if (!sdkScope || !sdkClient) {
+    initializeSentry();
+  }
+
+  if (sdkScope) {
+    const eventScope = sdkScope.clone();
+
+    eventScope.setTag('error_priority', 'P0');
+    eventScope.setTag('severity', 'CRITICAL');
+    eventScope.setTag('errorType', source);
+
+    if (extra) {
+      Object.entries(extra).forEach(([k, v]) => {
+        eventScope.setExtra(k, v);
+      });
+    }
+
+    eventScope.captureException(error);
+  }
+};
+
+export const captureP1Error = (
+  error: Error | unknown,
+  source: ErrorSource,
+  extra?: Record<string, any>
+) => {
+  if (!isSentryAvailable) {
+    return;
+  }
+
+  if (!sdkScope || !sdkClient) {
+    initializeSentry();
+  }
+
+  if (sdkScope) {
+    const eventScope = sdkScope.clone();
+
+    eventScope.setTag('error_priority', 'P1');
+    eventScope.setTag('severity', 'HIGH');
+    eventScope.setTag('errorType', source);
+
+    if (extra) {
+      Object.entries(extra).forEach(([k, v]) => {
+        eventScope.setExtra(k, v);
+      });
+    }
+
+    eventScope.captureException(error);
+  }
 };

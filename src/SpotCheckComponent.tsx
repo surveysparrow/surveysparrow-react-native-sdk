@@ -5,7 +5,6 @@ import {
   Dimensions,
   StyleSheet,
   type ScaledSize,
-  PermissionsAndroid,
   Platform,
   Keyboard,
   type ViewStyle,
@@ -22,6 +21,7 @@ import {
   fetchSpotcheckAPI,
   handleSurveyEnd,
   ischatSurvey,
+  captureP0Error,
 } from './HelperFunctions';
 import axios from 'axios';
 import WebView from 'react-native-webview';
@@ -87,16 +87,13 @@ export const SpotcheckComponent: React.FC = () => {
                 : '',
             })
           );
-
-          if (Platform.OS === 'android') {
-            const cameraPermission = PermissionsAndroid.PERMISSIONS.CAMERA;
-            if (cameraPermission) {
-              await PermissionsAndroid.request(cameraPermission);
-            }
-          }
         }
       } catch (error) {
-        console.log('Error initializing widget:', error);
+        captureP0Error(error, 'SPOTCHECK_INITIALIZATION', {
+          component: 'SpotcheckComponent',
+          action: 'initializeWidget',
+          targetToken: spotcheck.targetToken,
+        });
       }
     };
 
@@ -195,7 +192,7 @@ export const SpotcheckComponent: React.FC = () => {
                         0
                       ),
                       justifyContent: 'flex-start',
-                      paddingBottom: insets.top,
+                      paddingTop: insets.top,
                     }),
                     center: getBaseStyle({
                       top: Math.min(
@@ -544,9 +541,6 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
           );
         } else if (jsonResponse.type === 'surveyCompleted') {
           await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
-
-          console.log('Survey submitted');
-
           handleSurveyEnd();
         } else if (jsonResponse.type === 'surveyLoadStarted') {
           await spotchecks.listener?.onSurveyLoaded?.(jsonResponse.data);
@@ -587,7 +581,10 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         }
       }
     } catch (e) {
-      console.log('Error decoding JSON:', e);
+      captureP0Error(e, 'WEBVIEW_ERROR', {
+        action: 'handleOnMessage',
+        rawData: event.nativeEvent?.data,
+      });
     }
   };
 
@@ -619,6 +616,15 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
                 ? { isClassicLoading: true }
                 : { isChatLoading: true }),
             })
+          );
+          captureP0Error(
+            new Error('WebView loading error'),
+            'WEBVIEW_ERROR',
+            {
+              action: 'WebView Loading Error',
+              webviewType,
+              url,
+            }
           );
         }}
         injectedJavaScript={`
