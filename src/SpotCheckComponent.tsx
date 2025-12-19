@@ -192,7 +192,7 @@ export const SpotcheckComponent: React.FC = () => {
                         0
                       ),
                       justifyContent: 'flex-start',
-                      paddingBottom: insets.top,
+                      paddingTop: insets.top,
                     }),
                     center: getBaseStyle({
                       top: Math.min(
