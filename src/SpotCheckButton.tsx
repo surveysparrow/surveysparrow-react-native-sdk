@@ -345,9 +345,9 @@ const styles = StyleSheet.create({
   textButtonSmall: { paddingVertical: 4, paddingLeft: 8, paddingRight: 8 },
   textButtonMedium: { paddingVertical: 6, paddingLeft: 12, paddingRight: 12 },
   textButtonLarge: { paddingVertical: 10, paddingLeft: 16, paddingRight: 16 },
-  textSmall: { fontFamily: 'DMSans-Bold', fontSize: 12, lineHeight: 16 },
-  textMedium: { fontFamily: 'DMSans-Bold', fontSize: 14, lineHeight: 20 },
-  textLarge: { fontFamily: 'DMSans-Bold', fontSize: 16, lineHeight: 24 },
+  textSmall: { fontWeight: '700', fontSize: 12, lineHeight: 16 },
+  textMedium: { fontWeight: '700', fontSize: 14, lineHeight: 20 },
+  textLarge: { fontWeight: '700', fontSize: 16, lineHeight: 24 },
 });
 
 export default SpotCheckButton;
