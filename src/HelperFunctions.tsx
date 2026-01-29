@@ -148,43 +148,50 @@ export const fetchSpotcheckAPI = async () => {
 
     if (!spotcheckURL) throw new Error('Missing Spotcheck URL');
 
-    const userAgent = await getUserAgent();
-    const response = await axios.get(spotcheckURL, {
-      headers: { 'User-Agent': userAgent },
-    });
+    const headers: Record<string, string> = {};
+    if (Platform.OS !== 'web') {
+      headers['User-Agent'] = await getUserAgent();
+    }
+    const response = await axios.get(spotcheckURL, { headers });
 
     const themeInfo = response?.data?.config?.generatedCSS;
     const themePayload = { type: 'THEME_UPDATE_SPOTCHECK', themeInfo };
 
+    const resetStatePayload = {
+      type: 'RESET_STATE',
+      state: {
+        ...(response?.data || {}),
+        skip: true,
+        spotCheckAppearance: {
+          ...(appearance || {}),
+          targetType: 'MOBILE',
+        },
+        spotcheckUrl: screenName,
+        traceId,
+        elementBuilderParams: {
+          ...(variables || {}),
+        },
+      },
+    };
+
     const INJECTED_JAVASCRIPT = `
       (function() {
-        window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(
-          {
-            type: 'RESET_STATE',
-            state: {
-              ...(response?.data || {}),
-              skip: true,
-              spotCheckAppearance: {
-                ...(appearance || {}),
-                targetType: 'MOBILE',
-              },
-              spotcheckUrl: screenName,
-              traceId,
-              elementBuilderParams: {
-                ...(variables || {}),
-              },
-            },
-          }
-        )} }));
-        window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(
-          themePayload
-        )} }));
+        window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(resetStatePayload)} }));
+        window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(themePayload)} }));
       })();
     `;
 
     const webViewRef = isChat ? chatWebViewRef : classicWebViewRef;
     const isLoading = isChat ? isChatLoading : isClassicLoading;
-    const inject = () => webViewRef?.injectJavaScript(INJECTED_JAVASCRIPT);
+
+    const inject = () => {
+      if (Platform.OS === 'web') {
+        webViewRef?.postMessage(resetStatePayload, '*');
+        webViewRef?.postMessage(themePayload, '*');
+      } else {
+        webViewRef?.injectJavaScript(INJECTED_JAVASCRIPT);
+      }
+    };
 
     if (webViewRef && !isLoading) {
       inject();
@@ -199,7 +206,12 @@ export const fetchSpotcheckAPI = async () => {
       if (ready) {
         unsubscribe();
         const ref = s.isChat ? s.chatWebViewRef : s.classicWebViewRef;
-        ref?.injectJavaScript(INJECTED_JAVASCRIPT);
+        if (Platform.OS === 'web') {
+          ref?.postMessage(resetStatePayload, '*');
+          ref?.postMessage(themePayload, '*');
+        } else {
+          ref?.injectJavaScript(INJECTED_JAVASCRIPT);
+        }
         start();
       }
     });
@@ -223,13 +235,17 @@ export const handleSurveyEnd = (navigationChange: boolean = false) => {
       ? store.getState().spotcheck.chatWebViewRef
       : store.getState().spotcheck.classicWebViewRef;
 
-  webViewRef?.injectJavaScript(`
+  if (Platform.OS === 'web') {
+    webViewRef?.postMessage({ type: 'UNMOUNT_APP' }, '*');
+  } else {
+    webViewRef?.injectJavaScript(`
       (function() {
         window.dispatchEvent(new MessageEvent('message', {
           data: ${JSON.stringify({ type: 'UNMOUNT_APP' })}
         }));
       })();
     `);
+  }
 
   if (!store.getState().spotcheck.isSpotCheckButton || navigationChange) {
     const updatedState: Partial<SpotcheckState> = {

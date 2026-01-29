@@ -23,12 +23,16 @@ import {
   ischatSurvey,
 } from './HelperFunctions';
 import axios from 'axios';
-import WebView from 'react-native-webview';
 import DeviceInfo from 'react-native-device-info';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SpotCheckButton from './SpotCheckButton';
 import { useSpotcheckNavigation } from './NavigationHandler';
 
+const WebView =
+  Platform.OS === 'web'
+    ? require('@react.native.web/webview').default
+    : require('react-native-webview').WebView;
+    
 export const SpotcheckComponent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const spotcheck = useSelector((state: RootState) => state.spotcheck);
@@ -112,10 +116,10 @@ export const SpotcheckComponent: React.FC = () => {
   const getTopValue = (baseOffset = 0) =>
     Math.min(
       -spotcheck.keyBoardHeight +
-        (spotcheck.keyBoardHeight > 0 &&
+      (spotcheck.keyBoardHeight > 0 &&
         (spotcheck.currentQuestionHeight || spotcheck.isFullScreenMode)
-          ? height - baseOffset
-          : 0),
+        ? height - baseOffset
+        : 0),
       0
     );
   const getBaseStyle = (extraStyles: Partial<ViewStyle> = {}): ViewStyle => ({
@@ -137,87 +141,87 @@ export const SpotcheckComponent: React.FC = () => {
           spotcheck.showSurveyContent
             ? spotcheck.isFullScreenMode && spotcheck.isVisible
               ? getBaseStyle({
-                  top:
-                    spotcheck.spotCheckType === 'chat'
-                      ? -spotcheck.keyBoardHeight
-                      : getTopValue(spotcheck.textPosition + 100),
-                  paddingTop: insets.top,
-                  paddingBottom: insets.bottom,
-                })
+                top:
+                  spotcheck.spotCheckType === 'chat'
+                    ? -spotcheck.keyBoardHeight
+                    : getTopValue(spotcheck.textPosition + 100),
+                paddingTop: insets.top,
+                paddingBottom: insets.bottom,
+              })
               : spotcheck.isVisible && spotcheck.isMounted
                 ? {
-                    bottom: getBaseStyle({
-                      top:
-                        spotcheck.keyBoardHeight > 0 &&
+                  bottom: getBaseStyle({
+                    top:
+                      spotcheck.keyBoardHeight > 0 &&
                         spotcheck.currentQuestionHeight
-                          ? Math.min(
-                              -spotcheck.keyBoardHeight +
-                                (spotcheck.keyBoardHeight > 0
-                                  ? Math.max(
-                                      spotcheck.currentQuestionHeight -
-                                        spotcheck.textPosition -
-                                        350,
-                                      0
-                                    )
-                                  : 0),
+                        ? Math.min(
+                          -spotcheck.keyBoardHeight +
+                          (spotcheck.keyBoardHeight > 0
+                            ? Math.max(
+                              spotcheck.currentQuestionHeight -
+                              spotcheck.textPosition -
+                              350,
                               0
                             )
-                          : 0,
-                      justifyContent: 'flex-end',
-                      paddingBottom: insets.bottom,
-                    }),
-                    top: getBaseStyle({
-                      top: Math.min(
-                        getTopValue(
-                          spotcheck.screenHeight +
-                            (spotcheck.avatarEnabled ? 56 : 0) +
-                            (spotcheck.isCloseButtonEnabled &&
-                            spotcheck.spotChecksMode === 'miniCard'
-                              ? 40
-                              : 0)
-                        ) +
-                          (spotcheck.keyBoardHeight > 0
-                            ? Math.max(
-                                spotcheck.currentQuestionHeight -
-                                  spotcheck.textPosition -
-                                  350,
-                                0
-                              )
                             : 0),
-                        0
-                      ),
-                      justifyContent: 'flex-start',
-                      paddingBottom: insets.top,
-                    }),
-                    center: getBaseStyle({
-                      top: Math.min(
-                        getTopValue(
-                          spotcheck.screenHeight +
-                            (spotcheck.avatarEnabled ? 56 : 0) +
-                            (spotcheck.isCloseButtonEnabled &&
-                            spotcheck.spotChecksMode === 'miniCard'
-                              ? 40
-                              : 0)
-                        ) /
-                          2 +
-                          (spotcheck.keyBoardHeight > 0
-                            ? Math.max(
-                                spotcheck.currentQuestionHeight -
-                                  spotcheck.textPosition -
-                                  450,
-                                (height - spotcheck.screenHeight) / 2 <
-                                  spotcheck.keyBoardHeight
-                                  ? -100
-                                  : 0
-                              )
-                            : 0),
-                        0
-                      ),
-                      justifyContent: 'center',
-                      paddingTop: insets.top,
-                      paddingBottom: insets.bottom,
-                    }),
-                  }[spotcheck.spotcheckPosition] || style.nothing
+                          0
+                        )
+                        : 0,
+                    justifyContent: 'flex-end',
+                    paddingBottom: insets.bottom,
+                  }),
+                  top: getBaseStyle({
+                    top: Math.min(
+                      getTopValue(
+                        spotcheck.screenHeight +
+                        (spotcheck.avatarEnabled ? 56 : 0) +
+                        (spotcheck.isCloseButtonEnabled &&
+                          spotcheck.spotChecksMode === 'miniCard'
+                          ? 40
+                          : 0)
+                      ) +
+                      (spotcheck.keyBoardHeight > 0
+                        ? Math.max(
+                          spotcheck.currentQuestionHeight -
+                          spotcheck.textPosition -
+                          350,
+                          0
+                        )
+                        : 0),
+                      0
+                    ),
+                    justifyContent: 'flex-start',
+                    paddingBottom: insets.top,
+                  }),
+                  center: getBaseStyle({
+                    top: Math.min(
+                      getTopValue(
+                        spotcheck.screenHeight +
+                        (spotcheck.avatarEnabled ? 56 : 0) +
+                        (spotcheck.isCloseButtonEnabled &&
+                          spotcheck.spotChecksMode === 'miniCard'
+                          ? 40
+                          : 0)
+                      ) /
+                      2 +
+                      (spotcheck.keyBoardHeight > 0
+                        ? Math.max(
+                          spotcheck.currentQuestionHeight -
+                          spotcheck.textPosition -
+                          450,
+                          (height - spotcheck.screenHeight) / 2 <
+                            spotcheck.keyBoardHeight
+                            ? -100
+                            : 0
+                        )
+                        : 0),
+                      0
+                    ),
+                    justifyContent: 'center',
+                    paddingTop: insets.top,
+                    paddingBottom: insets.bottom,
+                  }),
+                }[spotcheck.spotcheckPosition] || style.nothing
                 : style.nothing
             : style.nothing
         }
@@ -258,50 +262,50 @@ export const SpotcheckComponent: React.FC = () => {
                     style={
                       spotcheck.spotChecksMode === 'miniCard'
                         ? {
-                            position: 'absolute',
-                            width: 15,
-                            height: 1.5,
-                            backgroundColor: 'black',
-                            top: '50%',
-                            left: 0,
-                            transform: [
-                              { translateY: -0.75 },
-                              { rotate: '45deg' },
-                            ],
-                          }
+                          position: 'absolute',
+                          width: 15,
+                          height: 1.5,
+                          backgroundColor: 'black',
+                          top: '50%',
+                          left: 0,
+                          transform: [
+                            { translateY: -0.75 },
+                            { rotate: '45deg' },
+                          ],
+                        }
                         : {
-                            position: 'absolute',
-                            width: 18,
-                            height: 1.6,
-                            backgroundColor:
-                              spotcheck.closeButtonStyle?.ctaButton,
-                            transform: [{ rotate: '45deg' }],
-                          }
+                          position: 'absolute',
+                          width: 18,
+                          height: 1.6,
+                          backgroundColor:
+                            spotcheck.closeButtonStyle?.ctaButton,
+                          transform: [{ rotate: '45deg' }],
+                        }
                     }
                   />
                   <View
                     style={
                       spotcheck.spotChecksMode === 'miniCard'
                         ? {
-                            position: 'absolute',
-                            width: 15,
-                            height: 1.5,
-                            backgroundColor: 'black',
-                            top: '50%',
-                            left: 0,
-                            transform: [
-                              { translateY: -0.75 },
-                              { rotate: '-45deg' },
-                            ],
-                          }
+                          position: 'absolute',
+                          width: 15,
+                          height: 1.5,
+                          backgroundColor: 'black',
+                          top: '50%',
+                          left: 0,
+                          transform: [
+                            { translateY: -0.75 },
+                            { rotate: '-45deg' },
+                          ],
+                        }
                         : {
-                            position: 'absolute',
-                            width: 18,
-                            height: 1.6,
-                            backgroundColor:
-                              spotcheck.closeButtonStyle?.ctaButton,
-                            transform: [{ rotate: '-45deg' }],
-                          }
+                          position: 'absolute',
+                          width: 18,
+                          height: 1.6,
+                          backgroundColor:
+                            spotcheck.closeButtonStyle?.ctaButton,
+                          transform: [{ rotate: '-45deg' }],
+                        }
                     }
                   />
                 </View>
@@ -312,16 +316,16 @@ export const SpotcheckComponent: React.FC = () => {
             <View
               style={
                 spotcheck.spotcheckURL.length > 0 &&
-                spotcheck.spotCheckType === 'classic'
+                  spotcheck.spotCheckType === 'classic'
                   ? {}
                   : {
-                      left: '-100%',
-                      right: '-100%',
-                      width: 1,
-                      height: 1,
-                      position: 'absolute',
-                      zIndex: 1,
-                    }
+                    left: '-100%',
+                    right: '-100%',
+                    width: 1,
+                    height: 1,
+                    position: 'absolute',
+                    zIndex: 1,
+                  }
               }
             >
               <WebViewComponents
@@ -337,16 +341,16 @@ export const SpotcheckComponent: React.FC = () => {
             <View
               style={
                 spotcheck.spotcheckURL.length > 0 &&
-                spotcheck.spotCheckType === 'chat'
+                  spotcheck.spotCheckType === 'chat'
                   ? {}
                   : {
-                      left: '-100%',
-                      right: '-100%',
-                      width: 1,
-                      height: 1,
-                      position: 'absolute',
-                      zIndex: 1,
-                    }
+                    left: '-100%',
+                    right: '-100%',
+                    width: 1,
+                    height: 1,
+                    position: 'absolute',
+                    zIndex: 1,
+                  }
               }
             >
               <WebViewComponents
@@ -447,23 +451,23 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
   useEffect(() => {
     var data_height = !spotchecks.isFullScreenMode
       ? Math.min(
-          height * 0.9,
-          Math.min(
-            spotchecks.currentQuestionHeight,
-            spotchecks.maxHeight * (height * 0.9)
-          ) +
-            (spotchecks.isBannerImageOn &&
-            spotchecks.currentQuestionHeight !== 0
-              ? Math.min(width, height) < 600
-                ? 100
-                : 0
-              : 0)
-        )
+        height * 0.9,
+        Math.min(
+          spotchecks.currentQuestionHeight,
+          spotchecks.maxHeight * (height * 0.9)
+        ) +
+        (spotchecks.isBannerImageOn &&
+          spotchecks.currentQuestionHeight !== 0
+          ? Math.min(width, height) < 600
+            ? 100
+            : 0
+          : 0)
+      )
       : (
-            webviewType === 'chat'
-              ? spotchecks.isChatLoading
-              : spotchecks.isClassicLoading
-          )
+        webviewType === 'chat'
+          ? spotchecks.isChatLoading
+          : spotchecks.isClassicLoading
+      )
         ? 0
         : Platform.OS === 'ios' && DeviceInfo.hasNotch()
           ? height * 0.9
@@ -504,79 +508,85 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
 
   const handleOnMessage = async (event: any) => {
     try {
-      if (event.nativeEvent?.data !== 'captureImage') {
-        const jsonResponse = JSON.parse(event.nativeEvent?.data);
+      const raw =
+        event.nativeEvent?.data ?? event?.data ?? event.nativeEvent?.nativeEvent?.data;
+      if (raw === 'captureImage') return;
+      const jsonResponse =
+        typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!jsonResponse || typeof jsonResponse !== 'object') return;
 
-        if (jsonResponse.type === 'spotCheckData') {
-          if (jsonResponse.data.currentQuestionSize) {
-            dispatch(
-              updateState({
-                currentQuestionHeight:
-                  jsonResponse.data.currentQuestionSize.height,
-              })
-            );
-          } else if (jsonResponse.data.isCloseButtonEnabled) {
-            dispatch(
-              updateState({
-                isCloseButtonEnabled: jsonResponse.data.isCloseButtonEnabled,
-              })
-            );
-          }
-        } else if (jsonResponse.type === 'classicLoadEvent') {
+      if (jsonResponse.type === 'spotCheckData') {
+        if (jsonResponse.data.currentQuestionSize) {
           dispatch(
             updateState({
-              isClassicLoading: false,
+              currentQuestionHeight:
+                jsonResponse.data.currentQuestionSize.height,
             })
           );
-        } else if (jsonResponse.type === 'chatLoadEvent') {
+        } else if (jsonResponse.data.isCloseButtonEnabled) {
           dispatch(
             updateState({
-              isChatLoading: false,
+              isCloseButtonEnabled: jsonResponse.data.isCloseButtonEnabled,
             })
           );
-        } else if (jsonResponse.type === 'surveyCompleted') {
-          await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
-
-          console.log('Survey submitted');
-
-          handleSurveyEnd();
-        } else if (jsonResponse.type === 'surveyLoadStarted') {
-          await spotchecks.listener?.onSurveyLoaded?.(jsonResponse.data);
-        } else if (jsonResponse.type === 'partialSubmission') {
-          await spotchecks.listener?.onPartialSubmission?.(jsonResponse.data);
-        } else if (jsonResponse.type === 'thankYouPageSubmission') {
-          dispatch(
-            updateState({
-              isThankyouPageSubmission: true,
-            })
-          );
-
-          if (spotchecks.listener?.onSurveyResponse) {
-            await spotchecks.listener.onSurveyResponse(jsonResponse.data);
-          }
-
-          if (
-            spotchecks.spotChecksMode === 'miniCard' &&
-            !spotchecks.isCloseButtonEnabled
-          ) {
-            setTimeout(() => {
-              handleSurveyEnd();
-            }, 4000);
-          } else {
-            dispatch(
-              updateState({
-                isCloseButtonEnabled: true,
-              })
-            );
-          }
-        } else if (
-          jsonResponse.type === 'slideInFrame' &&
-          jsonResponse?.data.mounted
-        ) {
-          dispatch(updateState({ isMounted: true }));
-        } else if (jsonResponse.type === 'position') {
-          dispatch(updateState({ textPosition: jsonResponse.y }));
         }
+      } else if (jsonResponse.type === 'classicLoadEvent') {
+        dispatch(
+          updateState({
+            isClassicLoading: false,
+          })
+        );
+      } else if (jsonResponse.type === 'chatLoadEvent') {
+        dispatch(
+          updateState({
+            isChatLoading: false,
+          })
+        );
+      } else if (jsonResponse.type === 'surveyCompleted') {
+        await spotchecks.listener?.onSurveyResponse?.(jsonResponse.data);
+
+        console.log('Survey submitted');
+
+        handleSurveyEnd();
+      } else if (jsonResponse.type === 'surveyLoadStarted') {
+        await spotchecks.listener?.onSurveyLoaded?.(jsonResponse.data);
+      } else if (jsonResponse.type === 'partialSubmission') {
+        await spotchecks.listener?.onPartialSubmission?.(jsonResponse.data);
+      } else if (jsonResponse.type === 'thankYouPageSubmission') {
+        dispatch(
+          updateState({
+            isThankyouPageSubmission: true,
+          })
+        );
+
+        if (spotchecks.listener?.onSurveyResponse) {
+          await spotchecks.listener.onSurveyResponse(jsonResponse.data);
+        }
+
+        if (
+          spotchecks.spotChecksMode === 'miniCard' &&
+          !spotchecks.isCloseButtonEnabled
+        ) {
+          setTimeout(() => {
+            handleSurveyEnd();
+          }, 4000);
+        } else {
+          dispatch(
+            updateState({
+              isCloseButtonEnabled: true,
+            })
+          );
+        }
+      } else if (jsonResponse.type === 'slideInFrame' && (jsonResponse?.data?.mounted || (jsonResponse?.mounted && Platform.OS === 'web'))) {
+        dispatch(updateState({ isMounted: true }));
+      } else if (jsonResponse.type === 'resizeWindow' && Platform.OS === 'web') {
+        dispatch(
+          updateState({
+            currentQuestionHeight: jsonResponse?.size?.height,
+          })
+        );
+      } else if (jsonResponse.type === 'position') {
+        dispatch(updateState({ textPosition: jsonResponse.y }));
       }
     } catch (e) {
       console.log('Error decoding JSON:', e);
