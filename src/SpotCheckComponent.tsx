@@ -615,6 +615,20 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
         }}
         injectedJavaScript={`
 
+            window.addEventListener(
+              'scroll',
+              function () {
+                if (
+                  document.querySelector(
+                    '.surveysparrow-chat__wrapper'
+                  )
+                ) {
+                  window.scrollTo(0, 0);
+                }
+              },
+              { passive: false }
+            );
+
             document.addEventListener('focusin', function(event) {
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
               var rect = event.target.getBoundingClientRect();
@@ -651,6 +665,18 @@ const WebViewComponents: React.FC<WebViewComponentProps> = ({
             }
           };
 
+        (function() {
+          const styleTag = document.createElement("style");
+          styleTag.innerHTML = \`
+            .surveysparrow-chat__wrapper .ss-language-selector--wrapper {
+              margin-right: 45px;
+            }
+            .close-btn-chat--spotchecks {
+              display: none !important;
+            }
+          \`;
+          document.head.appendChild(styleTag);
+        })();
 
         `}
       />
