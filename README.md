@@ -1,6 +1,26 @@
 # surveysparrow-react-native-sdk
 [SurveySparrow](https:://surveysparrow.com) React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.
 
+| SDK | Latest Version | Tag | Branch |
+| :--- | :--- | :--- | :--- |
+| **SpotChecks React Native SDK** | [1.0.11 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.11) | [1.0.11](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.0.11) | spotchecks |
+| **Expo SpotChecks React Native SDK** | [2.0.3(latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/2.0.3) | [2.0.3](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.0.3) |expo-spotchecks |
+| **Normal React Native SDK** | [0.3.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.3.0) | - | main |
+
+<br>
+
+# SpotChecks Details
+
+Introducing Spotchecks in 1.x.x version series(surveysparrow-react-native-sdk). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
+
+Introducing Expo Spotchecks in 2.x.x version series (surveysparrow-expo-spotchecks). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
+
+#### Normal SDK Share will be maintained in 0.2.x 
+
+<br>
+
+# Normal SDK Implementation
+
 ## Features
 1. [Fully customizable pre-build `Full Size View` to take feedback whenever & wherever you want.](#Take-feedback-using-Activity)
 2. [`Survey Component` to integrate the feedback experience anywhere in your app.](#Embed-survey-view)
