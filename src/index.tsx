@@ -1,23 +1,20 @@
-import Spotcheck from './SpotCheck';
-import { trackScreen, trackEvent } from './SpotCheck';
-import type {
-  TrackEventProps,
-  SpotcheckProps,
-  UserDetails,
-  Variables,
-  CustomProperties,
-  SsSpotcheckListener,
-} from './Types';
-import { initializeSpotChecks } from './SpotCheck';
+import {
+  SpotCheck,
+  initializeSpotChecks,
+  trackScreen,
+  trackEvent,
+  closeSpotChecks,
+} from './spotchecks';
 
-export { initializeSpotChecks };
-export { trackScreen, trackEvent };
-export default Spotcheck;
+export { initializeSpotChecks, trackScreen, trackEvent, closeSpotChecks };
+export default SpotCheck;
+
 export type {
-  TrackEventProps,
+  CustomProperties,
   SpotcheckProps,
+  SsSpotcheckListener,
+  TrackEventProps,
+  TrackScreenProps,
   UserDetails,
   Variables,
-  CustomProperties,
-  SsSpotcheckListener,
-};
+} from './spotchecks';
