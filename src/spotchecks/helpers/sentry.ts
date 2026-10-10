@@ -3,6 +3,9 @@
 
 import { spotcheckStore } from '../state/spotcheckState';
 import { SDK_VERSION, FRAMEWORK } from './version';
+import sentryReactNativeModule from './optional/sentryReactNative';
+import sentryCoreModule from './optional/sentryCore';
+import sentryReactModule from './optional/sentryReact';
 
 let ReactNativeClient: any = null;
 let Scope: any = null;
@@ -22,7 +25,8 @@ let expoContextIntegration: any = null;
 let isSentryAvailable = false;
 
 try {
-  const sentryReactNative = require('@sentry/react-native');
+  const sentryReactNative = sentryReactNativeModule;
+  if (!sentryReactNative) throw new Error('@sentry/react-native not installed');
   ReactNativeClient = sentryReactNative.ReactNativeClient;
   reactNativeInfoIntegration = sentryReactNative.reactNativeInfoIntegration;
   nativeReleaseIntegration = sentryReactNative.nativeReleaseIntegration;
@@ -30,13 +34,15 @@ try {
   sdkInfoIntegration = sentryReactNative.sdkInfoIntegration;
   expoContextIntegration = sentryReactNative.expoContextIntegration;
 
-  const sentryCore = require('@sentry/core');
+  const sentryCore = sentryCoreModule;
+  if (!sentryCore) throw new Error('@sentry/core not installed');
   Scope = sentryCore.Scope;
   dedupeIntegration = sentryCore.dedupeIntegration;
   functionToStringIntegration = sentryCore.functionToStringIntegration;
   inboundFiltersIntegration = sentryCore.inboundFiltersIntegration;
 
-  const sentryReact = require('@sentry/react');
+  const sentryReact = sentryReactModule;
+  if (!sentryReact) throw new Error('@sentry/react not installed');
   defaultStackParser = sentryReact.defaultStackParser;
   makeFetchTransport = sentryReact.makeFetchTransport;
   httpContextIntegration = sentryReact.httpContextIntegration;
