@@ -2,7 +2,7 @@ import { functionStore } from "../state/functionState";
 import { spotcheckStore, updateState } from "../state/spotcheckState";
 import { saveData, loadData } from "./storage";
 import type { SsSpotcheckListener } from "./types";
-import { captureP0Error, captureP1Error, addBreadcrumb } from "./sentry";
+import { captureP0Error, captureP1Error, addBreadcrumb, registerExecute } from "./sentry";
 import { Adjuster } from "./Adjuster";
 import { SDK_VERSION } from "./version";
 
@@ -156,3 +156,5 @@ export const execute = async (functionName: string, params?: any) => {
     return null;
   }
 }
+
+registerExecute(execute);

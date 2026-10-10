@@ -59,6 +59,10 @@ try {
 }
 
 
+// Set by executables.ts at load time; avoids a circular lazy require (crashes Metro inline requires).
+let executeRef: ((fn: string, params?: any) => Promise<any>) | null = null;
+export const registerExecute = (fn: (fnName: string, params?: any) => Promise<any>) => { executeRef = fn; };
+
 const MAX_BREADCRUMBS = 30;
 const sdkBreadcrumbs: any[] = [];
 
@@ -75,7 +79,8 @@ const mergeBreadcrumbs = (sentryBreadcrumbs?: any[]) =>
 // Routes an event to the backend; never throws.
 const sendToBackend = async (normalizedEvent: any) => {
   try {
-    const { execute } = require('./executables');
+    const execute = executeRef;
+    if (!execute) return;
     const result = await execute('sentry.processSentryError', {
       event: normalizedEvent,
       sdkType: FRAMEWORK,
