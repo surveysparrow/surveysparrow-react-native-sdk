@@ -3,8 +3,8 @@
 
 | SDK | Latest Version | Tag | Branch |
 | :--- | :--- | :--- | :--- |
-| **SpotChecks React Native SDK** | [1.0.10 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.10) | [1.0.10](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.0.10) | spotchecks |
-| **Expo SpotChecks React Native SDK** | [2.0.3(latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/2.0.3) | [2.0.3](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.0.3) |expo-spotchecks |
+| **SpotChecks React Native SDK** | [1.0.12 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.12) | [1.0.12](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.0.12) | spotchecks |
+| **Expo SpotChecks React Native SDK** | [2.0.4 (latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/2.0.4) | [2.0.4](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.0.4) |expo-spotchecks |
 | **Normal React Native SDK** | [0.3.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.3.0) | - | main |
 
 <br>
@@ -14,6 +14,10 @@
 Introducing Spotchecks in 1.x.x version series(surveysparrow-react-native-sdk). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
 
 Introducing Expo Spotchecks in 2.x.x version series (surveysparrow-expo-spotchecks). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
+
+#### SpotChecks requirements (1.x)
+
+Peer dependencies: `react-native-webview` 13.13.2+ (13.x), `react-native-safe-area-context` 5.6.2+ (5.x), `react-native-svg` 15.15.1+ (15.x), `react-native-device-info` 14.0.4+ (14.x). Optional: `@sentry/react-native` for SDK error reporting. Android `minSdkVersion` 24 or higher is recommended; iOS follows your React Native version's minimum. Android System WebView 80 or newer is needed on the device.
 
 #### Normal SDK Share will be maintained in 0.2.x 
 
