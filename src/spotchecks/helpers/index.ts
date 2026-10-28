@@ -33,8 +33,9 @@ export const getDeviceFacts = async () => {
     facts.isTablet = DeviceInfo.isTablet();
     if (Platform.OS === 'ios') {
       facts.deviceName = await DeviceInfo.getDeviceName();
-      facts.model = DeviceInfo.getModel();
     }
+    const model = DeviceInfo.getModel();
+    if (model) facts.model = String(model);
     // Host app release; the backend keeps the SDK version of the newest build.
     const appVersion = DeviceInfo.getVersion?.();
     const appBuild = DeviceInfo.getBuildNumber?.();

@@ -77,6 +77,44 @@ export const addBreadcrumb = (message: string, data?: Record<string, any>) => {
   if (sdkBreadcrumbs.length > MAX_BREADCRUMBS) sdkBreadcrumbs.shift();
 };
 
+const MAX_BREADCRUMB_STRING = 200;
+const capString = (value: string) => value.slice(0, MAX_BREADCRUMB_STRING);
+
+// Breadcrumb hook for backend functions; drops bad input and never throws.
+export const safeAddBreadcrumb = (message: unknown, data?: unknown) => {
+  try {
+    if (typeof message !== 'string') return;
+    let clean: Record<string, any> | undefined;
+    const proto = data && typeof data === 'object' ? Object.getPrototypeOf(data) : undefined;
+    if (proto === Object.prototype || proto === null) {
+      clean = {};
+      Object.keys(data as object).forEach((key) => {
+        const value = (data as any)[key];
+        if (typeof value === 'string') clean![key] = capString(value);
+        else if (value === null || typeof value === 'number' || typeof value === 'boolean') clean![key] = value;
+      });
+    }
+    addBreadcrumb(capString(message), clean);
+  } catch {}
+};
+
+// Flags an error as reported so execute() does not report it again.
+const markReported = (error: unknown) => {
+  try {
+    if (error !== null && typeof error === 'object') {
+      Object.defineProperty(error, '__ssReported', { value: true, configurable: true });
+    }
+  } catch {}
+};
+
+export const isReported = (error: unknown) => {
+  try {
+    return !!(error as any)?.__ssReported;
+  } catch {
+    return false;
+  }
+};
+
 const mergeBreadcrumbs = (sentryBreadcrumbs?: any[]) =>
   [...(sentryBreadcrumbs || []), ...sdkBreadcrumbs]
     .sort((a, b) => (a?.timestamp || 0) - (b?.timestamp || 0))
@@ -224,6 +262,7 @@ export const captureP0Error = (
   source: ErrorSource,
   extra?: Record<string, any>
 ) => {
+  markReported(error);
   if (!isSentryAvailable) {
     reportWithoutSentry(error, 'P0', source, extra);
     return;
@@ -254,6 +293,7 @@ export const captureP1Error = (
   source: ErrorSource,
   extra?: Record<string, any>
 ) => {
+  markReported(error);
   if (!isSentryAvailable) {
     reportWithoutSentry(error, 'P1', source, extra);
     return;
