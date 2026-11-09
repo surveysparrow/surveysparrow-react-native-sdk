@@ -174,6 +174,7 @@ This Component can be used to render a survey view
 | prop | Description | Default | Optional |
 | --- | --- | --- | --- |
 | config | survey config such as domain,token,surveyType,customParams | config object has to be provided | no |
+| progressBarColor | colour of the loading bar shown while the survey loads (Android only; iOS shows the native spinner) | '#007AFF' | yes |
 | onSurveyComplete | callback function that will be called after survey complete | null | yes |
 | styles | component styles | null | yes |
 

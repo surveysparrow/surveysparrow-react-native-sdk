@@ -17,15 +17,19 @@ export interface Props {
   };
   onSurveyComplete(value: IResponseData): any;
   styles: StyleProp<ViewStyle>;
+  progressBarColor?: string;
 }
 
 const SsSurveyViewComponentAndroid: FC<Props> = ({
   styles,
   onSurveyComplete,
   config: { domain, token, surveyType, customParams = [] },
+  progressBarColor = '#007AFF',
 }) => {
   const webViewRef = useRef<WebView>(null);
   const [progress, _] = useState(new Animated.Value(0));
+  // bar is shown only while the page loads, like the native SDK's progress bar
+  const [isLoading, setIsLoading] = useState(true);
 
   const generateUrl = () => {
     let params = '';
@@ -62,26 +66,33 @@ const SsSurveyViewComponentAndroid: FC<Props> = ({
 
   return (
     <View style={[styles, { position: 'relative', overflow: 'hidden' }]}>
-      <Animated.View
-        style={{
-          height: 3,
-          backgroundColor: '#007AFF',
-          width: progressWidth,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          zIndex: 999999,
-        }}
-      />
+      {isLoading && (
+        <Animated.View
+          style={{
+            height: 3,
+            backgroundColor: progressBarColor,
+            width: progressWidth,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 999999,
+          }}
+        />
+      )}
 
       <WebView
         ref={webViewRef}
         source={{ uri: generateUrl() }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
+        onLoadStart={() => {
+          progress.setValue(0);
+          setIsLoading(true);
+        }}
         onLoadProgress={({ nativeEvent }) =>
           handleProgress(nativeEvent.progress)
         }
+        onLoadEnd={() => setIsLoading(false)}
         onMessage={handleMessage}
         startInLoadingState={true}
         injectedJavaScript={`
