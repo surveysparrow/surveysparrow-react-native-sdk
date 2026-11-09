@@ -13,7 +13,7 @@ export const SsSurvey = ({
   surveyType,
   customParams = [],
   thankYouPageTimeLimit = 3000,
-  validateBeforeOpen = false,
+  validateBeforeOpen = true,
 }: {
   domain: string;
   token: string;

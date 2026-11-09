@@ -131,7 +131,7 @@ This method will be used to invoke Survey from SurveySparrow
 | surveyType | survey type for the survey | value has to be provided | no |
 | customParams | any custom params to be passed for the survey | [] | yes |
 | thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes | 
-| validateBeforeOpen | ask the server (survey active, schedule, per-person limit) before showing the survey; the result is emitted as `onSurveyValidation` and the survey opens only when active. Per-person limits need `customParams: [{ name: 'emailaddress', value: '<email>' }]` | false | yes |
+| validateBeforeOpen | ask the server (survey active, schedule, per-person limit) before showing the survey; the result is emitted as `onSurveyValidation` and the survey opens only when active. Per-person limits need `customParams: [{ name: 'emailaddress', value: '<email>' }]`. Set `false` to open without checking (pre-0.3.1 behaviour) | true | yes |
 
 ### 2) scheduleSurveySparrow()
 This method will be used to schedule Survey from SurveySparrow

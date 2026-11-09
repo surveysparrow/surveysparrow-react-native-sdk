@@ -80,7 +80,7 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
       surveySparrow = new SurveySparrow(activity, survey)
         .enableBackButton(true)
         .setWaitTime(thankYouPageTime);
-      boolean validateBeforeOpen = surveyConfig.hasKey("validateBeforeOpen") && surveyConfig.getBoolean("validateBeforeOpen");
+      boolean validateBeforeOpen = !surveyConfig.hasKey("validateBeforeOpen") || surveyConfig.getBoolean("validateBeforeOpen");
       if (validateBeforeOpen) {
         // validate-survey applies active/schedule/per-person checks; result reaches JS as onSurveyValidation
         surveySparrow.setValidateSurveyListener(new OnSsValidateSurveyEventListener() {

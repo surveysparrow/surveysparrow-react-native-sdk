@@ -23,7 +23,7 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
         let queryItem = options.value(forKey: "customParams") as! [NSDictionary]
         let surveyTypeParam = options.value(forKey: "surveyType") as! NSString
         let thankYouRedirectTime = (options.value(forKey: "thankYouPageTimeLimit") as! NSString).doubleValue
-        let validateBeforeOpen = options.value(forKey: "validateBeforeOpen") as? Bool ?? false
+        let validateBeforeOpen = options.value(forKey: "validateBeforeOpen") as? Bool ?? true
         var paramsmap: [String: String] = [:]
         
         for val in queryItem {
