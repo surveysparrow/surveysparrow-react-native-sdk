@@ -13,12 +13,14 @@ export const SsSurvey = ({
   surveyType,
   customParams = [],
   thankYouPageTimeLimit = 3000,
+  validateBeforeOpen = false,
 }: {
   domain: string;
   token: string;
   surveyType: string;
   customParams?: Array<paramValue>;
   thankYouPageTimeLimit?: number;
+  validateBeforeOpen?: boolean;
 }) => {
   SsSurveyModule.openSurvey({
     domain,
@@ -26,6 +28,7 @@ export const SsSurvey = ({
     surveyType,
     customParams,
     thankYouPageTimeLimit,
+    validateBeforeOpen,
   });
 };
 

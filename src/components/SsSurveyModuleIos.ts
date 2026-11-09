@@ -13,12 +13,14 @@ export const SsSurvey = ({
   surveyType,
   customParams = [],
   thankYouPageTimeLimit = 3000,
+  validateBeforeOpen = false,
 }: {
   domain: string;
   token: string;
   surveyType: string;
   customParams?: Array<paramValue>;
   thankYouPageTimeLimit?: number;
+  validateBeforeOpen?: boolean;
 }) => {
   const second = ((thankYouPageTimeLimit % 60000) / 1000).toFixed(0);
   SsSurveyModule.openSurvey({
@@ -27,6 +29,7 @@ export const SsSurvey = ({
     surveyType,
     customParams,
     thankYouPageTimeLimit: second,
+    validateBeforeOpen,
   });
 };
 
