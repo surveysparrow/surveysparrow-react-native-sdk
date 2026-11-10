@@ -21,7 +21,7 @@ def safeExtGet(prop, fallback) {
 android {
     compileSdkVersion safeExtGet('SurveysparrowReactNativeSdk_compileSdkVersion', 33)
     defaultConfig {
-        minSdkVersion safeExtGet('SurveysparrowReactNativeSdk_minSdkVersion', 21)
+        minSdkVersion safeExtGet('SurveysparrowReactNativeSdk_minSdkVersion', 24)
         targetSdkVersion safeExtGet('SurveysparrowReactNativeSdk_targetSdkVersion', 33)
         versionCode 1
         versionName "1.0"

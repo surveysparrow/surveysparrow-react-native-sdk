@@ -60,10 +60,10 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
       ReadableArray customparamMap = surveyConfig.getArray("customParams");
       JSONArray surveyParamsArray = ArrayUtil.toJSONArray(customparamMap);
       survey = new SsSurvey(domain,token);
-      if(surveyType == "nps"){
+      if ("nps".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.NPS);
       }
-      else if(surveyType == "chat"){
+      else if ("chat".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.CHAT);
       }
       else{
@@ -118,10 +118,10 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
 
       survey = new SsSurvey(domain,token);
 
-      if(surveyType == "nps"){
+      if ("nps".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.NPS);
       }
-      else if(surveyType == "chat"){
+      else if ("chat".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.CHAT);
       }
       else{
