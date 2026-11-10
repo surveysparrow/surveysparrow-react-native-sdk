@@ -51,6 +51,26 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
     }
 
 
+    // The array constructor is the only path that fills the params startSurvey reads for the email.
+    // emailaddress feeds the pre-open check; the survey page links the contact from email, so mirror it.
+    private static SsSurvey.CustomParam[] buildCustomParams(JSONArray surveyParamsArray) throws JSONException {
+      java.util.List<SsSurvey.CustomParam> params = new java.util.ArrayList<>();
+      String emailAddress = null;
+      boolean hasEmail = false;
+      for (int i = 0; i < surveyParamsArray.length(); i++) {
+        JSONObject surveyParam = surveyParamsArray.getJSONObject(i);
+        String name = surveyParam.get("name").toString();
+        String value = surveyParam.get("value").toString();
+        params.add(new SsSurvey.CustomParam(name, value));
+        if ("emailaddress".equals(name)) emailAddress = value;
+        if ("email".equals(name)) hasEmail = true;
+      }
+      if (emailAddress != null && !hasEmail) {
+        params.add(new SsSurvey.CustomParam("email", emailAddress));
+      }
+      return params.toArray(new SsSurvey.CustomParam[0]);
+    }
+
     @ReactMethod
     public void openSurvey(ReadableMap surveyConfig) throws JSONException {
       String domain = surveyConfig.getString("domain");
@@ -59,13 +79,7 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
       Integer thankYouPageTime = surveyConfig.getInt("thankYouPageTimeLimit");
       ReadableArray customparamMap = surveyConfig.getArray("customParams");
       JSONArray surveyParamsArray = ArrayUtil.toJSONArray(customparamMap);
-      // the array constructor is the only path that fills the params startSurvey reads for the email
-      SsSurvey.CustomParam[] customParams = new SsSurvey.CustomParam[surveyParamsArray.length()];
-      for (int i = 0; i < surveyParamsArray.length(); i++) {
-        JSONObject surveyParam = surveyParamsArray.getJSONObject(i);
-        customParams[i] = new SsSurvey.CustomParam(surveyParam.get("name").toString(), surveyParam.get("value").toString());
-      }
-      survey = new SsSurvey(domain, token, customParams);
+      survey = new SsSurvey(domain, token, buildCustomParams(surveyParamsArray));
       if ("nps".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.NPS);
       }
@@ -118,12 +132,7 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
       ReadableArray customparamMap = surveyConfig.getArray("customParams");
       JSONArray surveyParamsArray = ArrayUtil.toJSONArray(customparamMap);
 
-      SsSurvey.CustomParam[] customParams = new SsSurvey.CustomParam[surveyParamsArray.length()];
-      for (int i = 0; i < surveyParamsArray.length(); i++) {
-        JSONObject surveyParam = surveyParamsArray.getJSONObject(i);
-        customParams[i] = new SsSurvey.CustomParam(surveyParam.get("name").toString(), surveyParam.get("value").toString());
-      }
-      survey = new SsSurvey(domain, token, customParams);
+      survey = new SsSurvey(domain, token, buildCustomParams(surveyParamsArray));
 
       if ("nps".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.NPS);
