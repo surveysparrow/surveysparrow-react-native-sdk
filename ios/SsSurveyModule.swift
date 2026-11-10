@@ -31,6 +31,10 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
             let querValue = val.value(forKey: "value") as! String
             paramsmap[querName] = querValue
         }
+        // emailaddress feeds the pre-open check; the survey page links the contact from email, so mirror it
+        if let emailAddress = paramsmap["emailaddress"], paramsmap["email"] == nil {
+            paramsmap["email"] = emailAddress
+        }
         
         if(surveyTypeParam == "nps"){
             surveyType = SurveySparrow.SurveyType.NPS
@@ -90,6 +94,10 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
             let querName = val.value(forKey: "name") as! String
             let querValue = val.value(forKey: "value") as! String
             paramsmap[querName] = querValue
+        }
+        // emailaddress feeds the pre-open check; the survey page links the contact from email, so mirror it
+        if let emailAddress = paramsmap["emailaddress"], paramsmap["email"] == nil {
+            paramsmap["email"] = emailAddress
         }
         
         if(surveyTypeParam == "nps"){
