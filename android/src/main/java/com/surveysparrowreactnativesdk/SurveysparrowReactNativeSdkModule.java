@@ -16,6 +16,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.surveysparrow.ss_android_sdk.OnSsResponseEventListener;
+import com.surveysparrow.ss_android_sdk.OnSsValidateSurveyEventListener;
 import com.surveysparrow.ss_android_sdk.SsSurvey;
 import com.surveysparrow.ss_android_sdk.SurveySparrow;
 
@@ -59,10 +60,10 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
       ReadableArray customparamMap = surveyConfig.getArray("customParams");
       JSONArray surveyParamsArray = ArrayUtil.toJSONArray(customparamMap);
       survey = new SsSurvey(domain,token);
-      if(surveyType == "nps"){
+      if ("nps".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.NPS);
       }
-      else if(surveyType == "chat"){
+      else if ("chat".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.CHAT);
       }
       else{
@@ -79,7 +80,19 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
       surveySparrow = new SurveySparrow(activity, survey)
         .enableBackButton(true)
         .setWaitTime(thankYouPageTime);
-      surveySparrow.startSurveyForResult(SURVEY_REQUEST_CODE);
+      boolean validateBeforeOpen = !surveyConfig.hasKey("validateBeforeOpen") || surveyConfig.getBoolean("validateBeforeOpen");
+      if (validateBeforeOpen) {
+        // validate-survey applies active/schedule/per-person checks; result reaches JS as onSurveyValidation
+        surveySparrow.setValidateSurveyListener(new OnSsValidateSurveyEventListener() {
+          @Override
+          public void onSsValidateSurvey(JSONObject data) {
+            sendEventEmit("onSurveyValidation", data.toString());
+          }
+        });
+        surveySparrow.startSurvey(SURVEY_REQUEST_CODE);
+      } else {
+        surveySparrow.startSurveyForResult(SURVEY_REQUEST_CODE);
+      }
     }
 
     @ReactMethod
@@ -105,10 +118,10 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
 
       survey = new SsSurvey(domain,token);
 
-      if(surveyType == "nps"){
+      if ("nps".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.NPS);
       }
-      else if(surveyType == "chat"){
+      else if ("chat".equals(surveyType)) {
         survey.setSurveyType(SurveySparrow.CHAT);
       }
       else{
@@ -164,12 +177,12 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
     }
 
 
-    public void sendEventEmit(String result) {
+    public void sendEventEmit(String eventName, String result) {
       if(mEmitter == null){
         mEmitter = getReactApplicationContext().getJSModule((DeviceEventManagerModule.RCTDeviceEventEmitter.class));
       }
       if(mEmitter != null){
-        mEmitter.emit("onSurveyResponse",result);
+        mEmitter.emit(eventName, result);
       }
     }
 
@@ -180,7 +193,7 @@ public class SurveysparrowReactNativeSdkModule extends ReactContextBaseJavaModul
         if (resultCode == Activity.RESULT_OK) {
           if(data != null){
             JSONObject responses = SurveySparrow.toJSON(data.getData().toString());
-            sendEventEmit(responses.toString());
+            sendEventEmit("onSurveyResponse", responses.toString());
           }
         } else {
           Log.v(LOG_TAG, "No Response");

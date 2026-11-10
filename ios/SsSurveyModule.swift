@@ -23,6 +23,7 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
         let queryItem = options.value(forKey: "customParams") as! [NSDictionary]
         let surveyTypeParam = options.value(forKey: "surveyType") as! NSString
         let thankYouRedirectTime = (options.value(forKey: "thankYouPageTimeLimit") as! NSString).doubleValue
+        let validateBeforeOpen = options.value(forKey: "validateBeforeOpen") as? Bool ?? true
         var paramsmap: [String: String] = [:]
         
         for val in queryItem {
@@ -38,20 +39,34 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
             surveyType = SurveySparrow.SurveyType.CLASSIC
         }
         
-        DispatchQueue.main.async {
-            let controller = RCTPresentedViewController();
-            
-            let ssSurveyViewController = SsSurveyViewController()
-            ssSurveyViewController.domain = domain
-            ssSurveyViewController.token = token
-            ssSurveyViewController.surveyDelegate = self
-            ssSurveyViewController.params = paramsmap
-            ssSurveyViewController.thankyouTimeout = thankYouRedirectTime
-            ssSurveyViewController.surveyType = self.surveyType
-            
-            controller?.present(ssSurveyViewController, animated: true, completion: nil)
+        let present: (Int64) -> Void = { widgetContactId in
+            DispatchQueue.main.async {
+                let controller = RCTPresentedViewController();
+                
+                let ssSurveyViewController = SsSurveyViewController()
+                ssSurveyViewController.domain = domain
+                ssSurveyViewController.token = token
+                ssSurveyViewController.surveyDelegate = self
+                ssSurveyViewController.params = paramsmap
+                ssSurveyViewController.widgetContactId = widgetContactId
+                ssSurveyViewController.thankyouTimeout = thankYouRedirectTime
+                ssSurveyViewController.surveyType = self.surveyType
+                
+                controller?.present(ssSurveyViewController, animated: true, completion: nil)
+            }
         }
         
+        if validateBeforeOpen {
+            // validate-survey applies active/schedule/per-person checks before the WebView is shown
+            SurveySparrow.validate(domain: domain, token: token, params: paramsmap) { active, reason, widgetContactId in
+                self.sendEvent(withName: "onSurveyValidation", body: ["active": active, "reason": reason])
+                if active {
+                    present(widgetContactId)
+                }
+            }
+        } else {
+            present(0)
+        }
     }
     
     @objc
@@ -115,7 +130,7 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
     }
     
     override func supportedEvents() -> [String]! {
-        return["onSurveyResponse"]
+        return ["onSurveyResponse", "onSurveyValidation"]
     }
     
     func handleSurveyResponse(response: [String : AnyObject]) {
@@ -127,7 +142,7 @@ class SsSurveyModule:RCTEventEmitter,SsSurveyDelegate{
     }
     
     func handleSurveyValidation(response: [String : AnyObject]) {
-        print(response)
+        sendEvent(withName: "onSurveyValidation", body: response)
     }
     
     func handleCloseButtonTap() {

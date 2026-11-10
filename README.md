@@ -121,6 +121,8 @@ React.useEffect(() => {
 
 ## Methods
 
+> **0.4.0:** `invokeSurveySparrow` now validates with the server before opening (see `validateBeforeOpen`), and the Android minimum SDK is **24** (was 21) because the bundled native SDK moved to 1.2.12. iOS apps must point their Podfile at `SurveySparrowSdk` tag `0.5.4`.
+
 ### 1) invokeSurveySparrow()
 This method will be used to invoke Survey from SurveySparrow
 
@@ -131,6 +133,7 @@ This method will be used to invoke Survey from SurveySparrow
 | surveyType | survey type for the survey | value has to be provided | no |
 | customParams | any custom params to be passed for the survey | [] | yes |
 | thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes | 
+| validateBeforeOpen | ask the server (survey active, schedule, per-person limit) before showing the survey; the result is emitted as `onSurveyValidation` and the survey opens only when active. Per-person limits need `customParams: [{ name: 'emailaddress', value: '<email>' }]`. Set `false` to open without checking (pre-0.4.0 behaviour) | true | yes |
 
 ### 2) scheduleSurveySparrow()
 This method will be used to schedule Survey from SurveySparrow
@@ -173,6 +176,7 @@ This Component can be used to render a survey view
 | prop | Description | Default | Optional |
 | --- | --- | --- | --- |
 | config | survey config such as domain,token,surveyType,customParams | config object has to be provided | no |
+| progressBarColor | colour of the loading bar shown while the survey loads (Android only; iOS shows the native spinner) | '#007AFF' | yes |
 | onSurveyComplete | callback function that will be called after survey complete | null | yes |
 | styles | component styles | null | yes |
 
