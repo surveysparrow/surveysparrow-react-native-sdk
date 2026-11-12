@@ -5,7 +5,7 @@
 | :--- | :--- | :--- | :--- |
 | **SpotChecks React Native SDK** | [1.0.12 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.0.12) | [1.0.12](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.0.12) | spotchecks |
 | **Expo SpotChecks React Native SDK** | [2.0.4 (latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/2.0.4) | [2.0.4](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.0.4) |expo-spotchecks |
-| **Normal React Native SDK** | [0.3.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.3.0) | - | main |
+| **Normal React Native SDK** | [0.5.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.5.0) | - | main |
 
 <br>
 
@@ -19,7 +19,7 @@ Introducing Expo Spotchecks in 2.x.x version series (surveysparrow-expo-spotchec
 
 Peer dependencies: `react-native-webview` 13.13.2+ (13.x), `react-native-safe-area-context` 5.6.2+ (5.x), `react-native-svg` 15.15.1+ (15.x), `react-native-device-info` 14.0.4+ (14.x). Optional: `@sentry/react-native` for SDK error reporting. Android `minSdkVersion` 24 or higher is recommended; iOS follows your React Native version's minimum. Android System WebView 80 or newer is needed on the device.
 
-#### Normal SDK Share will be maintained in 0.2.x 
+#### Normal SDK Share will be maintained in 0.5.x 
 
 <br>
 
@@ -43,11 +43,11 @@ IOS
 
 Add SurveySparrow IOS sdk in pod file and run pod install
 ```sh
-pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.5.2'
+pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.5.4'
 ```
 ANDROID
 
-Android doesn't require any changes and note the min sdk version should be 19
+Android doesn't require any changes and note the min sdk version should be 24
 ## Usage
 
 ```js
@@ -125,6 +125,8 @@ React.useEffect(() => {
 
 ## Methods
 
+> **0.5.0:** `invokeSurveySparrow` now validates with the server before opening (see `validateBeforeOpen`), and the Android minimum SDK is **24** (was 21) because the bundled native SDK moved to 1.2.12. iOS apps must point their Podfile at `SurveySparrowSdk` tag `0.5.4`.
+
 ### 1) invokeSurveySparrow()
 This method will be used to invoke Survey from SurveySparrow
 
@@ -135,6 +137,7 @@ This method will be used to invoke Survey from SurveySparrow
 | surveyType | survey type for the survey | value has to be provided | no |
 | customParams | any custom params to be passed for the survey | [] | yes |
 | thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes | 
+| validateBeforeOpen | ask the server (survey active, schedule, per-person limit) before showing the survey; the result is emitted as `onSurveyValidation` and the survey opens only when active. Per-person limits need the respondent identified twice: `customParams: [{ name: 'emailaddress', value: '<email>' }, { name: 'email', value: '<email>' }]`. `emailaddress` is read by the pre-open check; `email` is read by the survey page so the submission is linked to the contact (NPS surveys link automatically, classic surveys need it). Set `false` to open without checking (pre-0.5.0 behaviour) | true | yes |
 
 ### 2) scheduleSurveySparrow()
 This method will be used to schedule Survey from SurveySparrow
@@ -177,6 +180,7 @@ This Component can be used to render a survey view
 | prop | Description | Default | Optional |
 | --- | --- | --- | --- |
 | config | survey config such as domain,token,surveyType,customParams | config object has to be provided | no |
+| progressBarColor | colour of the loading bar shown while the survey loads (Android only; iOS shows the native spinner) | '#007AFF' | yes |
 | onSurveyComplete | callback function that will be called after survey complete | null | yes |
 | styles | component styles | null | yes |
 
