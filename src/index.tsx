@@ -1,22 +1,22 @@
-import { NativeModules, Platform } from 'react-native';
+import {
+  SpotCheck,
+  initializeSpotChecks,
+  trackScreen,
+  trackEvent,
+  closeSpotChecks,
+} from './spotchecks';
 
-const LINKING_ERROR =
-  `The package 'surveysparrow-react-native-sdk' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+export { initializeSpotChecks, trackScreen, trackEvent, closeSpotChecks };
+// Named alias so `import { Spotcheck }` works alongside the default export.
+export { SpotCheck as Spotcheck };
+export default SpotCheck;
 
-const SurveysparrowReactNativeSdk = NativeModules.SurveysparrowReactNativeSdk
-  ? NativeModules.SurveysparrowReactNativeSdk
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
-
-export function multiply(a: number, b: number): Promise<number> {
-  return SurveysparrowReactNativeSdk.multiply(a, b);
-}
+export type {
+  CustomProperties,
+  SpotcheckProps,
+  SsSpotcheckListener,
+  TrackEventProps,
+  TrackScreenProps,
+  UserDetails,
+  Variables,
+} from './spotchecks';

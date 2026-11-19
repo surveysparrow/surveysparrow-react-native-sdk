@@ -26,14 +26,23 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to capture photos</string>
+	
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to your microphone to capture audio for voice input and recordings.</string>
+
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Location access is required to provide location-based services while you are using the app.</string>
+
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>We use speech recognition to convert your spoken words into text for a better hands-free experience.</string>
+
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

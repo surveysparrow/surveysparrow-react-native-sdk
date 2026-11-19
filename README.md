@@ -1,24 +1,188 @@
 # surveysparrow-react-native-sdk
+[SurveySparrow](https:://surveysparrow.com) React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.
 
-SurveySparrow React Native SDK enables you to collect feedback from your mobile app. Embed the Classic, Chat & NPS surveys in your React Native application seamlessly with few lines of code.
+| SDK | Latest Version | Tag | Branch |
+| :--- | :--- | :--- | :--- |
+| **SpotChecks React Native SDK** | [1.1.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/1.1.0) | [1.1.0](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/1.1.0) | spotchecks |
+| **Expo SpotChecks React Native SDK** | [2.1.0 (latest)](https://www.npmjs.com/package/surveysparrow-expo-spotchecks/v/2.1.0) | [2.1.0](https://github.com/surveysparrow/surveysparrow-react-native-sdk/releases/tag/2.1.0) |expo-spotchecks |
+| **Normal React Native SDK** | [0.5.0 (latest)](https://www.npmjs.com/package/surveysparrow-react-native-sdk/v/0.5.0) | - | main |
+
+<br>
+
+# SpotChecks Details
+
+Introducing Spotchecks in 1.x.x version series(surveysparrow-react-native-sdk). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
+
+Introducing Expo Spotchecks in 2.x.x version series (surveysparrow-expo-spotchecks). Spotchecks docs is available in [React Native Spotchecks](https://developers.surveysparrow.com/spotchecks/mobile-spotchecks/react-native).
+
+#### SpotChecks requirements (1.x)
+
+Peer dependencies: `react-native-webview` 13.13.2+ (13.x), `react-native-safe-area-context` 5.6.2+ (5.x), `react-native-svg` 15.15.1+ (15.x), `react-native-device-info` 14.0.4+ (14.x). Optional: `@sentry/react-native` for SDK error reporting. Android `minSdkVersion` 24 or higher is recommended; iOS follows your React Native version's minimum. Android System WebView 80 or newer is needed on the device.
+
+#### Normal SDK Share will be maintained in 0.5.x 
+
+<br>
+
+# Normal SDK Implementation
+
+## Features
+1. [Fully customizable pre-build `Full Size View` to take feedback whenever & wherever you want.](#Take-feedback-using-Activity)
+2. [`Survey Component` to integrate the feedback experience anywhere in your app.](#Embed-survey-view)
+3. [Schedule Surveys to take one-time or recurring feedbacks.](#Schedule-Surveys)
+
 
 ## Installation
 
 ```sh
 npm install surveysparrow-react-native-sdk
+
+yarn add surveysparrow-react-native-sdk
 ```
 
+IOS
+
+Add SurveySparrow IOS sdk in pod file and run pod install
+```sh
+pod 'SurveySparrowSdk', :git => 'https://github.com/surveysparrow/surveysparrow-ios-sdk.git', :tag => '0.5.4'
+```
+ANDROID
+
+Android doesn't require any changes and note the min sdk version should be 24
 ## Usage
 
-
 ```js
-import { multiply } from 'surveysparrow-react-native-sdk';
+import {
+  SurveySparrow,
+  invokeSurveySparrow,
+  onSurveyResponseListener,
+  scheduleSurveySparrow,
+  clearSurveySparrow,
+} from 'surveysparrow-react-native-sdk';
 
-// ...
+// Embedded Survey
+<SurveySparrow
+  styles={styles.box}
+  config={{
+    domain: 'domain-name',
+    token: 'survey-token',
+    surveyType: 'classic',
+    customParams: [
+      { name: 'testname', value: 'custom value 10' },
+      { name: 'testname2', value: 'custom value 2' },
+    ],
+  }}
+  onSurveyComplete={(data) => {
+    console.log('survey response from embed survey is', data);
+  }}
+/>
+//  Full Survey
+<Button
+  title="Open Survey"
+  onPress={() => {
+    invokeSurveySparrow({
+      domain: 'domain-name',
+      token: 'survey-token',
+      surveyType: 'classic',
+    });
+  }}
+/>
 
-const result = await multiply(3, 7);
+// Schedule Survey
+<Button
+  title="Open Survey"
+  onPress={() => {
+    scheduleSurveySparrow({
+      domain: 'domain-name',
+      token: 'survey-token',
+      surveyType: 'classic',
+    });
+  }}
+/>
+
+// clear schedule
+<Button
+  title="Open Survey"
+  onPress={() => {
+    clearSurveySparrow({
+      domain: 'domain-name',
+      token: 'survey-token',
+      surveyType: 'classic',
+    });
+  }}
+/>
+
+// listining to survey complete event
+React.useEffect(() => {
+  const sub = onSurveyResponseListener.addListener(
+    'onSurveyResponse',
+    (data: any) => {
+      console.log('survey response is', data);
+    }
+  );
+  return () => sub.remove();
+}, []);
 ```
 
+## Methods
+
+> **0.5.0:** `invokeSurveySparrow` now validates with the server before opening (see `validateBeforeOpen`), and the Android minimum SDK is **24** (was 21) because the bundled native SDK moved to 1.2.12. iOS apps must point their Podfile at `SurveySparrowSdk` tag `0.5.4`.
+
+### 1) invokeSurveySparrow()
+This method will be used to invoke Survey from SurveySparrow
+
+| parameter | Description | Default | Optional |
+| --- | --- | --- | -- |
+| domain | survey domain to load | value has to be provided | no |
+| token | survey token for the survey | value has to be provided | no |
+| surveyType | survey type for the survey | value has to be provided | no |
+| customParams | any custom params to be passed for the survey | [] | yes |
+| thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes | 
+| validateBeforeOpen | ask the server (survey active, schedule, per-person limit) before showing the survey; the result is emitted as `onSurveyValidation` and the survey opens only when active. Per-person limits need the respondent identified twice: `customParams: [{ name: 'emailaddress', value: '<email>' }, { name: 'email', value: '<email>' }]`. `emailaddress` is read by the pre-open check; `email` is read by the survey page so the submission is linked to the contact (NPS surveys link automatically, classic surveys need it). Set `false` to open without checking (pre-0.5.0 behaviour) | true | yes |
+
+### 2) scheduleSurveySparrow()
+This method will be used to schedule Survey from SurveySparrow
+
+| parameter | Description | Default | Optional |
+| --- | --- | --- | -- |
+| domain | survey domain to load | value has to be provided | no |
+| token | survey token for the survey | value has to be provided | no |
+| surveyType | survey type for the survey | value has to be provided | no |
+| customParams | any custom params to be passed for the survey | [] | yes |
+| thankYouPageTimeLimit | how long the full view has to be shown before closing | 3000 (ms) | yes |
+| alertTitle | dialouge box alert title | 'Rate us' | yes |
+| alertMessage | dialouge box alert message | 'Share your feedback and let us know how we are doing' | yes |
+| alertPositiveText | dialouge box positive text | 'Rate Now' | yes |
+| alertNegativeText | dialouge box negative text | 'Later' | yes |
+| startAfter | after how long the initial schedule has to happen | 259200000 | yes |
+| repeatInterval | after how long the schedule should repeat | 432000000 | yes |
+| repeatSurvey | if the schedule should repeat | false | yes |
+| incrementalRepeat | if schedule has to be a incremental repeat | false | yes |
+
+### 3) clearSurveySparrow()
+This method will be used to clear the schedule that was previously set
+
+| parameter | Description | Default | Optional |
+| --- | --- | --- | -- |
+| domain | survey domain to load | value has to be provided | no |
+| token | survey token for the survey | value has to be provided | no |
+
+## Event Listener
+### 1) onSurveyResponseListener
+
+| Listener name | Description |  Optional |
+| --- | --- | --- |
+| onSurveyResponse | this event listener will be triggered after completing the survey | yes |
+
+## Component
+### 1) SurveySparrow
+This Component can be used to render a survey view
+
+| prop | Description | Default | Optional |
+| --- | --- | --- | --- |
+| config | survey config such as domain,token,surveyType,customParams | config object has to be provided | no |
+| progressBarColor | colour of the loading bar shown while the survey loads (Android only; iOS shows the native spinner) | '#007AFF' | yes |
+| onSurveyComplete | callback function that will be called after survey complete | null | yes |
+| styles | component styles | null | yes |
 
 ## Contributing
 
@@ -28,6 +192,4 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 
 MIT
 
----
-
-Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
+> Please submit bugs/issues through GitHub issues we will try to fix it ASAP.
